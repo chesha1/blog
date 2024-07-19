@@ -64,8 +64,9 @@ Cloudflare 官方的这篇[文档](https://developers.cloudflare.com/d1/tutorial
 # Drizzle
 和 Prisma 不同，使用 Drizzle 的负担小很多，没有二进制文件的依赖，Drizzle 仅仅是在原生 SQL 上添加了一层薄薄的抽象
 
-首先需要一个 `schema.ts` 文件来定义表，比如：
+首先需要一个 `db/schema.ts` 文件来定义表，比如：
 ```typescript
+// db/schema.ts
 import { sqliteTable, text, integer } from 'drizzle-orm/sqlite-core';
 
 export const countries = sqliteTable('countries', {
@@ -74,6 +75,37 @@ export const countries = sqliteTable('countries', {
 }
 );
 ```
+{% fold info @接下来，可以用 Drizzle 的数据库迁移功能，也可以自己写 sql 文件管理数据库结构，展开具体步骤 %}
+然后在项目根目录中新建文件 `drizzle.config.ts`，配置数据库迁移的规则：
+
+{% note success %}
+注意，这里所说的数据库迁移，不是把数据从一个数据库搬到另一个数据库
+
+在 ORM 的语境下，数据库迁移是指在同一个数据库中，改变表的结构，可以参考一下 [Prisma 的文档](https://www.prisma.io/docs/orm/prisma-migrate/getting-started)理解一下这个概念
+{% endnote %}
+```typescript
+// drizzle.config.ts
+import type { Config } from "drizzle-kit";
+
+export default {
+    schema: "./db/schema.ts",
+    out: "./db/migrations",
+    dialect: "sqlite",
+    dbCredentials: {
+        wranglerConfigPath: "wrangler.toml",
+        dbName: "<your-db-name>",
+    },
+} satisfies Config;
+```
+
+然后用 `npx drizzle-kit generate` 生成迁移文件，注意产生的迁移文件需要跟着 Git 走，不然下次迁移就不好用了
+
+在 `wrangler.toml` 中添加 `migrations_dir = "db/migrations"`
+
+然后用 `npx wrangler d1 migrations apply <your-db-name> --remote` 应用迁移文件
+
+{% endfold %}
+
 然后直接在代码里使用这些定义，比如：
 ```typescript
 import { drizzle } from 'drizzle-orm/d1';
