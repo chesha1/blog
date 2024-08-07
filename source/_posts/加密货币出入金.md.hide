@@ -1,0 +1,60 @@
+---
+title: 无风险、超低磨损的加密货币出入金方案
+date: 2024-11-26 00:20
+excerpt: 从新加坡的银行，出入金加密货币
+index_img: /img/cloudflare-d1-orm.webp
+category: 生活
+---
+# 背景
+加密货币的出入金一直是一个比较麻烦的事，在交易所里，和中国大陆的商家使用 C2C 交易是最简单的解决方案
+
+但是一直存在冻卡，汇率不够好等问题，所以本文以新加坡的本地银行为起点，就避免了冻卡的风险，最多也就是汇款被拦截，不存在大额损失的可能
+
+# 入金具体做法
+入金的途径，具体来说就是：
+1. 从大陆汇款到新加坡本地银行
+2. 从新加坡本地银行入金到 StraitsX
+
+## 从大陆汇款到境外银行
+这里涉及跨境汇款，手段就很多了，比如：
+1. 从境内银行直接跨境汇款
+2. 用熊猫速汇、Wise 等汇款机构
+3. 各种地下换汇群
+
+跨境汇款这一步相对于直接在交易所里 C2C 交易，虽然也会被审查，但是真遇到了，也就是有银行的工作人员联系你，要求补交一些材料，包括个人信息，钱的用途之类
+
+只可能出不去，不会直接损失
+
+如果使用熊猫速汇等机构，实际上也是和从银行汇款一样的，但是汇率和手续费都要优惠一点
+
+至于用地下换汇群的风险，就浮动比较大了，如果比较纯良的群，比如都是打工人和学生的群，收不到黑钱就没什么风险
+
+## 从新加坡本地银行入金到 StraitsX
+86手机号收不到短信
+
+需要护照验证
+
+
+# 原文
+https://www.youtube.com/watch?v=_9RKHxmg7vg
+
+https://www.reddit.com/r/sgcrypto/comments/1c0mfxi/best_way_to_deposit_usd_to_coinbase_exchange/?rdt=41013
+
+https://straitsx.com/sg/pricing
+
+https://www.straitsx.com/blog-post/product-straitsx-swap
+
+https://www.reddit.com/r/sgcrypto/comments/19eb7mg/transfer_usdc_from_straitsx_to_cryptocom_queries/
+
+https://www.reddit.com/r/sgcrypto/comments/168v2gg/what_exchange_or_methods_used_to_transfer_sgd_to/
+
+google search uniswap polygon 
+
+
+
+# 出金
+新加坡银行也有风险
+
+https://www.reddit.com/r/sgcrypto/comments/1ekrwpm/is_it_true_bank_and_crypto_cant_coexist/
+
+https://www.reddit.com/r/sgcrypto/comments/1ebq7jl/onramp_to_binance/
