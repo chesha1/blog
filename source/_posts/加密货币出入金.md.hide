@@ -60,30 +60,57 @@ Coinbase 支持来自新加坡的银行的法币汇款，不像币安，只要�
 **如果你现在或者将来，可以获得新加坡的长期签证，别忘了注册一个可以交易加密货币的渠道**，别像我一样，等签证过期了才发现这个需求，失去了优惠的出入金渠道
 
 ## 存入 Kraken
-Kraken 支持中国大陆身份的 KYC，还是不错的，如果你用欧元或者英镑入金，那损耗是非常非常低的
+Kraken 支持中国大陆身份的 KYC，还是不错的，如果你从欧元区的银行用欧元或者英镑入金，那损耗是非常非常低的
 
-如果从新加坡的银行汇款，没有欧元和英镑的 FPS/SEPA 等优惠通道，但是磨损也还能接受（和 Coinbase的 3%）相比
+如果从新加坡的银行汇款，没有欧元和英镑的 FPS/SEPA 等优惠通道，但是磨损也还能接受（和 Coinbase的 3% 相比）
+
+### EUR 入金
 
 但是根据社区的反馈，这里有一些非常哈人的点：
 
-https://www.google.com.hk/search?q=dbs+deposit+to+kraken&rlz=1CDGOYI_enSG1066__1074&oq=dbs+deposit+to+kraken&gs_lcrp=EgZjaHJvbWUyBggAEEUYOTIHCAEQIRigATIHCAIQIRigAdIBBzkwMGowajeoAhWwAgHiAwQYASBf&hl=zh-CN&sourceid=chrome-mobile&ie=UTF-8&gfe_rd=mr&pli=1
-
-https://www.reddit.com/r/KrakenSupport/comments/11xjike/how_do_you_deposit_us_dollars_from_dbs_singapore/
-
 https://www.reddit.com/r/sgcrypto/comments/1c61hg5/psa_be_careful_with_dbs_remit_to_kraken/
 
-https://www.reddit.com/r/sgcrypto/comments/17m0ja0/best_way_to_deposit_usd_into_an_exchange/
-
 https://www.reddit.com/r/sgcrypto/comments/15iob7l/how_to_use_dbs_to_onramp_into_kraken/
+
+我自己尝试了一下，汇款没有成功，直接被退回了，倒是没有被吞掉，也没有产生佣金的损失
+
+如果将来可以用 EUR 入金了，还有一个注意点
+
+**因为这里涉及到一个从 SGD 到 EUR 的转换过程，银行的汇率又不是很好，所以就想到是否能用券商来中转一下**
+
+毕竟券商里的外汇市场基本上提供了比银行更好的汇率，同时从银行到券商的出入金基本是免费的
+
+我用 IBKR 试验了一下，用 4640 SGD 兑成 3212.07 EUR，佣金是 2.89 SGD
+
+3212 EUR 出金的时候，没有直接转到 DBS 里，而是通过巴克莱银行代理了一下，又产生了 6.86 EUR 的充值费用
+
+当时在券商里的汇率是 1 EUR = 1.44455 SGD，考虑到各种费用，额外产生了约 0.2% 的磨损
+
+查看一下银行和交易所现在的汇率差，有 0.9 %，所以从券商换，虽然时间很长，但是还是比较值得的
+
+计算比较粗糙，可能具体数值不太对，但是结论应该没有问题：**银行入金到券商，换汇再出金回银行，比直接在银行内部换汇好**
+
+### USD 入金
+用 DBS 转账的时候，直接提示我 SWIFT code 不对，这就很奇怪了
 
 ## 存入 Nexo
 Nexo 是一个比较特殊的交易所啊，支持中国大陆的身份，同时利率还不错，算是一个交易量不高但是老看见有人说的交易所
 
 Nexo 本身支持欧元、英镑和美元的入金，但是对于中国大陆的身份，只能选择英镑入金
 
-不考虑银行的额外手续费，每次电汇，Nexo 会有 25 GBP 的手续费，如果一次性入金数量大还好，不到 1% 的损耗
+不考虑银行的额外手续费，每次通过 SWIFT 电汇，Nexo 会有 25 GBP 的手续费，如果一次性入金数量大还好，不到 1% 的损耗
 
-待实测 DBS TO NEXO
+我试着通过 DBS Remit 汇了 50 GBP，通过 SWIFT 填写 IBAN 汇款，成功到账了，但是竟然没扣一分手续费，不仅没扣 Nexo 本身说的 25 GBP，银行也没扣费
+
+不过我只汇了这一次，可能是第一次有交易所的手续费减免？但是查文档也没说到这一点，所以也可能是 DBS Remit 不是传统的 SWIFT 汇款，有什么别的优化的渠道
+
+GBP 汇入之后会变成 GBPx，然后如果要兑换成其他加密货币，汇率是很差的，相对比外汇市场上的汇率，要贵 1% 多一点
+
+但是根据 Loyalty Tiers，如果升到最高可以有 0.5% 的 cashback，这样兑换的损失就没那么高了，就还可以接受
+
+具体的操作的话，就是先买一笔 Nexo，把 Loyalty Tiers 提升到 Platinum
+
+然后把 GBPx 兑成 USDT，然后再把 Nexo 卖掉，这样相对比外汇市场上汇率的损失小于 1%
 
 # 其他渠道
 https://www.youtube.com/watch?v=VW-f76iyWQs
