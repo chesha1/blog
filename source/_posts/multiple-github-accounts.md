@@ -74,6 +74,8 @@ ssh -T git@github-new
 Hi <userName>! You've successfully authenticated, but GitHub does not provide shell access.
 ```
 
+关于使用 SSH 连接 GitHub，官网有[更详细的说明](https://docs.github.com/zh/authentication/connecting-to-github-with-ssh)，可以参考一下
+
 ## 使用新身份操作 git
 git 有很多配置，仓库底下的 `.git/config` 的优先级会高于全局的
 
