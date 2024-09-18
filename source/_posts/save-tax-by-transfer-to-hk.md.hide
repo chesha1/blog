@@ -1,0 +1,40 @@
+---
+title: 将 OneDrive for Business 转到香港，降低税率
+date: 2024-09-14 16:03
+excerpt: ？？？？？？？
+category: 生活
+tags: 
+  - OneDrive
+---
+# 背景
+一直在使用 OneDrive for Business，每个月价格 10 美元，再加上 9% 的税
+
+因为之前住在新加坡，消费税刚好就是 9%，也就没管了，但是后来返回大陆，还是一直收 9% 的税，这就有点受不了了
+
+看上去 9% 不多，但是订阅一年，差不多也要多出来一个月的费用
+
+所以就开始考虑怎么捣鼓一下，降低税率
+
+# 售后支持
+刚开始在[微软社区](https://answers.microsoft.com/zh-hans)发了一个疑问贴，询问关于税率的情况，但是有版主提示我应该去[管理中心](https://admin.microsoft.com/)提一个工单，社区不处理这种事
+
+晚上提了一个工单后，第二天上午就有微软的售后打电话跟我说明了情况，总结一下结论
+
+- 税是因为我当初创建的租户就在新加坡，所以税用新加坡的税来收
+- 不能通过更改账单地址等简单的方式用别的地区的税率，要创建一个新租户
+- 用美国某些免税州的地址，也不一定能免税，因为线上服务可能会按照微软总部的地址来收税
+- **用香港的地址，可以做到 0 税率**
+- 我的订阅很少（就一个），创建好新租户后可以提个工单，让技术人员帮我把订阅和 OneDrive 中的数据免费转过去，如果是一个公司几千个订阅的那种规模的转移，就要收费了
+
+顺便说一下，微软的服务是真不错
+
+# 实际操作
+
+
+# 参考来源
+https://learn.microsoft.com/zh-cn/microsoft-365/enterprise/cross-tenant-onedrive-migration?view=o365-worldwide
+
+https://learn.microsoft.com/zh-cn/entra/fundamentals/create-new-tenant
+
+https://learn.microsoft.com/zh-cn/microsoft-365/solutions/tenant-management-tenants?view=o365-worldwide
+

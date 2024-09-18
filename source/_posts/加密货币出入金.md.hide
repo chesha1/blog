@@ -90,6 +90,8 @@ https://www.reddit.com/r/sgcrypto/comments/15iob7l/how_to_use_dbs_to_onramp_into
 
 计算比较粗糙，可能具体数值不太对，但是结论应该没有问题：**银行入金到券商，换汇再出金回银行，比直接在银行内部换汇好**
 
+但是这样比较折腾，而且有概率被银行退回，我有一笔 GBP 从 IBKR 出金到 DBS，就被退回了，同时 SGD 和 EUR 就没问题
+
 ### USD 入金
 用 DBS 转账的时候，直接提示我 SWIFT code 不对，这就很奇怪了
 
