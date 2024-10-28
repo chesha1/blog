@@ -1,5 +1,5 @@
 ---
-title: cosplay 道具的法律风险：枪和刀
+title: Cosplay 道具的法律风险：枪和刀
 date: 2024-10-10 21:41
 excerpt: 仿真枪和管制刀具的标准是什么，可能会有什么处罚
 category: 生活
