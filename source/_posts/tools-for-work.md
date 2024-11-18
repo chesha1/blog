@@ -1,7 +1,7 @@
 ---
 title: 工作用工具总结
 date: 2024-11-16 20:44
-excerpt: 可视化
+excerpt: 可视化以及其他，长期更新中
 category: 工具
 ---
 # 背景
@@ -9,32 +9,34 @@ category: 工具
 
 # 可视化
 ## 与 markdown 结合的示意图
-[Mermaid](https://mermaid.js.org/)是一个作图工具，功能非常强大，可以用简单的代码画图
+[Mermaid](https://mermaid.js.org/) 是一个作图工具，功能非常强大，可以用简单的代码画图
 
 最主要是 GitHub markdown 支持 Mermaid，这就很实用
 
-（此处需要补图 https://github.com/mermaid-js/mermaid）
+![](/img/visualization-1.png)
 
 ## 其他示意图
 其他需要直接插入图片的可视化（流程图、思维导图等），我都用飞书了，审美在线，性能也不错
 
 字节投了这么多资源做办公软件，虽然我不是为产品付费的 B 端用户，但也是让我蹭上了
 
-（此处需要补图 https://github.com/mermaid-js/mermaid）
+![](/img/visualization-2.png)
 
 ## 另一个思维导图
 思维导图有很多软件在做了，因为我习惯把这些都放在云端，而且云端的内容分享起来也方便，所以只记录一下我更早之前用的 [AmyMind](https://amymind.com/)
 
 我之前用的时候只是一个单纯的思维导图，现在都有 AI 功能了，不过不影响免费用基础功能
 
-（此处需要补图 https://github.com/mermaid-js/mermaid）
+![](/img/visualization-3.webp)
 
 ## 3D 示意图
-有时候需要做展示，比较需要图形的美观的，当然 draw.io 也是一个好选择，但是 2D 有时候不太够，所以我一般会选择 [iCraft Editor](https://icraft.gantcloud.com/)
+有时候需要做展示，比较需要图形的美观的，当然 [draw.io](https://app.diagrams.net/) 也是一个好选择，但是 2D 有时候不太够，所以我一般会选择 [iCraft Editor](https://icraft.gantcloud.com/)
 
 也是全网页端的操作，而且包含了一些常用的计算机领域的图标，还算比较好用
 
-# 协同工具
+![](/img/visualization-4.png)
+
+# 其他
 ## 传输文件
 这个[网站](https://note.ms/)可以直接分配一个链接给你，把想要的内容输入进去，然后把链接分享给别人就行了
 
@@ -42,9 +44,6 @@ category: 工具
 
 用一个第三方服务传递大段消息，感觉会更优雅一点
 
-（此处需要补图 https://github.com/mermaid-js/mermaid）
-
-# 其他
 ## 职级和薪水
 这个[网站](https://www.levels.fyi/)可以查看各大互联网公司的职级和对应的薪水
 
