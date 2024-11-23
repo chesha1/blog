@@ -13,28 +13,36 @@ category: 工具
 
 最主要是 GitHub markdown 支持 Mermaid，这就很实用
 
-![](/img/visualization-1.png)
+![](/img/tools-for-work-1.png)
 
 ## 其他示意图
 其他需要直接插入图片的可视化（流程图、思维导图等），我都用飞书了，审美在线，性能也不错
 
 字节投了这么多资源做办公软件，虽然我不是为产品付费的 B 端用户，但也是让我蹭上了
 
-![](/img/visualization-2.png)
+![](/img/tools-for-work-2.png)
+
+## 比较漂亮的示意图
+这个[示意图](https://www.onemodel.app/)也不错，主要是图标比较丰富，比较适合绘制互联网相关的示意图，比飞书的图标丰富多了
+
+而且默认样式也很漂亮
+
+![](/img/tools-for-work-5.svg)
+
 
 ## 另一个思维导图
 思维导图有很多软件在做了，因为我习惯把这些都放在云端，而且云端的内容分享起来也方便，所以只记录一下我更早之前用的 [AmyMind](https://amymind.com/)
 
 我之前用的时候只是一个单纯的思维导图，现在都有 AI 功能了，不过不影响免费用基础功能
 
-![](/img/visualization-3.webp)
+![](/img/tools-for-work-3.webp)
 
 ## 3D 示意图
 有时候需要做展示，比较需要图形的美观的，当然 [draw.io](https://app.diagrams.net/) 也是一个好选择，但是 2D 有时候不太够，所以我一般会选择 [iCraft Editor](https://icraft.gantcloud.com/)
 
 也是全网页端的操作，而且包含了一些常用的计算机领域的图标，还算比较好用
 
-![](/img/visualization-4.png)
+![](/img/tools-for-work-4.png)
 
 # 其他
 ## 传输文件
