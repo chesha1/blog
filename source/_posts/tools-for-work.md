@@ -23,7 +23,7 @@ category: 工具
 ![](/img/tools-for-work-2.png)
 
 ## 比较漂亮的示意图
-这个[示意图](https://www.onemodel.app/)也不错，主要是图标比较丰富，比较适合绘制互联网相关的示意图，比飞书的图标丰富多了
+[onemodel](https://www.onemodel.app/) 的示意图也不错，主要是图标比较丰富，比较适合绘制互联网相关的示意图，比飞书的图标丰富多了
 
 而且默认样式也很漂亮
 
