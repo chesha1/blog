@@ -96,3 +96,13 @@ git config user.email your_email@example.com
 ```
 
 这样设置好之后，对仓库进行的操作，用的就是新用户的身份了
+
+然后可以用 `git ls-remote origin` 测试一下设置是否成功，尝试连接到 `origin` 远程仓库，并列出所有远程引用
+
+如果成功，你会看到类似以下输出：
+```shell
+<commit-hash>  refs/heads/main
+<commit-hash>  refs/heads/other-branch
+```
+
+再用 `git push --dry-run` 需要验证是否有推送权限，这会模拟推送过程而不会实际更改远程仓库
