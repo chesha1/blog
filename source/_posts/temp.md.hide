@@ -1,0 +1,17 @@
+# 配置
+## git
+开发容器会无脑把本地的一些文件复制到容器里，比如 `.gitconfig`，这一点还不好在 `.devcontainer.json` 里配置，这对于网络环境比较复杂的中国开发者来说，就会带来一些额外的麻烦
+
+比如，在看完官网文档，进行[第一个实践](https://code.visualstudio.com/docs/devcontainers/containers#_quick-start-try-a-development-container)的时候，很可能会遇到无法 git clone 的报错，就是这个问题引起的
+
+这个时候可以把本地的 `.gitconfig` 中关于代理的部分注释掉就好了，按理说这个地方应该编辑一下 `.devcontainer.json` 把容器网络配置好，但是有简单的方法用，我就不搞复杂的了
+
+或者还有一种方法，在 vscode 设置中，`dev.containers.copyGitConfig` 设置为 `false`，也就是图形化设置里的打钩取消
+
+然后就没有全局的 `.gitconfig` 了，但是根据默认设置，git credential 还是会被复制过去，不影响权限，只是需要手动设置一个用户名和邮箱
+
+我也试了一下[有些人](https://github.com/microsoft/vscode-remote-release/issues/4603)提到的更改 `.devcontainer.json` 中的 `postCreateCommand`，但是似乎不起作用
+
+## ssh
+这里又是一个麻烦的问题，可以先看下文档：https://code.visualstudio.com/remote/advancedcontainers/sharing-git-credentials#_using-ssh-keys
+
