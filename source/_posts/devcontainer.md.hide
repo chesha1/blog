@@ -1,0 +1,78 @@
+---
+title: 一次配置，处处运行：在 Dev Containers 中开发（施工中）
+date: 2024-12-24 18:22
+excerpt: 如何使用 Dev Containers 作为环境进行开发
+category: 工具
+---
+# 背景
+本来我一直是在本地的 Windows 或者 macOS 上进行开发的，也没出过什么问题
+
+但是在某次对一个前端项目升级依赖后，部署到 cloudflare pages 上的预览功能突然不能用了，报错显示
+
+> ⚡️ @cloudflare/next-on-pages CLI v.1.13.7
+>
+> ⚡️ Warning: It seems like you're on a Windows system, the Vercel CLI (run by @cloudflare/next-on-pages
+> ⚡️ to build your application) seems not to work reliably on Windows so if you experience issues during
+> ⚡️ the build process please try switching to a different operating system or running
+> ⚡️ @cloudflare/next-on-pages under the Windows Subsystem for Linux
+
+直接提示我没法在 Windows 上用，也是离大谱了，按理说这个时候最好的选择是用 wsl，但是之前折腾过一次，网络配置有点麻烦，索性要折腾，就一步到位吧，所以还是选择了 Dev Containers 这种方法，比 wsl 更有普适性
+
+其实可以直接看[官方文档](https://code.visualstudio.com/docs/devcontainers/containers)，文档写得很详细，所以文档有的内容我尽量不赘述，主要补充一点我的使用体会和文档说的不够详细的地方
+
+# 安装
+一般来说还是推荐使用本地的容器，所以就先需要安装 Docker Desktop，这里不赘述了，不是本文关键，参考[官网](https://docs.docker.com/get-started/get-docker/)即可
+
+在 Windows 上，Docker Desktop 需要 wsl 作为后端，所以其实相当于也还是用了 wsl，不过又在 wsl 上包装了一层，更方便使用了
+
+**这里一般有两种**
+
+# 配置
+## git 行尾
+因为容器中是 Linux 环境，所以使用 git 的时候还需要设置一下行尾，可以参考：https://code.visualstudio.com/docs/remote/troubleshooting#_resolving-git-line-ending-issues-in-wsl-resulting-in-many-modified-files
+
+简单来说就是，在 git 仓库的根目录下再新建一个 `.gitattributes` 文件，强制文件使用 Linux 的 LF 行尾，某些 Windows 专有文件除外：
+
+```
+* text=auto eol=lf
+*.{cmd,[cC][mM][dD]} text eol=crlf
+*.{bat,[bB][aA][tT]} text eol=crlf
+```
+## git config
+开发容器会无脑把本地的一些文件复制到容器里，比如 `.gitconfig`，这一点还不好在 `.devcontainer.json` 里配置，这对于网络环境比较复杂的中国开发者来说，就会带来一些额外的麻烦
+
+比如，在看完官网文档，进行[第一个实践](https://code.visualstudio.com/docs/devcontainers/containers#_quick-start-try-a-development-container)的时候，很可能会遇到无法 git clone 的报错，就是这个问题引起的
+
+这个时候可以把本地的 `.gitconfig` 中关于代理的部分注释掉就好了，按理说这个地方应该编辑一下 `.devcontainer.json` 把容器网络配置好，但是有简单的方法用，我就不搞复杂的了
+
+或者还有一种方法，在 vscode 设置中，`dev.containers.copyGitConfig` 设置为 `false`，也就是图形化设置里的打钩取消
+
+然后就没有全局的 `.gitconfig` 了，但是根据默认设置，git credential 还是会被复制过去，不影响权限，只是需要手动设置一个用户名和邮箱
+
+我也试了一下[有些人](https://github.com/microsoft/vscode-remote-release/issues/4603)提到的更改 `.devcontainer.json` 中的 `postCreateCommand`，但是似乎不起作用
+
+## ssh 设置
+有的时候如果使用 ssh 而不是 http/https 连接 git，就需要一些额外的配置
+
+从这一步开始就有一点不一样了，为了启动 ssh-agent，在 macOS 上使用 `eval "$(ssh-agent -s)"`
+
+在 Windows 上，假设你之前已经正常安装过 ssh 了，现在在“服务”中，找到 `OpenSSH Authentication Agent`，然后启动这个服务
+
+对于这两个操作系统来说，下面的命令是一样的，用 `ssh-add -l` 验证 ssh-agent 是否有效
+
+如果运行正常，但没有加载密钥，会看到 `The agent has no identities.`
+
+然后加载私钥到 ssh-agent，比如：`ssh-add ~/.ssh/id_xxx`
+
+顺便说一下，`.ssh/` 下可能会有两个文件，`id_xxx` 是私钥，`id_xxx.pub` 是公钥
+
+加载完成后，再用 `ssh-add -l` 验证，就能看到刚才添加的私钥信息
+
+如果这个时候又因为代理报错了，可以先把代理管理，把私钥加上，再把代理开回来，不影响后续使用
+
+现在已经添加好了，想要验证一下 ssh 是用了 ssh-agent 还是直接用了本地文件，可以用 `ssh -v -T user@hostname` 测试一下
+
+如果正常使用了 ssh-agent，就会看到类似的信息 `debug1: Server accepts key: <path> <algorithm> <hash> explicit agent`
+
+如果直接用了本地文件没有用代理，信息就是 `debug1: Server accepts key: <path> <algorithm> <hash> explicit`
+
