@@ -25,8 +25,6 @@ category: 工具
 
 在 Windows 上，Docker Desktop 需要 wsl 作为后端，所以其实相当于也还是用了 wsl，不过又在 wsl 上包装了一层，更方便使用了
 
-**这里一般有两种**
-
 # 配置
 ## git 行尾
 因为容器中是 Linux 环境，所以使用 git 的时候还需要设置一下行尾，可以参考：https://code.visualstudio.com/docs/remote/troubleshooting#_resolving-git-line-ending-issues-in-wsl-resulting-in-many-modified-files
@@ -93,6 +91,15 @@ category: 工具
 
 这里注意挂载的目标路径要和你的远程用户相符
 
+这里可能会报一个错误 `Bad owner or permissions on /root/.ssh/config`，这个似乎跟所有者和权限有关，因为是自己开发，我就用比较简单粗暴的方法修复了：
+
+```bash
+chmod 700 ~/.ssh
+chmod 600 ~/.ssh/*
+```
+
+之后还可以把上面的命令添加到 `postCreateCommand` 里
+
 ## 拓展
 dev container 创建的时候，会自带一些拓展，这一点可以在 `dev.containers.defaultExtensionsIfInstalledLocally` 中修改，这是一个全局的
 
@@ -134,8 +141,19 @@ dev container 创建的时候，会自带一些拓展，这一点可以在 `dev.
 
 **提了 issue，这个功能不知道会不会改，后续再看看吧**
 
-## 镜像和功能
-上面的所有配置基本上是不分项目和语言的，下面就和语言比较相关了
+## 基础环境
+上面的所有配置基本上是不分项目和语言的，下面就和语言比较相关了，需要配置和语言相关的环境
+### 从镜像构建
+比较简单的做法是直接设置 `"image"` 属性，这样就有一个基础的环境了，比如 `"image": "mcr.microsoft.com/devcontainers/javascript-node:1-18-bullseye"`
+
+或者 `"image": "node:latest"` 
+
+### 从 Dockerfile 构建
+
+
+### 从模板构建
+另一个比较简单的做法是使用[开发容器模板](https://containers.dev/implementors/templates/)
+
 
 
 
