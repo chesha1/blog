@@ -144,12 +144,26 @@ dev container 创建的时候，会自带一些拓展，这一点可以在 `dev.
 ## 基础环境
 上面的所有配置基本上是不分项目和语言的，下面就和语言比较相关了，需要配置和语言相关的环境
 ### 从镜像构建
-比较简单的做法是直接设置 `"image"` 属性，这样就有一个基础的环境了，比如 `"image": "mcr.microsoft.com/devcontainers/javascript-node:1-18-bullseye"`
+比较简单的做法是直接设置 `image` 属性，这样就有一个基础的环境了，比如 `"image": "mcr.microsoft.com/devcontainers/javascript-node:1-18-bullseye"`
 
 或者 `"image": "node:latest"` 
 
 ### 从 Dockerfile 构建
+这种方法用 Dockerfile 提供环境，比用 `image` 自由度稍高一点
 
+我个人是比较喜欢 Dockerfile，比 `image` 加 `postCreateCommand` 好一点
+
+使用 Dockerfile，就不需要 `image` 了，要设置 `build.dockerfile` 为 `Dockerfile` 对于 `devcontainer.json` 的相对地址
+
+一般来说，`.devcontainer` 文件夹下会有 `devcontainer.json` 文件和 `Dockerfile` 文件
+
+然后 `devcontainer.json` 文件中的配置是：
+
+```json
+"build": {
+		"dockerfile": "Dockerfile"
+	},
+```
 
 ### 从模板构建
 另一个比较简单的做法是使用[开发容器模板](https://containers.dev/implementors/templates/)
