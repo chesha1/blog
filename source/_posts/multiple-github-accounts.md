@@ -49,6 +49,18 @@ Host github-new
     IdentityFile ~/.ssh/id_github_new
 ```
 
+有时候用 22 端口会有网络问题，建议改为用 https 的 443 端口
+
+那么上面的配置就改为
+
+```
+Host github-new
+    HostName ssh.github.com
+    Port 443
+    User git
+    IdentityFile ~/.ssh/id_github_new
+```
+
 `Host` 后面的内容是自定义的名称，可以使用任何不冲突的名字，它将作为 GitHub 的别名，方便在命令中使用
 
 `HostName` 和 `User` 的内容不能改
