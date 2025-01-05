@@ -1,7 +1,7 @@
 ---
-title: 一次配置，处处运行：在 Dev Containers 中开发（施工中）
-date: 2024-12-24 18:22
-excerpt: 如何使用 Dev Containers 作为环境进行开发
+title: 一次配置，处处运行：在 Dev Containers 中开发
+date: 2025-01-05 23:42
+excerpt: 如何使用 Dev Containers 作为环境进行开发，享受统一的 Linux 环境
 category: 工具
 ---
 # 背景
@@ -18,7 +18,7 @@ category: 工具
 
 直接提示我没法在 Windows 上用，也是离大谱了，按理说这个时候最好的选择是用 wsl，但是之前折腾过一次，网络配置有点麻烦，索性要折腾，就一步到位吧，所以还是选择了 Dev Containers 这种方法，比 wsl 更有普适性
 
-其实可以直接看[官方文档](https://code.visualstudio.com/docs/devcontainers/containers)，文档写得很详细，所以文档有的内容我尽量不赘述，主要补充一点我的使用体会和文档说的不够详细的地方
+其实可以直接看[官方文档](https://code.visualstudio.com/docs/devcontainers/containers)，所以文档有的内容我尽量不赘述，主要补充一点我的使用体会和文档说的不够详细的地方
 
 # 安装
 一般来说还是推荐使用本地的容器，所以就先需要安装 Docker Desktop，这里不赘述了，不是本文关键，参考[官网](https://docs.docker.com/get-started/get-docker/)即可
@@ -41,7 +41,7 @@ category: 工具
 
 比如，在看完官网文档，进行[第一个实践](https://code.visualstudio.com/docs/devcontainers/containers#_quick-start-try-a-development-container)的时候，很可能会遇到无法 git clone 的报错，就是这个问题引起的
 
-这个时候可以把本地的 `.gitconfig` 中关于代理的部分注释掉就好了，按理说这个地方应该编辑一下 `.devcontainer.json` 把容器网络配置好，但是有简单的方法用，我就不搞复杂的了
+这个时候可以把本地的 `.gitconfig` 中关于代理的部分注释掉，按理说这个地方应该编辑一下 `.devcontainer.json` 把容器网络配置好，但是有简单的方法用，我就不搞复杂的了
 
 或者还有一种方法，在 vscode 设置中，`dev.containers.copyGitConfig` 设置为 `false`，也就是图形化设置里的打钩取消
 
@@ -101,9 +101,9 @@ chmod 600 ~/.ssh/*
 之后还可以把上面的命令添加到 `postCreateCommand` 里
 
 ## 拓展
-dev container 创建的时候，会自带一些拓展，这一点可以在 `dev.containers.defaultExtensionsIfInstalledLocally` 中修改，这是一个全局的
+dev container 创建的时候，会自带一些拓展，这一点可以在 `dev.containers.defaultExtensionsIfInstalledLocally` 中修改，这是一个全局的设置
 
-我这里默认的内容是有 `"GitHub.copilot"`
+我这里默认的内容有 `"GitHub.copilot"`
 
 如果在某个开发容器里，还想要把其他本地拓展安装进去，可以在本地的拓展上右键，选择 `添加到 devcontainer.json`，然后 rebuild 即可
 
@@ -168,6 +168,14 @@ dev container 创建的时候，会自带一些拓展，这一点可以在 `dev.
 ### 从模板构建
 另一个比较简单的做法是使用[开发容器模板](https://containers.dev/implementors/templates/)
 
+这部分的文档写得很差，我只能简单说一下似乎正确的使用方式
+
+模板都是官方和社区提供的，这种方式是自己写好模板后推送到一个中央仓库，然后用户从中央仓库拉取，所以不太适合小范围分享模板
+
+使用方法是用 vscode, Ctrl + Shift + P 打开命令面板，然后选择 dev containers: add dev container configuration files
+
+然后就可以选择想使用的模板了，选择完之后会生成相应的配置文件
+
 
 
 
@@ -176,14 +184,16 @@ dev container 创建的时候，会自带一些拓展，这一点可以在 `dev.
 - 把文件全部放在容器中（dev containers: clone repository in container volume）
 - 把文件放在本地（dev containers: open folder in container）
 
-比较推荐的是第一种做法，上面很多繁琐的配置也是基于第一种方法做的，如果把本地放在本地，有的配置就会比较简答
+比较推荐的是第一种做法，上面很多繁琐的配置也是基于第一种方法做的，如果把本地放在本地，有的配置就可以比较简单
 
 但是把文件放在本地，而且本地操作系统是 Windows 或 macOS，跨文件系统就会有比较严重的性能问题
 
 如果非要这么做记得看一下注意点：https://code.visualstudio.com/remote/advancedcontainers/improve-performance
 
-# 其他
-如果修改配置后，重新生成容器还不行，可以试试把 containers 和 volumes 删了，应该就能 100% 保证新的容器是用新配置生成的了
+## 其他
+如果修改配置后，重新生成容器还不行，可以试试把 Docker Desktop 里的相关 containers 和 volumes 删了，这样可以确保新的容器完全按照新配置生成
 
+# 最终效果
+这样，针对 git 仓库的开发容器就设置好了，你可以在任何一个包含 docker 和 vscode 的设备上，无需任何其他环境配置，直接进行开发，非常方便
 
-
+甚至在 GitHub 的网页端，也可以直接利用 Codespaces 读取开发容器配置，启动一个云端环境进行开发
