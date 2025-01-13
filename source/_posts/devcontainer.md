@@ -149,9 +149,11 @@ dev container 创建的时候，会自带一些拓展，这一点可以在 `dev.
 或者 `"image": "node:latest"` 
 
 ### 从 Dockerfile 构建
-这种方法用 Dockerfile 提供环境，比用 `image` 自由度稍高一点
+这种方法用 Dockerfile 提供基础环境，比用 `image` 自由度稍高一点
 
 我个人是比较喜欢 Dockerfile，比 `image` 加 `postCreateCommand` 好一点
+
+不过对于有的需要在项目目录下执行的命令，还是用 `postCreateCommand` 方便一点，比如 `pnpm install`，一些可以全局执行的命令就无所谓了
 
 使用 Dockerfile，就不需要 `image` 了，要设置 `build.dockerfile` 为 `Dockerfile` 对于 `devcontainer.json` 的相对地址
 
