@@ -945,3 +945,309 @@ claude-3-5-sonnet-20241022, 20250106
 **综合来看，o1-preview > GPT-4o >> Claude 3.5 Sonnet > DeepSeek-V3 > DeepSeek-V3 深度思考**
 
 o1-preview 和 GPT-4o 是唯二完成了问题的模型，以往在代码上表现一直很出色的 Claude 3.5 Sonnet 反而没有，这还是挺意外的
+
+## 问题三
+```
+用鼠标中间点击一个链接，实际上是什么，会触发click事件吗？
+```
+### GPT-4o
+gpt-4o-poe, 20250114
+
+---
+用鼠标中键点击一个链接时，浏览器的行为和是否触发 `click` 事件取决于具体的情况。以下是详细的解答：
+
+---
+
+#### 1. **鼠标中键点击的默认行为**
+- **在浏览器中：**
+  - 鼠标中键点击链接时，链接通常会在 **新标签页中打开**（如果是超链接 `<a>` 元素并且设置了 `href` 属性）。
+  - 这种行为是浏览器的原生功能，属于默认行为，与 JavaScript 的事件无关。
+  
+- **鼠标中键的常规作用：**
+  - 鼠标中键点击通常也会触发滚动功能（比如在空白区域中点击，启动滚动模式）。
+
+---
+
+#### 2. **是否会触发 `click` 事件？**
+鼠标中键点击链接时，是否触发 `click` 事件，取决于以下因素：
+
+#### **标准行为**
+- 根据 W3C 的规范，鼠标点击事件分为三种鼠标按钮：
+  - 左键：`button === 0`
+  - 中键：`button === 1`
+  - 右键：`button === 2`
+  
+- 当你用鼠标中键点击链接时：
+  - **不会触发 `click` 事件**，因为 `click` 事件通常与鼠标左键（`button === 0`）相关联。
+  - 中键点击时会触发 **`mousedown`** 和 **`mouseup`** 事件，但浏览器不会触发 `click`。
+
+#### **事件监听的行为**
+如果你显式监听了其他鼠标事件，比如 `mousedown`、`mouseup` 或者用 `addEventListener` 捕获所有鼠标事件，你可以检测鼠标中键的点击：
+
+```javascript
+document.addEventListener('mousedown', (event) => {
+  if (event.button === 1) {
+    console.log('鼠标中键点击了！');
+  }
+});
+```
+
+#### **用户阻止默认行为**
+如果你阻止了链接的默认行为，鼠标中键点击可能会被视为普通事件。例如：
+
+```javascript
+// 阻止默认行为
+document.querySelector('a').addEventListener('click', (event) => {
+  event.preventDefault(); // 阻止新标签页打开
+  console.log('链接被点击了');
+});
+```
+即使鼠标中键点击了链接，`preventDefault` 会阻止默认行为（新标签页打开），但仍然不会触发 `click` 事件。
+
+---
+
+#### 3. **总结**
+- **鼠标中键点击链接时的默认行为：**
+  - 在新标签页中打开链接（浏览器默认）。
+  - 不会触发 `click` 事件。
+  
+- **可触发的事件：**
+  - 中键点击会触发 `mousedown` 和 `mouseup` 事件。
+  
+- **如何检测中键点击？**
+  - 通过检查事件对象中的 `event.button === 1`。
+
+- **如何阻止默认行为？**
+  - 使用 `event.preventDefault()` 可以阻止鼠标中键点击链接在新标签页中打开。
+
+--- 
+
+#### 补充代码示例
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>鼠标中键测试</title>
+</head>
+<body>
+  <a href="https://example.com" target="_blank">点击我</a>
+
+  <script>
+    const link = document.querySelector('a');
+
+    // 检测中键点击
+    link.addEventListener('mousedown', (event) => {
+      if (event.button === 1) {
+        console.log('鼠标中键点击了链接');
+      }
+    });
+
+    // 阻止默认行为
+    link.addEventListener('click', (event) => {
+      event.preventDefault();
+      console.log('链接点击事件触发，但阻止了默认行为');
+    });
+  </script>
+</body>
+</html>
+```
+
+### o1-preview
+o1-preview-2024-09-12, 20250114
+
+---
+当你用鼠标中键点击一个链接时，浏览器通常会在新标签页中打开该链接，这是浏览器对鼠标中键点击的默认行为。
+
+从JavaScript的角度来看，**鼠标中键点击并不会触发元素的`click`事件**。`click`事件通常仅由鼠标左键点击触发。
+
+然而，鼠标中键点击时会触发其他事件：
+
+1. **`mousedown`和`mouseup`事件**：鼠标任何按钮的按下和释放都会触发这两个事件。你可以通过事件对象的`button`属性来判断是哪个鼠标按钮：
+   - `event.button === 0`：左键
+   - `event.button === 1`：中键
+   - `event.button === 2`：右键
+
+2. **`auxclick`事件**：这是专门为处理非左键点击（如中键、右键）而设计的事件。鼠标中键点击会触发`auxclick`事件，你可以监听这个事件来捕获中键点击。
+
+**示例：**
+
+```javascript
+document.addEventListener('mousedown', function(event) {
+  if (event.button === 1) {
+    console.log('鼠标中键按下');
+  }
+});
+
+document.addEventListener('auxclick', function(event) {
+  if (event.button === 1) {
+    console.log('鼠标中键点击');
+  }
+});
+```
+
+**注意事项：**
+
+- **默认行为**：中键点击链接的默认行为是打开新标签页。如果你想阻止这个默认行为，可以在事件处理函数中调用`event.preventDefault()`。
+  
+  ```javascript
+  document.addEventListener('auxclick', function(event) {
+    if (event.button === 1) {
+      event.preventDefault(); // 阻止打开新标签页
+      console.log('中键点击被捕获，默认行为已阻止');
+    }
+  });
+  ```
+
+- **兼容性**：并非所有浏览器都支持`auxclick`事件。为确保兼容性，最好同时监听`mousedown`或`mouseup`事件，并结合`event.button`进行判断。
+
+**总结**：鼠标中键点击不会触发`click`事件，但会触发`mousedown`、`mouseup`和`auxclick`等事件。因此，如果你需要在中键点击时执行特定逻辑，建议监听`auxclick`事件，并根据需要阻止默认行为。
+
+### Claude 3.5 Sonnet
+claude-3-5-sonnet-20241022, 20250114
+
+---
+鼠标中键（滚轮按下）点击链接的行为：
+
+1. 默认行为：
+- 在新标签页打开链接
+- 不会切换到新打开的标签页（保持在当前页面）
+
+2. 事件触发：
+- 不会触发标准的 click 事件
+- 会触发 mouseup 和 mousedown 事件
+- 具体触发 auxclick 事件（auxiliary button click）
+
+示例代码：
+```javascript
+link.addEventListener('click', (e) => {
+    console.log('click'); // 中键点击不会触发
+});
+
+link.addEventListener('auxclick', (e) => {
+    console.log('auxclick'); // 中键点击会触发
+    if (e.button === 1) { // button值为1表示中键
+        // 处理中键点击
+    }
+});
+
+link.addEventListener('mouseup', (e) => {
+    console.log('mouseup'); // 中键点击会触发
+});
+```
+
+3. 阻止默认行为：
+```javascript
+link.addEventListener('auxclick', (e) => {
+    if (e.button === 1) {
+        e.preventDefault(); // 阻止在新标签页打开
+    }
+});
+
+// 或者
+link.addEventListener('mousedown', (e) => {
+    if (e.button === 1) {
+        e.preventDefault();
+    }
+});
+```
+
+4. 鼠标按键对应的button值：
+- 左键：0
+- 中键：1
+- 右键：2
+
+注意：
+- 中键点击的这个默认行为是浏览器级别的，不是JavaScript标准事件模型的一部分
+- 不同浏览器可能有细微的实现差异
+- 如果要处理中键点击，建议使用 auxclick 事件而不是 click 事件
+
+### DeepSeek-V3
+网页版，20250114
+
+---
+用鼠标中键点击链接时，通常会在新标签页中打开链接，但不会触发标准的 `click` 事件。
+
+具体行为如下：
+
+1. **新标签页打开**：浏览器默认会在新标签页中打开链接。
+2. **`click` 事件**：不会触发标准的 `click` 事件。`click` 事件通常由左键点击触发。
+3. **`auxclick` 事件**：会触发 `auxclick` 事件，专门用于处理非左键点击（如中键或右键）。
+
+#### 示例代码
+```javascript
+document.addEventListener('auxclick', function(event) {
+    if (event.button === 1) { // 1 表示中键
+        console.log('中键点击');
+    }
+});
+```
+
+#### 总结
+- **中键点击**：不会触发 `click` 事件，但会触发 `auxclick` 事件。
+- **默认行为**：在新标签页中打开链接。
+
+如果你需要处理中键点击，应监听 `auxclick` 事件。
+
+### DeepSeek-V3
+网页版深度思考，20250114
+
+---
+使用鼠标中间键（通常是滚轮点击）点击一个链接时，具体行为取决于浏览器的设置和操作系统的配置。在大多数情况下，中键点击一个链接会在新的标签页或窗口中打开该链接，但并不一定会触发JavaScript的`click`事件。
+
+#### 浏览器行为
+
+- **Firefox**: 中键点击通常会新开一个标签页并加载链接，但可能不会触发`click`事件。
+- **Chrome**: 中键点击可能会在新的标签页中打开链接，但行为可能因系统设置而异。
+- **其他浏览器**: 行为可能有所不同，但通常与上述类似。
+
+#### 是否触发`click`事件
+
+- 在某些浏览器中，中键点击可能不会触发`click`事件。
+- 在其他浏览器中，可能会触发`click`事件，但具体情况因浏览器而异。
+
+#### 如何检测
+
+你可以通过编写一个简单的HTML页面来测试：
+
+```html
+<a href="https://www.example.com" id="testLink">测试链接</a>
+
+<script>
+  document.getElementById('testLink').addEventListener('click', function(event) {
+    alert('click事件被触发了!');
+    event.preventDefault(); // 阻止默认行为
+  });
+</script>
+```
+
+然后用中键点击链接，看看是否弹出提示框。
+
+#### 鼠标事件的button属性
+
+在JavaScript中，`MouseEvent.button` 属性可以用来判断是哪个鼠标按钮被点击：
+
+- `0`: 左键
+- `1`: 中键（滚轮）
+- `2`: 右键
+
+你可以通过以下代码来检测是哪个按钮被点击：
+
+```javascript
+document.getElementById('testLink').addEventListener('click', function(event) {
+  console.log('按钮:', event.button);
+  // 其他代码
+});
+```
+
+#### 总结
+
+- 中键点击链接通常会在新的标签页或窗口中打开链接。
+- 是否触发`click`事件取决于浏览器的实现。
+- 可以通过检测`event.button`的值来确定是哪个鼠标按钮被点击。
+
+### 答案评价
+少见的 deepseek 表现很好的问题，还是挺惊喜的
+
+o1-preview > DeepSeek-V3 > Claude 3.5 Sonnet ≈ GPT-4o > DeepSeek-V3 深度思考
