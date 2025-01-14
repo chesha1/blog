@@ -192,6 +192,13 @@ dev container 创建的时候，会自带一些拓展，这一点可以在 `dev.
 
 如果非要这么做记得看一下注意点：https://code.visualstudio.com/remote/advancedcontainers/improve-performance
 
+## postCreateCommand
+前面说了很多 `postCreateCommand`，是用于在项目目录下执行命令，可以接受字符串、对象或者数组，但是我的体验是，如果命令很多，用数组把命令一条一条塞进去，并不好用，不知道为什么会报错
+
+如果只有很短的一条或者几条就算了，直接写成字符串，比如 `"postCreateCommand": "pnpm install"`
+
+如果命令比较多的话，建议单独创建一个脚本 `install.sh`，在里面写好命令，然后 `"postCreateCommand": "chmod +x install.sh && ./install.sh"`
+
 ## 其他
 如果修改配置后，重新生成容器还不行，可以试试把 Docker Desktop 里的相关 containers 和 volumes 删了，这样可以确保新的容器完全按照新配置生成
 
