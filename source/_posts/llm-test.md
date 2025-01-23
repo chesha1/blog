@@ -320,7 +320,43 @@ wrangler dev
 
 通过以上步骤，你可以在 `wrangler.toml` 文件中成功使用 `.dev.vars` 中定义的变量。
 
+### DeepSeek-R1
+网页版，20250121
 
+---
+
+在 Cloudflare Workers 项目中，使用 `.dev.vars` 文件中的变量无需在 `wrangler.toml` 中显式引用。以下是正确步骤：
+
+1. **定义生产环境变量**：在 `wrangler.toml` 中通过 `[vars]` 块设置默认变量（通常用于生产环境）：
+   ```toml
+   [vars]
+   API_KEY = "production_key"
+   ```
+
+2. **定义开发环境变量**：创建 `.dev.vars` 文件（与 `wrangler.toml` 同级），使用同名变量并指定开发值：
+   ```ini
+   API_KEY = "dev_key"
+   ```
+
+3. **代码中访问变量**：在 Worker 代码中通过 `env` 对象获取变量：
+   ```javascript
+   export default {
+     async fetch(request, env) {
+       return new Response(`API Key: ${env.API_KEY}`);
+     }
+   };
+   ```
+
+4. **运行和部署**：
+   - **开发模式**：运行 `wrangler dev` 时，`.dev.vars` 的变量自动覆盖 `wrangler.toml` 中的同名变量。
+   - **生产部署**：运行 `wrangler deploy` 时，使用 `wrangler.toml` 中的变量，或通过 [Cloudflare 仪表板](https://dash.cloudflare.com) 设置生产环境变量。
+
+**注意事项**：
+- **敏感信息保护**：将 `.dev.vars` 添加到 `.gitignore` 避免提交敏感数据。
+- **环境优先级**：直接通过 `wrangler secret put <NAME>` 设置的变量优先级最高，其次是 `.dev.vars`，最后是 `wrangler.toml` 的 `[vars]`。
+- **不支持动态引用**：`wrangler.toml` 是静态配置，无法直接插入 `.dev.vars` 中的变量到其他字段（如 `name` 或 `route`）。
+
+通过此流程，即可安全管理不同环境的配置，无需在 `wrangler.toml` 中硬编码开发变量。
 
 ### 答案评价
 
@@ -349,6 +385,11 @@ DeepSeek-V3 同样错误描述了使用条件，并且生成了一个 `wrangler.
 这里 o1-preview ≈ Claude 3.5 Sonnet ≈ GPT-4o ≈ DeepSeek-V3
 
 **综合来看，o1-preview > Claude 3.5 Sonnet > GPT-4o ≈ DeepSeek-V3**
+
+---
+20250121 更新
+
+**综合来看，o1-preview > DeepSeek-R1 > Claude 3.5 Sonnet > GPT-4o ≈ DeepSeek-V3**
 
 ## 问题二
 ```
@@ -941,8 +982,20 @@ claude-3-5-sonnet-20241022, 20250106
 
 第三次还是一样
 
+### DeepSeek-R1
+网页版，20250121
+
+第一次的生成结果能正常编译，但是按钮重叠在一起了，原有的样式还被破坏了
+
+第二次的生成结果基本实现了功能，但是 caption 过长，比下面的日历本体长
+
+第三次的生成结果完全破坏了样式，也没有实现功能
+
+节约空间，答案不再呈现
+
+
 ### 答案评价
-**综合来看，o1-preview > GPT-4o >> Claude 3.5 Sonnet > DeepSeek-V3 > DeepSeek-V3 深度思考**
+**综合来看，o1-preview > GPT-4o >> DeepSeek-R1 ≈ Claude 3.5 Sonnet ≈ DeepSeek-V3 ≈ DeepSeek-V3 深度思考**
 
 o1-preview 和 GPT-4o 是唯二完成了问题的模型，以往在代码上表现一直很出色的 Claude 3.5 Sonnet 反而没有，这还是挺意外的
 
@@ -1247,7 +1300,43 @@ document.getElementById('testLink').addEventListener('click', function(event) {
 - 是否触发`click`事件取决于浏览器的实现。
 - 可以通过检测`event.button`的值来确定是哪个鼠标按钮被点击。
 
+### DeepSeek-R1
+网页版，20250121
+
+---
+
+在浏览器中，使用鼠标中键点击链接的行为与左键点击有以下关键区别：
+
+1. **默认行为**：
+   - 鼠标中键点击链接时，浏览器默认会在**新标签页打开链接**（多数现代浏览器的默认行为）。
+   - 左键点击链接时，默认在当前页面跳转。
+
+2. **事件触发**：
+   - **`click` 事件不会触发**：浏览器通常仅在左键点击时触发 `click` 事件，中键点击不会触发。
+   - 中键点击会触发 `mousedown` 和 `mouseup` 事件（可通过 `event.button` 属性判断具体按键）。
+
+3. **代码验证示例**：
+   ```javascript
+   document.querySelector('a').addEventListener('click', (e) => {
+     console.log('Click event triggered'); // 仅左键点击会触发
+   });
+
+   document.querySelector('a').addEventListener('mousedown', (e) => {
+     if (e.button === 1) { // 中键的 button 值为 1
+       console.log('Middle mouse button pressed');
+     }
+   });
+   ```
+
+4. **实际应用场景**：
+   - 如果需捕获中键点击，应监听 `mousedown/mouseup` 并检查 `event.button`。
+   - 默认行为可通过 `e.preventDefault()` 阻止（但需谨慎，可能影响用户体验）。
+
+**总结**：鼠标中键点击链接会触发 `mousedown/mouseup` 事件，但不会触发 `click` 事件，浏览器会直接执行新标签页打开的默认行为。
+
 ### 答案评价
 少见的 deepseek 表现很好的问题，还是挺惊喜的
 
-o1-preview > DeepSeek-V3 > Claude 3.5 Sonnet ≈ GPT-4o > DeepSeek-V3 深度思考
+有一个明显的分水岭，有的模型没有提到 `auxclick`，有的提到了 `auxclick`
+
+**o1-preview > DeepSeek-V3 > Claude 3.5 Sonnet >> GPT-4o ≈ DeepSeek-V3 深度思考 ≈ DeepSeek-R1**
