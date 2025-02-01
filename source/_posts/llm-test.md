@@ -5,17 +5,17 @@ excerpt: 个人使用场景下准备的一些问题，用于测试新的大模�
 category: 生活
 ---
 # 背景
-一直有新的大模型出现，每个都很好，但是很多都是宣传没输过，体验（相对于 GPT-4o 和 Claude 3.5 Sonnet）没赢过
+一直有新的大模型出现，每个都很好，但是很多都是宣传没输过，体验没赢过
 
-一直有各种宣传骗我去体验，所以就直接准备几个个人实际使用中的，有一点难度的问题，看看大模型会怎么反馈，这里姑且记录一下
+考虑到很多模型会针对开源数据集刷榜（不然可以看官方 benchmark 和 [LiveBench](https://livebench.ai/#/)）所以就直接准备几个个人实际使用中的，有一点难度的问题，看看大模型会怎么反馈，这里姑且记录一下
 
 为了防止官网降智，我都尽量用 api 输出答案
-
-目前 [ChatGPT-Next-Web](https://github.com/ChatGPTNextWeb/ChatGPT-Next-Web) 对 o1-preview 的支持坏了，稍后等它修了再补一点 o1-preview 的答案
 
 每个回答下面，附上了使用的具体模型和测试时间
 
 为了方便复制问题进行复现，所有问题的原文都放在代码块里了
+
+由于答案累加起来太长，所以非 SOTA 的答案就折叠起来了
 
 # 问题
 ## 问题一
@@ -25,9 +25,10 @@ cloudflare如何在wrangler.toml中使用.dev.vars中的变量
 
 
 ### GPT-4o
+
 gpt-4o-2024-08-06, 20250101
 
----
+{% fold info @展开查看回答 %}
 
 在使用 Cloudflare Wrangler 时，你可以通过在 `wrangler.toml` 文件中引用 `.dev.vars` 文件中的变量来管理你的环境变量。以下是如何设置和使用这些变量的步骤：
 
@@ -69,6 +70,8 @@ gpt-4o-2024-08-06, 20250101
    - 使用 `wrangler dev --env dev` 来启动你的开发环境，确保它加载 `.dev.vars` 中的变量。
 
 这样，你就可以在本地开发环境中使用 `.dev.vars` 文件来管理和加载你的环境变量。
+
+{% endfold %}
 
 ### o1-preview
 o1-preview-2024-09-12, 20250105
@@ -126,10 +129,60 @@ compatibility_date = "2023-10-20"
 
 通过以上步骤，您就可以在 Cloudflare Workers 的本地开发环境中使用 `.dev.vars` 文件中的变量，而无需在 `wrangler.toml` 中进行额外配置。
 
+### o3-mini-high
+poe, 20250201
+
+{% fold info @展开查看回答 %}
+在 Cloudflare Workers 的配置中，wrangler.toml 本身并不会直接“读取”或解析 .dev.vars 文件中的内容。也就是说，你不能在 wrangler.toml 中直接使用类似于 `${...}` 的方式自动注入 .dev.vars 的变量。
+
+如果你需要在 wrangler.toml 中用到环境变量，可以按照以下步骤操作：
+
+1. **在 wrangler.toml 中引用环境变量**  
+   你可以在 wrangler.toml 中使用 `$VARIABLE_NAME` 的写法来引用当前 shell 环境中的变量。例如：
+
+   ```toml
+   name = "my-worker"
+   type = "javascript"
+
+   [vars]
+   API_KEY = "$API_KEY"
+   ```
+
+   这样，当 Wrangler 处理这个文件时，会从当前环境变量中取出 API_KEY 的值。
+
+2. **使用 .dev.vars 文件加载环境变量**  
+   .dev.vars 文件常用于本地开发时存放环境变量，例如：
+
+   ```dotenv
+   API_KEY=your_api_key_here
+   OTHER_VAR=another_value
+   ```
+
+   但 Wrangler 并不会自动将 .dev.vars 中的内容注入到你的 shell 环境中。你需要自己将它们加载到环境变量中。常用的方法有：
+
+   - **手动加载**  
+     在终端中，你可以通过类似下面的命令先将 .dev.vars 中的变量加载到环境中，再启动 Wrangler：
+     
+     ```bash
+     export $(grep -v '^#' .dev.vars | xargs) && wrangler dev
+     ```
+
+   - **使用 dotenv 库或工具**  
+     可以借助 [dotenv](https://github.com/motdotla/dotenv) 或其他自动加载工具来在启动开发环境时加载这些变量。
+
+3. **注意事项**  
+   - 对于生产环境，建议使用 `wrangler secret put` 命令来存储敏感信息，而不是依赖于配置文件或 .dev.vars。  
+   - .dev.vars 主要用于本地开发，不会在部署到 Cloudflare Workers 时自动生效，所以在部署前请确保你的部署流程中已正确配置所需的变量（例如在 Cloudflare 仪表盘或使用 Wrangler secret）。
+
+总结来说：  
+在 wrangler.toml 中使用环境变量时，你只能引用当前 shell 环境中已经定义好的变量（例如 `$API_KEY`），而 .dev.vars 的内容必须先通过手动或工具加载到环境变量中，这样 Wrangler 才能在解析配置时正确替换这些值。
+
+{% endfold %}
+
 ### Claude 3.5 Sonnet
 claude-3-5-sonnet-20241022, 20250101
 
----
+{% fold info @展开查看回答 %}
 
 在 Cloudflare Workers 的 wrangler.toml 中使用 .dev.vars 变量的方法如下：
 
@@ -185,12 +238,12 @@ interface Env {
 ```
 
 这样可以在开发环境中使用 .dev.vars 的变量，同时在生产环境中使用正式的环境变量。
-
+{% endfold %}
 
 ### DeepSeek-V3
 网页版，20250101
 
----
+{% fold info @展开查看回答 %}
 
 在 Cloudflare Workers 中，`wrangler.toml` 是配置文件，而 `.dev.vars` 文件用于存储环境变量，尤其是在开发环境中。要在 `wrangler.toml` 中使用 `.dev.vars` 中的变量，可以按照以下步骤操作：
 
@@ -253,10 +306,12 @@ wrangler dev
 
 通过以上步骤，你可以在 `wrangler.toml` 中成功使用 `.dev.vars` 中的变量。
 
+{% endfold %}
+
 ### DeepSeek-V3
 网页版深度思考，20250101
 
----
+{% fold info @展开查看回答 %}
 
 在 Cloudflare Workers 中，你可以通过 `wrangler.toml` 文件配置你的项目，并且可以在其中使用环境变量。`.dev.vars` 文件用于存储开发环境的变量，这些变量在开发模式下会被自动加载。
 
@@ -320,10 +375,12 @@ wrangler dev
 
 通过以上步骤，你可以在 `wrangler.toml` 文件中成功使用 `.dev.vars` 中定义的变量。
 
+{% endfold %}
+
 ### DeepSeek-R1
 网页版，20250121
 
----
+{% fold info @展开查看回答 %}
 
 在 Cloudflare Workers 项目中，使用 `.dev.vars` 文件中的变量无需在 `wrangler.toml` 中显式引用。以下是正确步骤：
 
@@ -358,6 +415,13 @@ wrangler dev
 
 通过此流程，即可安全管理不同环境的配置，无需在 `wrangler.toml` 中硬编码开发变量。
 
+{% endfold %}
+
+### Kimi-k1.5
+网页版，长思考，联网，20250201
+
+无法直接复制答案，如果包括代码块，回答格式就会很乱，这功能就是来搞笑的
+
 ### 答案评价
 
 这其实是一个描述不是很清楚的问题，真实的意图是，有一些 secrets，比如云服务的 API_KEY，如果想在本地开发使用这些环境变量，同时它们不能上传到 GitHub，在 `.dev.vars` 和 `wrangler.toml` 中如何定义，在代码中如何使用
@@ -390,6 +454,19 @@ DeepSeek-V3 同样错误描述了使用条件，并且生成了一个 `wrangler.
 20250121 更新
 
 **综合来看，o1-preview > DeepSeek-R1 > Claude 3.5 Sonnet > GPT-4o ≈ DeepSeek-V3**
+
+---
+20250201 更新
+
+**综合来看，o1-preview > DeepSeek-R1 > Claude 3.5 Sonnet ≈ GPT-4o ≈ DeepSeek-V3 ≈ Kimi-k1.5**
+
+再更新：
+
+o3-mini-high 的回答很怪，正确描述了 wrangler.toml 不会读取 .dev.vars 文件这一事实，但是多增加了一个冗余步骤：.dev.vars 的内容必须先通过手动或工具加载到环境变量中
+
+同时，没有清晰表达 wrangler dev 会自动加载 .dev.vars，这一点远远落后其他任何大模型
+
+**综合来看，o1-preview > DeepSeek-R1 > Claude 3.5 Sonnet ≈ GPT-4o ≈ DeepSeek-V3 ≈ Kimi-k1.5 > o3-mini-high**
 
 ## 问题二
 ```
@@ -482,7 +559,7 @@ poe GPT-4o, 20250106
 
 把报错返回给它后，第三次输出可用的答案如下
 
----
+{% fold info @展开查看回答 %}
 
 问题的原因是 `react-day-picker` 的 `Caption` 组件的 `Props` 类型已经发生变化。在 `react-day-picker` 的新版本（v8+）中，`Caption` 组件的 `props` 不再直接包含 `date` 和 `className`，而是通过其他方式传递数据。我们需要调整代码以适配新的 `react-day-picker` API。
 
@@ -686,6 +763,7 @@ export { Calendar }
 - **年份切换**：点击 `<<` 切换到上一年，`>>` 切换到下一年。
 - **月份切换**：点击左箭头切换到上个月，右箭头切换到下个月。
 
+{% endfold %}
 
 ### o1-preview
 o1-preview-2024-09-12, 20250106
@@ -696,7 +774,7 @@ o1-preview-2024-09-12, 20250106
 
 再次把报错提供给它之后，第三次提供了基本可用的正常答案：
 
----
+{% fold info @展开查看回答 %}
 
 抱歉给您带来了困扰。您遇到的错误：
 
@@ -953,6 +1031,13 @@ function Calendar({
         month: "space-y
 ```
 
+{% endfold %}
+
+### o3-mini-high
+poe, 20250202
+
+TODO HERE
+
 ### Claude 3.5 Sonnet
 claude-3-5-sonnet-20241022, 20250106
 
@@ -993,11 +1078,25 @@ claude-3-5-sonnet-20241022, 20250106
 
 节约空间，答案不再呈现
 
+### Kimi-k1.5
+网页版，长思考，联网，20250201
+
+---
+
+第一次无法编译
+
+第二次能成功编译，但是没有实现功能，也对原有功能产生了破坏
+
+第三次和第二次一样
 
 ### 答案评价
 **综合来看，o1-preview > GPT-4o >> DeepSeek-R1 ≈ Claude 3.5 Sonnet ≈ DeepSeek-V3 ≈ DeepSeek-V3 深度思考**
 
 o1-preview 和 GPT-4o 是唯二完成了问题的模型，以往在代码上表现一直很出色的 Claude 3.5 Sonnet 反而没有，这还是挺意外的
+
+20250201 更新：
+
+**综合来看，o1-preview > GPT-4o >> DeepSeek-R1 ≈ Claude 3.5 Sonnet ≈ DeepSeek-V3 ≈ DeepSeek-V3 深度思考 ≈ Kimi-k1.5**
 
 ## 问题三
 ```
@@ -1156,6 +1255,33 @@ document.addEventListener('auxclick', function(event) {
 - **兼容性**：并非所有浏览器都支持`auxclick`事件。为确保兼容性，最好同时监听`mousedown`或`mouseup`事件，并结合`event.button`进行判断。
 
 **总结**：鼠标中键点击不会触发`click`事件，但会触发`mousedown`、`mouseup`和`auxclick`等事件。因此，如果你需要在中键点击时执行特定逻辑，建议监听`auxclick`事件，并根据需要阻止默认行为。
+
+### o3-mini-high
+poe, 20250201
+
+---
+在现代浏览器中，用鼠标中间按钮点击一个链接通常会产生以下两种效果：
+
+1. **默认行为**  
+   浏览器会将该链接在新标签页中打开。这是因为中键点击被视为“辅助点击”（auxiliary click），其默认行为与左键点击（触发 click 事件）不同。
+
+2. **事件触发情况**  
+   - **click 事件**：标准的 click 事件通常只对主键（即左键）有效。因此，中键点击一般不会触发 click 事件。
+   - **auxclick 事件**：为了解决非主键点击的事件捕获问题，现代浏览器引入了 auxclick 事件。中键点击通常会触发 auxclick 事件（事件对象中的 button 属性值通常为 1，表示中键）。如果你希望监听中键的点击，可以使用 auxclick 事件，例如：
+
+   ```javascript
+   document.addEventListener('auxclick', function(event) {
+     if (event.button === 1) {
+       console.log('检测到鼠标中键点击');
+       // 在这里可以添加自定义行为
+       // 如果需要阻止默认行为，可以调用 event.preventDefault();
+     }
+   });
+   ```
+
+需要注意的是，不同浏览器对 auxclick 事件的支持和行为可能略有差异，因此在开发过程中最好在目标环境中进行充分测试。
+
+总之，用鼠标中间点击链接不会触发标准的 click 事件，而是由浏览器默认处理为在新标签页中打开链接，同时可能会触发 auxclick 事件供开发者使用。
 
 ### Claude 3.5 Sonnet
 claude-3-5-sonnet-20241022, 20250114
@@ -1334,9 +1460,341 @@ document.getElementById('testLink').addEventListener('click', function(event) {
 
 **总结**：鼠标中键点击链接会触发 `mousedown/mouseup` 事件，但不会触发 `click` 事件，浏览器会直接执行新标签页打开的默认行为。
 
+### Kimi-k1.5
+网页版，长思考，联网，20250201
+
+---
+无法直接复制答案，如果包括代码块，回答格式就会很乱，这功能就是来搞笑的
+
+提到 auxclick 了，没有自动对中间和中键的描述纠错
+
 ### 答案评价
-少见的 deepseek 表现很好的问题，还是挺惊喜的
+少见的 deepseek-v3 表现很好的问题，还是挺惊喜的
 
 有一个明显的分水岭，有的模型没有提到 `auxclick`，有的提到了 `auxclick`
 
 **o1-preview > DeepSeek-V3 > Claude 3.5 Sonnet >> GPT-4o ≈ DeepSeek-V3 深度思考 ≈ DeepSeek-R1**
+
+20250201更新：
+
+Kimi-k1.5 提到了没必要提到的 contextmenu 事件
+
+**o1-preview > DeepSeek-V3 > Claude 3.5 Sonnet > Kimi-k1.5 >> GPT-4o ≈ DeepSeek-V3 深度思考 ≈ DeepSeek-R1**
+
+最新更新：
+
+o3-mini-high 提到了 auxclick，但是没有更多事件了
+
+**o1-preview > DeepSeek-V3 > Claude 3.5 Sonnet > o3-mini-high > Kimi-k1.5 >> GPT-4o ≈ DeepSeek-V3 深度思考 ≈ DeepSeek-R1**
+
+## 问题四
+```
+在js中，可以用test函数测试是否和正则匹配，对于，match patterns，有没有类似的函数？
+```
+### GPT-4o
+poe, 20250201
+
+---
+在 JavaScript 中，`test` 是正则表达式的一个方法，用来测试一个字符串是否与正则匹配。而对于匹配具体的模式 (`match patterns`)，确实有类似的函数和方法可以用来实现。
+
+#### 1. **`String.prototype.match()`**
+`match()` 是字符串的一个方法，它可以根据提供的正则表达式从字符串中提取匹配的内容。和 `test` 不同，`match` 不仅检查是否匹配，还会返回匹配的结果。
+
+**用法示例：**
+
+```javascript
+const str = "hello world";
+const regex = /hello/;
+
+const result = str.match(regex);
+console.log(result);
+// 输出: ["hello"]
+```
+
+如果没有匹配到内容，`match` 会返回 `null`：
+
+```javascript
+const str = "hello world";
+const regex = /hi/;
+
+const result = str.match(regex);
+console.log(result);
+// 输出: null
+```
+
+---
+
+#### 2. **`String.prototype.matchAll()`**
+如果你需要查找所有的匹配结果（比如全局匹配时），可以使用 `matchAll()` 方法。与 `match` 不同的是，`matchAll` 返回一个迭代器对象，包含所有匹配结果的详细信息。
+
+**用法示例：**
+
+```javascript
+const str = "cat bat rat cat";
+const regex = /cat/g;
+
+const results = str.matchAll(regex);
+
+for (const match of results) {
+  console.log(match);
+}
+// 输出:
+// ["cat", index: 0, input: "cat bat rat cat", groups: undefined]
+// ["cat", index: 12, input: "cat bat rat cat", groups: undefined]
+```
+
+`matchAll` 的主要优点是，它不仅可以返回匹配的内容，还可以提供匹配的位置、分组等信息。
+
+---
+
+#### 3. **`RegExp.prototype.exec()`**
+`exec()` 是正则表达式的一个方法，用来在字符串中查找匹配的内容。它与 `match` 类似，但返回的结果更加详细，并且可以通过循环获取所有全局匹配的结果。
+
+**用法示例：**
+
+```javascript
+const str = "cat bat rat cat";
+const regex = /cat/g;
+
+let match;
+while ((match = regex.exec(str)) !== null) {
+  console.log(`Matched: ${match[0]} at index ${match.index}`);
+}
+// 输出:
+// Matched: cat at index 0
+// Matched: cat at index 12
+```
+
+`exec` 的主要特点是，它维护了正则表达式的内部状态，因此适合逐个查找全局匹配。
+
+---
+
+#### 4. **`String.prototype.includes()`**
+如果你只是想检查一个字符串是否包含某个特定的子字符串，而不需要使用复杂的正则表达式，可以使用 `includes()` 方法。
+
+**用法示例：**
+
+```javascript
+const str = "hello world";
+
+console.log(str.includes("hello")); // 输出: true
+console.log(str.includes("hi"));    // 输出: false
+```
+
+---
+
+#### 总结
+- **`test`**：检查是否匹配，返回布尔值。
+- **`match`**：返回匹配的结果或者 `null`。
+- **`matchAll`**：返回所有匹配的详细信息，适合全局匹配。
+- **`exec`**：逐个查找匹配，适合需要更详细信息的场景。
+- **`includes`**：简单的子字符串匹配，不需要正则表达式。
+
+根据你的需求选择合适的方法。如果需要正则匹配的结果，可以使用 `match` 或 `exec`；如果只需要布尔值，可以继续用 `test`。
+
+### o1-preview
+o1-preview, 20250201
+
+---
+截至 2023 年 10 月,JavaScript 中的 `RegExp.prototype.test()` 方法用于测试字符串是否匹配正则表达式。如果您想测试字符串是否匹配特定的模式(如通配符模式),JavaScript 还没有内置的类似于 `test()` 的函数直接用于非正则表达式的模式匹配。
+
+如果您需要匹配类似通配符(如 `*.txt`)的模式,您可以:
+
+1. **手动将模式转换为正则表达式**:将通配符模式中的特殊字符替换成正则表达式对应的字符,然后使用 `test()` 方法。例如:
+
+   ```javascript
+   function wildcardToRegex(pattern) {
+     return new RegExp('^' + pattern.split('*').map(s => s.replace(/([.+^=!:${}()|\[\]\/\\])/g, '\\$1')).join('.*') + '$');
+   }
+
+   const pattern = '*.txt';
+   const regex = wildcardToRegex(pattern);
+   console.log(regex.test('document.txt')); // 输出 true
+   ```
+
+2. **使用第三方库**:有一些库可以帮助您处理模式匹配,例如 `minimatch` 或 `micromatch`。使用这些库,您可以方便地匹配复杂的模式。
+
+   ```javascript
+   // 使用 minimatch
+   const minimatch = require('minimatch');
+
+   console.log(minimatch('document.txt', '*.txt')); // 输出 true
+   ```
+
+3. **使用字符串方法进行简单匹配**:对于简单的模式,您可以使用字符串的 `includes()`、`startsWith()` 和 `endsWith()` 方法。
+
+   ```javascript
+   const filename = 'document.txt';
+   console.log(filename.endsWith('.txt')); // 输出 true
+   ```
+
+如果您指的是**模式匹配(Pattern Matching)**功能,即类似于其他语言中的模式匹配(如 Haskell、Scala),目前 JavaScript 中并未正式支持。然而,TC39 已经针对模式匹配提出了提案([Pattern Matching 提案](https://github.com/tc39/proposal-pattern-matching)),但尚未在主流 JavaScript 引擎中实现。
+
+因此,虽然 JavaScript 中有用于正则表达式匹配的 `test()` 方法,但对于其他类型的模式匹配,您需要使用上述方法之一或者等待未来的语言特性更新。
+
+### o3-mini-high
+poe, 20250201
+
+---
+
+在 JavaScript 中，正则表达式匹配主要有以下几种方法，每种方法适用于不同的需求：
+
+1. **RegExp.prototype.test**  
+   返回一个布尔值，表示是否有匹配。  
+   ```js
+   const regex = /foo/;
+   const str = "foobar";
+   console.log(regex.test(str)); // 输出 true
+   ```
+
+2. **String.prototype.match**  
+   返回一个数组，其中包含了匹配的结果（以及捕获组），如果没有匹配则返回 null。  
+   ```js
+   const str = "foobar";
+   const matchResult = str.match(/foo/);
+   if (matchResult) {
+     console.log("找到了匹配：", matchResult[0]); // 输出 "foo"
+   } else {
+     console.log("没有匹配");
+   }
+   ```
+
+3. **RegExp.prototype.exec**  
+   类似于 match，但是由正则表达式对象调用，同样返回匹配的数组或 null。  
+   ```js
+   const regex = /foo/;
+   const str = "foobar";
+   const execResult = regex.exec(str);
+   if (execResult) {
+     console.log("匹配结果：", execResult[0]); // 输出 "foo"
+   } else {
+     console.log("没有匹配");
+   }
+   ```
+
+4. **String.prototype.search**  
+   返回匹配项在字符串中的索引，如果没有匹配则返回 -1。  
+   ```js
+   const str = "foobar";
+   const index = str.search(/foo/);
+   if (index !== -1) {
+     console.log("匹配位置索引：", index); // 输出 0
+   } else {
+     console.log("没有匹配");
+   }
+   ```
+
+所以，如果你希望获得匹配的具体内容或详细信息，可以使用 `match` 或 `exec` 方法；而如果你只关心是否有匹配，`test` 已经足够。  
+目前没有专门为“模式匹配”（match patterns）设计的与 `test` 行为完全类似的函数；如果你指的是结构化的模式匹配（类似其他语言中那种模式匹配语法），JavaScript 目前还没有内建支持，不过社区中有一些库（例如 ts-pattern）可以实现类似的功能。
+
+### Claude 3.5 Sonnet
+poe, 20250201
+
+---
+对于匹配模式(match patterns)，没有直接的test函数。但有几种方法可以实现类似功能：
+
+1. 使用 CSS 选择器的 matches() 方法:
+
+```javascript
+// 测试元素是否匹配CSS选择器
+element.matches('div.someClass');
+```
+
+2. 使用字符串的 match() 方法，配合通配符匹配:
+
+```javascript
+let pattern = "user/*.js";
+let str = "user/profile.js";
+
+// 转换通配符为正则表达式
+let regex = new RegExp(`^${pattern.replace(/\*/g, '.*')}$`);
+regex.test(str); // true
+```
+
+3. 使用第三方库如 minimatch:
+
+```javascript
+import minimatch from 'minimatch';
+
+minimatch("user/file.js", "user/*.js"); // true
+minimatch("user/file.txt", "user/*.js"); // false
+```
+
+要测试完整的字符串是否匹配模式，将正则转换方案是最简单的办法。
+
+需要我详细解释这些方法吗？
+
+### DeepSeek-R1
+网页版，20250201
+
+---
+
+在 JavaScript 中，如果你指的是 **正则表达式** 的匹配测试，通常有两种方式：
+1. **`RegExp.test()`** ：直接返回布尔值（是否匹配）。
+2. **`String.match()`** ：返回匹配结果（`null` 或匹配内容的数组）。
+
+但如果你提到的是类似 Chrome 扩展中使用的 **"match patterns"**（如 `*://*.example.com/*` 这类 URL 模式），则需要额外处理：
+
+---
+
+#### 1. 针对 **正则表达式**：
+直接用 `test()` 或 `match()` 即可：
+```javascript
+const regex = /pattern/;
+const str = "test string";
+
+// 方法1: test()
+regex.test(str); // true/false
+
+// 方法2: match()
+str.match(regex); // null 或匹配结果
+```
+
+---
+
+#### 2. 针对 **Chrome 扩展的 Match Patterns**：
+JavaScript 没有原生支持这种语法，但可以通过将其转换为正则表达式来实现。例如，将 `*://*.example.com/*` 转为正则：
+
+```javascript
+function isMatchPattern(url, pattern) {
+  // 转义特殊字符，将 * 替换为 .*
+  const regexStr = pattern
+    .replace(/\./g, '\\.')
+    .replace(/\*/g, '.*')
+    .replace(/^:\/\//, ':\\/\\/'); // 处理协议部分
+
+  const regex = new RegExp(`^${regexStr}$`);
+  return regex.test(url);
+}
+
+// 示例
+const pattern = '*://*.example.com/*';
+const url1 = 'https://sub.example.com/path';
+const url2 = 'ftp://example.com/';
+
+console.log(isMatchPattern(url1, pattern)); // true
+console.log(isMatchPattern(url2, pattern)); // true
+```
+
+---
+
+#### 关键区别：
+- **正则表达式**：语法更复杂，但功能强大（如 `\d`, `[a-z]`, `?` 等）。
+- **Match Patterns**：语法简单（仅支持 `*` 通配符），专为 URL 设计。
+
+根据你的需求选择对应的方案。
+
+### 答案评价
+GPT-4o 全篇没有想到 match patterns 是和 regex 不一样的东西
+
+o1-preview 提到了现在标准库中没有这种函数，并提供了三种解决方法
+
+o3-mini-high 提供了一堆关于正则匹配的废话，最后才提到目前没有匹配 match patterns 的标准库函数
+
+Claude 3.5 Sonnet 提到了现在标准库中没有这种函数，并提供了三种解决方法，但是有的方法是错的
+
+DeepSeek-R1 也对正则匹配进行了一些废话，但还是提供了一个解决方法
+
+综合来看：
+
+**o1-preview > Claude 3.5 Sonnet > DeepSeek-R1 > o3-mini-high > GPT-4o** 
