@@ -1,0 +1,12 @@
+---
+title: V8 是如何进行正则表达式匹配的
+date: 2025-07-16 00:20
+excerpt: TODO
+category: 前端
+---
+# 背景
+最近在写油猴脚本，遇到需要大量进行正则表达式匹配的场景，因为油猴脚本在用户端运行，所以希望能扣一点性能出来，哪怕能节约 1 ms 也是好的
+
+这里就有一个优化场景：`new RegExp(/a/).test('abc')` 和 `new RegExp(/abc/).test('abc')` 都会返回 `true`，那么是否需要用开发者的先验，尽量在正则表达式中提供更多的信息，节约匹配时的计算量？
+
+然后就想到 [leetcode 中做过正则表达式匹配的题](https://leetcode.cn/problems/regular-expression-matching/)，但只是 `.` 和 `*` 的简单场景，正好研究一下生产环境中实际的正则表达式匹配是怎么做的
