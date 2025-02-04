@@ -1036,7 +1036,7 @@ function Calendar({
 ### o3-mini-high
 poe, 20250202
 
-TODO HERE
+暂时需要tier-3的key，poe也不够，长度太长了
 
 ### Claude 3.5 Sonnet
 claude-3-5-sonnet-20241022, 20250106
