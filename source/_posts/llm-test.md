@@ -1,7 +1,7 @@
 ---
 title: 自用大模型评测问题（持续更新中）
 date: 2025-01-06 18:45
-excerpt: 个人使用场景下准备的一些问题，用于测试新的大模型，至少和 GPT-4o, o1-preview, Claude 3.5 sonnet 比较
+excerpt: 个人使用场景下准备的一些问题，用于测试新的大模型，至少和 o1, o3-mini, DeepSeek-R1 比较
 category: 生活
 ---
 # 背景
