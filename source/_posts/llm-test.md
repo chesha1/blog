@@ -533,6 +533,11 @@ wrangler dev
 
 {% endfold %}
 
+## Kimi-k1.5
+网页版，长思考，联网，20250201
+
+无法直接复制答案，如果包括代码块，回答格式就会很乱，这功能就是来搞笑的
+
 ## Gemini 2.0 Pro
 OpenRouter, 20250228
 
@@ -743,11 +748,6 @@ wrangler dev
 
 希望这个解释清楚地解答了你的问题！如果还有疑问，欢迎进一步讨论。
 
-## Kimi-k1.5
-网页版，长思考，联网，20250201
-
-无法直接复制答案，如果包括代码块，回答格式就会很乱，这功能就是来搞笑的
-
 ## 答案评价
 
 GPT-4o, o3-mini-high, Claude 3.5 Sonnet, Claude 3.7 Sonnet, DeepSeek-V3, Gemini 2.0 Pro 没有纠正引用这种错误说法
@@ -765,8 +765,8 @@ o1-preview, o1, DeepSeek-R1, Grok 3 纠正了引用这种错误说法
 | | | DeepSeek-V3 | |
 | | | Gemini 2.0 Pro | |
 
-# 问题
-## 问题二
+
+# 问题二
 ```
 下面是shadcn/ui中的calendar组件，如何在切换月份的按钮之外再增加两个切换年份的按钮
 
@@ -848,7 +848,7 @@ Calendar.displayName = "Calendar"
 export { Calendar }
 ```
 
-### GPT-4o
+## GPT-4o
 poe GPT-4o, 20250106
 
 第一次的回答无法渲染，直接报错
@@ -865,7 +865,7 @@ poe GPT-4o, 20250106
 
 ---
 
-#### 修复后的代码
+### 修复后的代码
 
 ```tsx
 "use client"
@@ -1028,7 +1028,7 @@ export { Calendar }
 
 ---
 
-#### 修复内容
+### 修复内容
 
 1. **`Caption` 的 `Props` 类型**：
    - 在 `react-day-picker` 的新版本中，`Caption` 组件的 `props` 不再直接传递 `date` 和 `className`。
@@ -1054,7 +1054,7 @@ export { Calendar }
 
 ---
 
-#### 效果
+### 效果
 
 修复后的代码可以正常运行。新增的年份切换按钮（`<<` 和 `>>`）可以正常工作，同时月份切换逻辑（左右箭头）也能正常运作。
 
@@ -1063,7 +1063,7 @@ export { Calendar }
 
 {% endfold %}
 
-### o1-preview
+## o1-preview
 o1-preview-2024-09-12, 20250106
 
 由于回答太长就不放上来了，第一次的答案会报错，但是在保持原本组件功能的同时，已经有另外两个按钮的样式出现
@@ -1088,7 +1088,7 @@ TypeError: props.onNextMonthClick is not a function
 
 ---
 
-#### **1. 使用 `useNavigation` 来导航月份**
+### **1. 使用 `useNavigation` 来导航月份**
 
 首先，从 `react-day-picker` 导入 `useNavigation`：
 
@@ -1098,7 +1098,7 @@ import { useNavigation } from "react-day-picker"
 
 然后，在 `CustomCaption` 组件中，使用 `useNavigation` 获取 `goToMonth` 函数。
 
-#### **2. 更新 `CustomCaption` 组件**
+### **2. 更新 `CustomCaption` 组件**
 
 **完整的更新后的代码如下：**
 
@@ -1200,7 +1200,7 @@ function CustomCaption(props: CaptionProps) {
 }
 ```
 
-#### **3. 解释**
+### **3. 解释**
 
 - **问题原因**：`CaptionProps` 并不包含 `onNextMonthClick` 和 `onPrevMonthClick` 方法，所以直接调用 `props.onNextMonthClick` 会导致报错。
   
@@ -1208,13 +1208,13 @@ function CustomCaption(props: CaptionProps) {
 
 - **导航年份**：`handlePrevYear` 和 `handleNextYear` 方法与之前一致，使用 `goToMonth` 来导航年份。
 
-#### **4. 不需要修改 `Calendar` 组件**
+### **4. 不需要修改 `Calendar` 组件**
 
 因为您只需要修改 `CustomCaption` 组件即可，`Calendar` 组件不需要进一步修改。
 
 ---
 
-#### **完整示例**
+### **完整示例**
 
 以下是完整的代码，包括 `CustomCaption` 和 `Calendar` 组件：
 
@@ -1331,12 +1331,12 @@ function Calendar({
 
 {% endfold %}
 
-### o1
+## o1
 OpenRouter, 20250217
 
 三次的回答都没有提供功能，也没有报错
 
-### o3-mini-high
+## o3-mini-high
 OpenRouter, 20250217
 
 第一次提供了一起取巧的方法，又多增加了一个标题实现了功能
@@ -1345,7 +1345,7 @@ OpenRouter, 20250217
 
 第三次编译正常，有新增的按钮，但是点击报错
 
-### Claude 3.5 Sonnet
+## Claude 3.5 Sonnet
 claude-3-5-sonnet-20241022, 20250106
 
 第一次的回答会有报错，不仅没有实现需要的功能，而且破坏了原本的样式
@@ -1356,7 +1356,7 @@ claude-3-5-sonnet-20241022, 20250106
 
 节约空间，回答不再呈现
 
-### Claude 3.7 Sonnet
+## Claude 3.7 Sonnet
 claude-3-7-sonnet, thinking, 20250225
 
 第一次实现了功能，但是点击按钮有报错
@@ -1525,7 +1525,7 @@ Calendar.displayName = "Calendar"
 export { Calendar }
 ```
 
-#### 修复说明
+### 修复说明
 
 1. **添加状态管理**：
    - 创建了组件内部的月份状态 `month`，在没有外部控制值的情况下使用
@@ -1546,7 +1546,7 @@ export { Calendar }
 
 这个改进版本应该能够正确处理年份和月份的切换，而不会出现 "goToMonth is not a function" 错误。它同时保持了与 shadcn/ui 组件库风格的一致性。
 
-### DeepSeek-V3
+## DeepSeek-V3
 网页版，20250106
 
 第一次回答把原本 caption 中的其他内容都搞没了，点击按钮还会报错
@@ -1555,7 +1555,7 @@ export { Calendar }
 
 再次提供现象和报错信息后，第三次的回答直接无法渲染
 
-### DeepSeek-V3
+## DeepSeek-V3
 网页版深度思考，20250106
 
 第一次答案直接变成英文的了，可能是 CoT 用的是英文，影响了最后的输出，回答没有产生任何改变，样式和功能上都没有
@@ -1564,7 +1564,7 @@ export { Calendar }
 
 第三次还是一样
 
-### DeepSeek-R1
+## DeepSeek-R1
 网页版，20250121
 
 第一次的生成结果能正常编译，但是按钮重叠在一起了，原有的样式还被破坏了
@@ -1575,7 +1575,7 @@ export { Calendar }
 
 节约空间，答案不再呈现
 
-### Kimi-k1.5
+## Kimi-k1.5
 网页版，长思考，联网，20250201
 
 ---
@@ -1586,7 +1586,16 @@ export { Calendar }
 
 第三次和第二次一样
 
-### Grok 3
+## Gemini 2.0 Pro
+OpenRouter, 20250228
+
+第一次没有实现功能，还破坏了原有功能
+
+第二次编译错误
+
+第三次没有实现功能
+
+## Grok 3
 网页版，打开 Think，20250220
 
 第一次没有实现功能
@@ -1596,14 +1605,23 @@ export { Calendar }
 第三次实现了视觉效果，但是点击有报错
 
 
-### 答案评价
+## 答案评价
 o1-preview, GPT-4o, Claude 3.7 Sonnet 是唯三完成了问题的模型
 
 其中 Claude 3.7 Sonnet 还用了更好看的图标，而且 Claude 3.7 Sonnet 只用了两次回答，其他模型用了三次
 
+| 好 | 中 | 差 |
+|:--:|:--:|:--:|
+| Claude 3.7 Sonnet | o1-preview | o1 |
+| | GPT-4o | o3-mini-high |
+| | | Claude 3.5 Sonnet |
+| | | DeepSeek-V3 |
+| | | DeepSeek-R1 |
+| | | Kimi-k1.5 |
+| | | Gemini 2.0 Pro |
+| | | Grok 3 |
 
-**Claude 3.7 Sonnet > o1-preview > GPT-4o >> DeepSeek-R1 = Claude 3.5 Sonnet = DeepSeek-V3 = DeepSeek-V3 深度思考 = Kimi-k1.5 = o1 = o3-mini-high = Grok 3**
-
+# 问题
 ## 问题三
 ```
 用鼠标中间点击一个链接，实际上是什么，会触发click事件吗？
