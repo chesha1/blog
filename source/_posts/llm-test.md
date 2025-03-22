@@ -1,5 +1,5 @@
 ---
-title: 自用大模型评测问题（持续更新中）
+title: 自用大模型评测问题（20250322 持续更新中）
 date: 2025-01-06 18:45
 excerpt: 个人使用场景下准备的一些问题，用于测试新的大模型，至少和 o1, o3-mini, DeepSeek-R1 比较
 category: 生活
@@ -24,6 +24,14 @@ o1 和 o3-mini 比较特殊，现在它们不会优先输出 markdown 格式的�
 在经过五个问题的测评后，发现 GPT-4o 在任何情况下，都不会好于 o1 或 o1-preview，所以从第六个问题开始，GPT-4o 不再参与
 
 Claude 3.7 Sonnet	对于 Claude 3.5 Sonnet 同理
+
+{% fold info @小声吐槽 %}
+
+gpt-4.5 和 o1-pro 也太贵了，沟槽的 altman
+
+o1-pro 后续再测，现在钱不够，在 openRouter 里充了 70 美元都不够用的
+
+{% endfold %}
 
 # 问题一
 ```
