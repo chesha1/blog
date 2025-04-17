@@ -1487,6 +1487,176 @@ export { Calendar }
 
 {% endfold %}
 
+## GPT-4.5 preview
+OpenRouter, 20250417
+
+---
+你可以通过自定义 DayPicker 的 `captionLayout` 和 `components.Caption` 来实现自定义的月份和年份切换按钮，以下是具体步骤：
+
+### 一、安装必要依赖：
+
+首先确认安装了 `date-fns`用来操作日期：
+
+```bash
+npm install date-fns
+```
+
+### 二、代码实现：
+
+修改 Calendar 组件，以在 caption 中自定义年月选择按钮：
+
+```tsx
+"use client"
+
+import * as React from "react"
+import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from "lucide-react"
+import { DayPicker, useNavigation } from "react-day-picker"
+import { cn } from "@/lib/utils"
+import { buttonVariants } from "@/components/ui/button"
+import { addMonths, subMonths, addYears, subYears, format } from "date-fns"
+
+export type CalendarProps = React.ComponentProps<typeof DayPicker>
+
+function CustomCaption(props: any) {
+  const { displayMonth } = props;
+  const { goToMonth } = useNavigation();
+
+  const handlePreviousYear = () => {
+    goToMonth(subYears(displayMonth, 1));
+  };
+  const handleNextYear = () => {
+    goToMonth(addYears(displayMonth, 1));
+  };
+
+  const handlePreviousMonth = () => {
+    goToMonth(subMonths(displayMonth, 1));
+  };
+  const handleNextMonth = () => {
+    goToMonth(addMonths(displayMonth, 1));
+  };
+
+  return (
+    <div className="flex justify-between items-center px-1">
+      <div className="space-x-1 flex">
+        <button
+          type="button"
+          onClick={handlePreviousYear}
+          className={cn(
+            buttonVariants({ variant: "outline" }),
+            "h-7 w-7 bg-transparent p-0 opacity-50 hover:opacity-100"
+          )}
+        >
+          <ChevronsLeft className="h-4 w-4" />
+        </button>
+        <button
+          type="button"
+          onClick={handlePreviousMonth}
+          className={cn(
+            buttonVariants({ variant: "outline" }),
+            "h-7 w-7 bg-transparent p-0 opacity-50 hover:opacity-100"
+          )}
+        >
+          <ChevronLeft className="h-4 w-4" />
+        </button>
+      </div>
+
+      <div className="text-sm font-medium">
+        {format(displayMonth, 'yyyy 年 MM 月')}
+      </div>
+
+      <div className="space-x-1 flex">
+        <button
+          type="button"
+          onClick={handleNextMonth}
+          className={cn(
+            buttonVariants({ variant: "outline" }),
+            "h-7 w-7 bg-transparent p-0 opacity-50 hover:opacity-100"
+          )}
+        >
+          <ChevronRight className="h-4 w-4" />
+        </button>
+        <button
+          type="button"
+          onClick={handleNextYear}
+          className={cn(
+            buttonVariants({ variant: "outline" }),
+            "h-7 w-7 bg-transparent p-0 opacity-50 hover:opacity-100"
+          )}
+        >
+          <ChevronsRight className="h-4 w-4" />
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function Calendar({
+  className,
+  classNames,
+  showOutsideDays = true,
+  ...props
+}: CalendarProps) {
+  return (
+    <DayPicker
+      showOutsideDays={showOutsideDays}
+      className={cn("p-3", className)}
+      captionLayout="dropdown" // 保证 caption 可自定义
+      components={{
+        Caption: CustomCaption,
+        ...props.components,
+      }}
+      classNames={{
+        months: "flex flex-col sm:flex-row space-y-4 sm:space-x-4 sm:space-y-0",
+        month: "space-y-4",
+        caption: "flex justify-center pt-1 relative items-center",
+        caption_label: "text-sm font-medium",
+        nav: "space-x-1 flex items-center",
+        table: "w-full border-collapse space-y-1",
+        cell: cn(
+          "relative p-0 text-center text-sm focus-within:relative focus-within:z-20 [&:has([aria-selected])]:bg-accent [&:has([aria-selected].day-outside)]:bg-accent/50 [&:has([aria-selected].day-range-end)]:rounded-r-md",
+          props.mode === "range"
+            ? "[&:has(>.day-range-end)]:rounded-r-md [&:has(>.day-range-start)]:rounded-l-md first:[&:has([aria-selected])]:rounded-l-md last:[&:has([aria-selected])]:rounded-r-md"
+            : "[&:has([aria-selected])]:rounded-md"
+        ),
+        day: cn(
+          buttonVariants({ variant: "ghost" }),
+          "h-8 w-8 p-0 font-normal aria-selected:opacity-100"
+        ),
+        day_range_start: "day-range-start",
+        day_range_end: "day-range-end",
+        day_selected:
+          "bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground focus:bg-primary focus:text-primary-foreground",
+        day_today: "bg-accent text-accent-foreground",
+        day_outside:
+          "text-muted-foreground day-outside aria-selected:bg-accent/50 aria-selected:text-muted-foreground",
+        day_disabled: "text-muted-foreground opacity-50",
+        day_range_middle:
+          "aria-selected:bg-accent aria-selected:text-accent-foreground",
+        day_hidden: "invisible",
+        ...classNames,
+      }}
+      {...props}
+    />
+  )
+}
+Calendar.displayName = "Calendar"
+
+export { Calendar }
+```
+
+### 三、解释说明：
+
+- 使用 `useNavigation()` 来进行月份跳转；
+- 使用 date-fns 提供的日期计算函数 (`addMonths` / `subMonths` / `addYears` / `subYears`) 切换视图显示的月份和年份；
+- 新增了年份切换的按钮使用了 Lucide-React 图标中的 `ChevronsLeft` (<<) 和 `ChevronsRight` (>>)；
+- 通过自定义 `components.Caption` 替换了默认月份切换栏，重新实现了四个按钮：
+  - "<<" 上一年
+  - "<" 上一月
+  - ">" 下一月
+  - ">>" 下一年
+
+经过以上代码修改，现在你的 Calendar 组件就会既能切换月份，也能方便地一次切换一年了。
+
 ## o1-preview
 o1-preview-2024-09-12, 20250106
 
@@ -1787,7 +1957,8 @@ claude-3-7-sonnet, thinking, 20250225
 
 第二次实现了功能，回答如下
 
----
+{% fold info @展开查看回答 %}
+
 您遇到的 `TypeError: goToMonth is not a function` 错误是因为在最新版本的 react-day-picker 中，自定义 Caption 组件接收的属性有所不同。让我们修复这个问题：
 
 ```tsx
@@ -1970,6 +2141,8 @@ export { Calendar }
 
 这个改进版本应该能够正确处理年份和月份的切换，而不会出现 "goToMonth is not a function" 错误。它同时保持了与 shadcn/ui 组件库风格的一致性。
 
+{% endfold %}
+
 ## DeepSeek-V3
 网页版，20250106
 
@@ -2037,22 +2210,26 @@ OpenRouter, 20250327
 
 
 ## 答案评价
-o1-preview, GPT-4o, Claude 3.7 Sonnet, Gemini 2.5 Pro 完成了问题
+GPT-4.5 preview, o1-preview, GPT-4o, Claude 3.7 Sonnet, Gemini 2.5 Pro 完成了问题
 
-其中 Claude 3.7 Sonnet, Gemini 2.5 Pro 还用了更好看的图标，只用了两次回答，
+其中：
+
+GPT-4.5 preview 只用了一次回答
+
+Claude 3.7 Sonnet, Gemini 2.5 Pro 还用了更好看的图标，只用了两次回答
 
 o1-preview, GPT-4o 用了三次
 
-| 好 | 中 | 差 |
-|:--:|:--:|:--:|
-| Claude 3.7 Sonnet | o1-preview | o1 |
-| Gemini 2.5 Pro | GPT-4o | o3-mini-high |
-| | | Claude 3.5 Sonnet |
-| | | DeepSeek-V3 |
-| | | DeepSeek-R1 |
-| | | Kimi-k1.5 |
-| | | Gemini 2.0 Pro |
-| | | Grok 3 |
+| 更好 | 好 | 中 | 差 |
+|:--:|:--:|:--:|:--:|
+|GPT-4.5 preview | Claude 3.7 Sonnet | o1-preview | o1 |
+|| Gemini 2.5 Pro | GPT-4o | o3-mini-high |
+|| | | Claude 3.5 Sonnet |
+|| | | DeepSeek-V3 |
+|| | | DeepSeek-R1 |
+|| | | Kimi-k1.5 |
+|| | | Gemini 2.0 Pro |
+|| | | Grok 3 |
 
 
 # 问题三
