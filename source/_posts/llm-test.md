@@ -1,7 +1,7 @@
 ---
-title: 自用大模型评测问题（20250327 持续更新中）
+title: 自用大模型评测问题（20250417 持续更新中）
 date: 2025-01-06 18:45
-excerpt: 个人使用场景下准备的一些问题，用于测试新的大模型，至少和 o1, o3-mini, DeepSeek-R1 比较
+excerpt: 个人使用场景下准备的一些问题，用于测试新的大模型，至少和 o1, Claude 3.7 Sonnet, Gemini 2.5 Pro, DeepSeek-R1 比较
 category: 生活
 ---
 # 背景
@@ -21,9 +21,21 @@ category: 生活
 
 o1 和 o3-mini 比较特殊，现在它们不会优先输出 markdown 格式的回答，所以它们的 prompt 加上了 `Formatting re-enabled`
 
-在经过几个问题的测评后，发现 GPT-4o 在任何情况下，都不会好于 o1 或 o1-preview，所以从第六个问题开始，GPT-4o 不再参与
+在经过几个问题的测评后，随着模型的迭代，发现某些模型在任何情况下都被其他模型全面超过，所以
 
-Claude 3.7 Sonnet, Gemini 2.5 Pro 同理
+还在测评中的模型：
+- GPT-4.5 preview, o1-prevew, o1, o1-pro, o3-mini, o4-mini
+- Claude 3.7 Sonnet
+- DeepSeek-R1
+- Gemini 2.5 Pro
+- Grok 3
+
+曾参与现退出的模型：
+- GPT-4o
+- Claude 3.5 Sonnet
+- DeepSeek-V3
+- Kimi-k1.5
+- Gemini 2.0 Pro
 
 {% fold info @小声吐槽 %}
 
@@ -431,6 +443,103 @@ poe, 20250201
 
 总结来说：  
 在 wrangler.toml 中使用环境变量时，你只能引用当前 shell 环境中已经定义好的变量（例如 `$API_KEY`），而 .dev.vars 的内容必须先通过手动或工具加载到环境变量中，这样 Wrangler 才能在解析配置时正确替换这些值。
+
+{% endfold %}
+
+## o4-mini-high
+OpenRouter, 20250417
+
+{% fold info @展开查看回答 %}
+
+首先要明白一点：​
+​.dev.vars​ 是给 `wrangler dev --local` 时本地模拟环境（Miniflare）注入「环境变量／秘密」用的，它只会在你本地跑 `wrangler dev` 的时候生效，并把这些键值放到你脚本里的 `env` 对象里（或 `Deno.env`／`process.env`，取决于你的运行时）。而 `wrangler.toml` 本身是一个静态的配置文件，**它不会去解析或加载 `.dev.vars`**，也不支持在 toml 里写 `${FOO}` 让 Wrangler 自动去找 `.dev.vars`。
+
+如果你的目的是在本地开发的时候拿到某些变量，在代码里直接这样访问就 OK 了：
+
+```js
+export default {
+  async fetch(request, env) {
+    // 通过 .dev.vars 注入的变量
+    console.log(env.MY_LOCAL_SECRET)
+    return new Response('ok')
+  }
+}
+```
+
+只要你有一个 `.dev.vars`：
+```
+MY_LOCAL_SECRET=abc123
+```
+然后运行
+```
+wrangler dev --local
+```
+就能在 `env.MY_LOCAL_SECRET` 拿到 `abc123`。
+
+---
+
+要是在 `wrangler.toml` 里也想设置不同环境的变量，推荐用 Wrangler 自带的 env 分组或者脚本生成方案：
+
+1.  用 env 分组
+   ```toml
+   name = "my-worker"
+   type = "javascript"
+
+   [vars]
+   # 这是默认环境的全局 vars
+   COMMON_URL = "https://prod.example.com"
+
+   [env.dev]
+   # 本地或测试环境专用
+   vars = { 
+     COMMON_URL = "https://dev.example.com",
+     FEATURE_FLAG = "true"
+   }
+
+   [env.prod]
+   vars = {
+     FEATURE_FLAG = "false"
+   }
+   ```
+   本地调试：
+   ```
+   wrangler dev --env dev
+   ```
+   发布到生产：
+   ```
+   wrangler publish --env prod
+   ```
+
+2.  用脚本或模板预处理 toml
+   如果你真的想把 `.dev.vars` 里的值直接写进 toml，可以把 `wrangler.toml` 先写成模板，比如 `wrangler.toml.tpl`：
+   ```toml
+   name = "my-worker"
+   type = "javascript"
+
+   [vars]
+   API_KEY = "${API_KEY}"
+   ENDPOINT = "${ENDPOINT}"
+   ```
+   然后在 shell 里：
+   ```bash
+   # 先把 .dev.vars 导出到当前 shell
+   export $(grep -v '^#' .dev.vars | xargs)
+   # 用 envsubst 生成实际配置
+   envsubst < wrangler.toml.tpl > wrangler.toml
+   # 再跑 wrangler
+   wrangler dev
+   ```
+
+3.  如果是“真正的秘密”要上 Cloudflare，还是推荐用 `wrangler secret put`：
+   ```bash
+   wrangler secret put SLACK_WEBHOOK_URL  # 然后输入你的地址
+   ```
+   这样生产环境也能拿到，而不会把它硬编码到 repo 里。
+
+总结
+- **不**可以让 Wrangler 自动在 toml 里读取 `.dev.vars`。
+- `.dev.vars` 只在 `wrangler dev --local` 时给你的 Worker 代码注入环境变量。
+- 如果想在 toml 层面写「环境特定的变量／密钥」，请用 Wrangler 自带的 `[env.*]` 分组或外部脚本预处理。
 
 {% endfold %}
 
@@ -1066,7 +1175,7 @@ OpenRouter, 20250327
 
 GPT-4o, o3-mini-high, Claude 3.5 Sonnet, Claude 3.7 Sonnet, DeepSeek-V3, Gemini 2.0 Pro 没有纠正引用这种错误说法
 
-GPT-4.5 preview, o1-preview, o1, o1-pro, DeepSeek-R1, Gemini 2.5 Pro, Grok 3 纠正了引用这种错误说法
+GPT-4.5 preview, o1-preview, o1, o1-pro, o4-mini-high, DeepSeek-R1, Gemini 2.5 Pro, Grok 3 纠正了引用这种错误说法
 
 其中 Grok 3 的描述最清晰
 
@@ -1076,8 +1185,9 @@ GPT-4.5 preview, o1-preview, o1, o1-pro, DeepSeek-R1, Gemini 2.5 Pro, Grok 3 纠
 | | o1-preview | o3-mini-high | Kimi-k1.5 |
 | | o1 | Claude 3.5 Sonnet | |
 | | o1-pro | Claude 3.7 Sonnet | |
-| | DeepSeek-R1 | DeepSeek-V3 | |
-| | Gemini 2.5 Pro | Gemini 2.0 Pro | |
+| | o4-mini-high | DeepSeek-V3 | |
+| | DeepSeek-R1 | Gemini 2.0 Pro | |
+| | Gemini 2.5 Pro |  | |
 
 
 # 问题二
