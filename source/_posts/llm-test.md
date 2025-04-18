@@ -1964,11 +1964,50 @@ poe, 20250201
 
 {% endfold %}
 
+## o4-mini-high
+OpenRouter, 20250418
+
+---
+在桌面浏览器里，鼠标滚轮（中键）点在一个 `<a>` 上，浏览器的默认行为是“在新标签打开”，而它在 DOM 里的表现并不是普通的 click 事件。具体来说：
+
+1. 触发的事件序列（以支持 HTML5 UI Events 的浏览器为例）：
+   • mousedown （event.button==1）
+   • mouseup   （event.button==1）
+   • auxclick  （event.button==1）  ← HTML5 新增，用来表示“非主键（middle/right）”点击
+   （而不会再触发 click，因为 click 只针对主键 primary button —— 通常就是左键）
+
+2. 浏览器兼容性：
+   – Chrome/Edge/Opera 等现代浏览器都会把中键抛给 auxclick，不会再走 click。
+   – Firefox/Safari 等目前还不一定实现 auxclick，但同样不会把中键当成普通 click，只能从 mousedown/mouseup 里自己判断 button==1。
+
+3. 拦截／监听中键点击的方法：
+   – 最严谨：监听 auxclick（支持的浏览器）
+   – 兼容方案：监听 mousedown 或 mouseup，然后检查 `event.button===1`
+   – 注意：用 `onclick`（或 jQuery 的 `.on('click',…)`）是抓不到中键的
+
+示例：
+```js
+linkElem.addEventListener('auxclick', e=>{
+  if(e.button===1){
+    e.preventDefault()  // 阻止浏览器默认“新标签打开”
+    console.log('捕获到中键点击！')
+  }
+});
+
+// 兼容写法
+linkElem.addEventListener('mousedown', e=>{
+  if(e.button===1){
+    console.log('mousedown 检测到中键');
+  }
+});
+```
+
+总结：中键打开链接会走 mousedown→mouseup→auxclick（或仅 mousedown/up），不会触发常规的 click 事件。
 
 ## Claude 3.7 Sonnet
 claude-3-7-sonnet, thinking, 20250225
 
----
+{% fold info @展开查看回答 %}
 
 当您用鼠标中键（滚轮按下）点击一个链接时：
 
@@ -1997,6 +2036,7 @@ document.addEventListener('auxclick', function(event) {
 
 这是浏览器的标准行为，在处理鼠标交互时需要注意这一点：标准click事件只由鼠标左键触发，而中键和右键有各自不同的事件处理机制。
 
+{% endfold %}
 
 ## DeepSeek-R1
 网页版，20250228
@@ -2149,17 +2189,18 @@ myLink.addEventListener('click', function(event) {
 ## 答案评价
 GPT-4o, DeepSeek-V3 深度思考, DeepSeek-R1, Gemini 2.0 Pro 没有提到 `auxclick`
 
-GPT-4.5 preview, o1-preview, o1, Claude 3.5 Sonnet, Claude 3.7 Sonnet, Gemini 2.5 Pro, Grok 3 还额外提到 `mousedown` 和 `mouseup`
+GPT-4.5 preview, o1-preview, o1, o4-mini-high, Claude 3.5 Sonnet, Claude 3.7 Sonnet, Gemini 2.5 Pro, Grok 3 还额外提到 `mousedown` 和 `mouseup`
 
 后续又多试了几次 DeepSeek-R1 有时候能提到，有时候不能
 
 | 更好 | 好 | 中 | 差 |
 |:--:|:--:|:--:|:--:|
-| Claude 3.7 Sonnet | GPT-4.5 preview | GPT-4.1 | GPT-4o |
+| o4-mini-high | GPT-4.5 preview | GPT-4.1 | GPT-4o |
 |  | o1 | o3-mini-high | DeepSeek-V3 深度思考 |
 |  | DeepSeek-V3 | o1-preview | DeepSeek-R1 |
 |  | Claude 3.5 Sonnet |  | Kimi-k1.5 |
-|  | Gemini 2.5 Pro |  | Gemini 2.0 Pro |
+|  | Claude 3.7 Sonnet |  | Gemini 2.0 Pro |
+|  | Gemini 2.5 Pro |  |  |
 |  | Grok 3 |  |  |
 
 
