@@ -2597,6 +2597,82 @@ poe, 20250201
 
 {% endfold %}
 
+## o4-mini-high
+OpenRouter, 20250419
+
+---
+在 JS 里目前并没有一个「内建函数」能像 RegExp.prototype.test 一样，直接接受 Chrome/Firefox 扩展里的 match‑pattern（比如
+`*://*.example.com/*`）去做匹配。但你可以用下面几种方法来达到同样的效果：
+
+1. 使用 URLPattern（实验性 API，Chrome 111+、Firefox 108+ 支持）
+   ```js
+   // 注意：URLPattern 的写法和 match‑pattern 不完全一样，
+   // 需要拆成 protocol/hostname/pathname 三部分来写
+   const p = new URLPattern({
+     protocol: "https",          // 不支持 "*"
+     hostname: "*.example.com",  // 支持 "*." 通配
+     pathname: "/*"              // 支持 "*" 通配
+   });
+
+   console.log( p.test("https://foo.example.com/bar") ); // true
+   console.log( p.test("http://foo.example.com/bar") );  // false (因为 protocol 写死了 https)
+   ```
+
+2. 手写一个把 match‑pattern 转成 RegExp 的小函数
+   原理就是把 `<scheme>://<host><path>` 拆开，然后对 `*`、`?.` 等做正则转义／替换，最后构造一个 `RegExp`。例如：
+
+   ```js
+   /**
+    * 把扩展 match‑pattern 转成 RegExp
+    * 支持 scheme=*|http|https|file|ftp
+    * 支持 host=* 或 *.example.com 或 example.com
+    * 支持 path 中的 * 通配
+    */
+   function patternToRegExp(pattern) {
+     const m = pattern.match(/^(\*|https?|file|ftp):\/\/(\*|\*\.[^/]+|[^/*]+)(\/.*)$/);
+     if (!m) throw new Error("Invalid match pattern: " + pattern);
+     let [, scheme, host, path] = m;
+
+     // scheme 部分
+     let schemeRe = scheme === "*" ? "(?:http|https)" : scheme.replace(/\*/g, ".*");
+
+     // host 部分
+     let hostRe;
+     if (host === "*") {
+       hostRe = "[^/]+";
+     } else if (host.startsWith("*.") ) {
+       // *.example.com → (?:[^.]+\.)?example\.com
+       hostRe = "(?:[^.]+\\.)?" + host.slice(2).replace(/\./g, "\\.");
+     } else {
+       hostRe = host.replace(/\./g, "\\.");
+     }
+
+     // path 部分，* → .*
+     let pathRe = path
+       .replace(/[.+^${}()|[\]\\]/g, "\\$&")
+       .replace(/\*/g, ".*");
+
+     return new RegExp("^" + schemeRe + "://" + hostRe + pathRe + "$");
+   }
+
+   // 使用举例
+   const re = patternToRegExp("*://*.example.com/*");
+   console.log( re.test("https://foo.example.com/index.html") ); // true
+   console.log( re.test("http://example.com/") );                // true
+   console.log( re.test("ftp://foo.example.com/") );              // true
+   console.log( re.test("file:///etc/passwd") );                  // false
+   ```
+
+3. 直接用社区已有的库
+   NPM 上有一些专门做这种「Chrome/Firefox match‑pattern ↔ RegExp」转换的包，例如
+   - `match-pattern` / `extension-match-patterns` / `webextension-polyfill-match-patterns`
+   - 通用 glob 库也可以轻松改造成支持 URL （`micromatch`、`minimatch` 等）
+
+——
+总结：
+· 如果你能用实验性 API，URLPattern 就最简单；
+· 否则把 match‑pattern 拆成 scheme/host/path，用正则或第三方库手动去测试。
+
 
 ## Claude 3.7 Sonnet
 claude-3-7-sonnet, thinking, 20250225
@@ -2732,7 +2808,8 @@ console.log(isMatchPattern(url2, pattern)); // true
 ## Gemini 2.5 Pro
 OpenRouter, 20250327
 
----
+  
+{% fold info @展开查看回答 %}
 
 是的，你说得对，JavaScript 中 `RegExp.prototype.test()` 函数用于测试一个字符串是否匹配某个正则表达式，并返回 `true` 或 `false`。
 
@@ -2823,6 +2900,8 @@ console.log(noMatchResult); // 输出: null
 **总结:**
 
 如果你需要测试一个字符串是否符合某个 **URL 模式**，`URLPattern.prototype.test()` 就是你要找的函数。它是 `RegExp.prototype.test()` 在 URL 匹配领域的直接对应物。对于需要提取 URL 中动态部分值的场景，则可以使用 `URLPattern.prototype.exec()`。
+
+{% endfold %}
 
 ## Grok 3
 网页版，打开 Think，20250220
@@ -2922,14 +3001,20 @@ GPT-4.5 preview, GPT-4.1, Claude 3.7 Sonnet 提供了把 match patterns 转化�
 
 DeepSeek-R1 也对正则匹配进行了一些废话，但还是提供了一个解决方法
 
-Gemini 2.5 Pro 是唯一提到 URL Pattern API 的，这么新的东西也能提到，还是比较惊喜的
+Gemini 2.5 Pro 是提到了 URL Pattern API
 
-|    更好    |         好        |         中        |       差       |
-|:----------:|:-----------------:|:-----------------:|:--------------:|
-| Gemini 2.5 Pro |  o1-preview  |       o1-pro      |     GPT-4o     |
-|            |  GPT-4.5 preview  |    o3-mini-high   |       o1       |
-|            |  GPT-4.1          | Claude 3.5 Sonnet | Gemini 2.0 Pro |
-|            |  Claude 3.7 Sonnet |    DeepSeek-R1    |     Grok 3     |
+o4-mini-high 也提到了 URL Pattern API，还有一些额外的方法
+
+|     更好     |       好       |         中        |         差        |
+|:------------:|:--------------:|:-----------------:|:-----------------:|
+| o4-mini-high | Gemini 2.5 Pro |  GPT-4.5 preview  |       GPT-4o      |
+|              |                |      GPT-4.1      |         o1        |
+|              |                |     o1-preview    |       o1-pro      |
+|              |                | Claude 3.7 Sonnet |    o3-mini-high   |
+|              |                |                   | Claude 3.5 Sonnet |
+|              |                |                   |    DeepSeek-R1    |
+|              |                |                   |   Gemini 2.0 Pro  |
+|              |                |                   |       Grok 3      |
 
 # 问题五
 ```
@@ -3046,6 +3131,21 @@ OpenRouter, 20250217
 经过查阅正史与主流的史籍，目前并没有可靠的史料记载范滂被捕时与其母亲对话的具体原文，也就是说，没有确凿的文献证明有这样一段“告别母亲”的文言对话留存于史册。网络上偶有提及此事的版本，多属于后人附会或民间传说，缺乏权威依据。
 
 因此，无法提供经得起学术考证的文言原文及其翻译。如果您有特定版本或资料出处，欢迎提供进一步信息，以便更准确地讨论这一问题。
+
+{% endfold %}
+
+## o4-mini-high
+OpenRouter, 20250419
+
+{% fold info @展开查看回答 %}
+
+下列文字，节录自《晋书·范滂传》（或后世所作本），记载了范滂被逮入狱之时，与老母诀别的对话。原文与现代汉语译文如下：
+
+一、文言原文
+永嘉中，巢珎、王浑、崔烈等反，朝廷下诏捕范滂。时母年逾八十，执衣泣送，叩曰：“吾儿何罪？弃我何依？”滂对母曰：“母，吾平生清白无愧，惧死非罪。既蒙圣诏，臣不得不往；为国捐躯，何负母于心？”遂释衣而出。
+
+二、现代汉语译文
+永嘉年间，巢珎、王浑、崔烈等人举兵叛乱，朝廷于是下令逮捕范滂。彼时他已八旬高龄的母亲紧紧揪住他的衣襟，泪流满面地说：“孩子，你到底犯了什么罪？抛下我这个老身，将来该依靠谁？”范滂对母亲说道：“母亲，我一生清白无愧于人，惧死本非过错。如今既已受了皇帝的圣旨，就无法回避；若能以身殉国，方显忠节，也绝不会愧对您。”说罢，他释手回首，头也不回地赴法司。
 
 {% endfold %}
 
@@ -3177,6 +3277,7 @@ o3-mini-high 直接否认了这个问题
 |             |  Gemini 2.0 Pro |       GPT-4.1     |              |
 |             |                 |         o1        |              |
 |             |                 |     o1-preview    |              |
+|             |                 | o4-mini-high      |              |
 |             |                 | Claude 3.5 Sonnet |              |
 |             |                 | Claude 3.7 Sonnet |              |
 |             |                 |   Gemini 2.5 Pro  |              |
@@ -3383,6 +3484,133 @@ print("\n完成所有文件的 VAD 处理并绘制时长分布图")
 7. 片段时长计算统一使用目标采样率16kHz，以保证时长统计准确。
 
 这样修改后的代码便能自动适应任意输入的音频采样率，而输出的片段始终保持统一的 16000 Hz。
+
+{% endfold %}
+
+## GPT-4.1
+poe, 20250419
+
+{% fold info @展开查看回答 %}
+
+下面是**改进后的代码**，自动适应输入采样率，**始终输出16kHz音频**（包括VAD前的推理、保存等环节，全部适配），**无需硬编码采样率**。
+
+### 主要思路
+
+- 自动检测输入文件采样率并据此处理。
+- VAD和保存均内置采样率参数，始终以16kHz输出。
+- 使用`torchaudio.load`获取真实采样率，必要时重采样。
+- `read_audio`和`save_audio`的`samping_rate`参数改为变量。
+- 用PyTorch的`torchaudio.transforms.Resample`做重采样。
+
+---
+
+```python
+import torch
+import os
+import time
+from tqdm import tqdm
+import matplotlib.pyplot as plt
+import numpy as np
+
+import torchaudio
+
+torch.set_num_threads(1)
+
+# 参数配置
+input_dir = "raw"  # 原始音频所在目录
+save_path = "after-vad"  # 分段后音频保存目录
+min_speech_duration_ms = 1000
+max_speech_duration_s = 20
+audio_extensions = (".wav", ".mp3", ".flac", ".ogg", ".m4a", ".aac")
+target_sr = 16000  # 输出采样率
+
+os.makedirs(save_path, exist_ok=True)
+
+# 加载 Silero VAD 模型
+model, utils = torch.hub.load(repo_or_dir="snakers4/silero-vad", model="silero_vad")
+(get_speech_timestamps, save_audio, read_audio, VADIterator, collect_chunks) = utils
+
+# 用于累积所有音频片段时长（秒），绘制直方图
+all_durations = []
+
+# 遍历目录，筛选音频后缀文件
+audio_files = [f for f in os.listdir(input_dir) if f.lower().endswith(audio_extensions)]
+
+for audio_file in audio_files:
+    audio_path = os.path.join(input_dir, audio_file)
+    print(f"处理文件: {audio_file}")
+
+    original_root, original_ext = os.path.splitext(audio_file)
+
+    # 读取音频，获取原采样率
+    waveform, orig_sr = torchaudio.load(audio_path)
+    waveform = waveform.mean(dim=0, keepdim=True)  # 强制单声道
+    waveform = waveform.squeeze(0)
+
+    # 如原采样率非16k，则重采样到16k
+    if orig_sr != target_sr:
+        resampler = torchaudio.transforms.Resample(orig_sr, target_sr)
+        wav_16k = resampler(waveform)
+    else:
+        wav_16k = waveform
+
+    # Silero read_audio输出归一化float32，确保类型一致
+    wav_16k = wav_16k.numpy() if isinstance(wav_16k, torch.Tensor) else wav_16k
+
+    # 执行 VAD（采样率16k）
+    start = time.time()
+    speech_timestamps = get_speech_timestamps(
+        wav_16k,
+        model,
+        sampling_rate=target_sr,
+        min_speech_duration_ms=min_speech_duration_ms,
+        max_speech_duration_s=max_speech_duration_s,
+    )
+    end = time.time()
+    print(f"{audio_file} 的 VAD 耗时: {end - start:.2f}s")
+
+    # 保存切分后音频片段
+    for idx, timestamp in tqdm(
+        enumerate(speech_timestamps),
+        total=len(speech_timestamps),
+        desc=f"保存切分片段 -> {audio_file}",
+    ):
+        segment_file_name = f"{original_root}-{idx}.wav"
+        save_file_path = os.path.join(save_path, segment_file_name)
+
+        audio_chunk = collect_chunks([timestamp], wav_16k)
+        save_audio(save_file_path, audio_chunk, sampling_rate=target_sr)
+
+        duration = (timestamp["end"] - timestamp["start"]) / target_sr
+        all_durations.append(duration)
+
+# 绘制切分结果时长分布
+plt.figure(figsize=(8, 5))
+plt.hist(all_durations, bins=20, color="skyblue", edgecolor="black")
+plt.xlabel("Segment Duration (s)")
+plt.ylabel("Count")
+plt.title("Segment Duration Distribution for All Files")
+plt.savefig("duration_distribution.png")
+plt.close()
+
+print("完成所有文件的 VAD 处理并绘制时长分布图")
+```
+
+---
+
+### 主要变化说明
+
+1. **自适应采样率读取**
+    - 用`torchaudio.load`读取音频，并获取真实采样率`orig_sr`。
+2. **VAD处理与保存始终16kHz**
+    - 若原采样率非16kHz，先用`torchaudio.transforms.Resample`重采样。
+    - VAD与保存全部在16kHz下进行。
+3. **时长统计与绘图正常**
+    - 片段长度除以`target_sr`，而不是硬编码的48000。
+
+---
+
+如需支持多通道音频，这里做了强制单声道处理（`.mean(dim=0)`），如需保留多通道可调整。
 
 {% endfold %}
 
@@ -3727,6 +3955,109 @@ print("完成所有文件的 VAD 处理并绘制时长分布图")
 3. 利用 torchaudio.transforms.Resample 对提取到的音频片段进行重采样，确保保存的 WAV 文件始终为 16kHz。
 
 这样修改后，无论输入音频的采样率是多少，都能正确检测语音段，并将输出保存为 16kHz 的音频。
+
+{% endfold %}
+
+## o4-mini-high
+OpenRouter，20250419
+  
+{% fold info @展开查看回答 %}
+
+下面给出两种常用的改法，核心思路都是：
+
+1. 先用 `torchaudio.load`（或 `librosa.load(..., sr=None)`）加载出原始采样率 `input_sr`。
+2. 把它喂给 Silero VAD 时用真实的 `input_sr` 计算分段。
+3. 最后把每段 `resample` 到 16 kHz，再以 16 kHz 保存。
+
+以下示例使用 `torchaudio`：
+
+```python
+import os
+import time
+
+import torch
+import torchaudio
+import torchaudio.functional as F
+from tqdm import tqdm
+import matplotlib.pyplot as plt
+import numpy as np
+
+torch.set_num_threads(1)
+
+# 参数配置
+input_dir = "raw"
+save_path = "after-vad"
+min_speech_duration_ms = 1000
+max_speech_duration_s = 20
+audio_extensions = (".wav", ".mp3", ".flac", ".ogg", ".m4a", ".aac")
+target_sr = 16000  # 输出固定 16kHz
+
+os.makedirs(save_path, exist_ok=True)
+
+# 加载 Silero VAD
+model, utils = torch.hub.load("snakers4/silero-vad", "silero_vad")
+(get_speech_timestamps, save_audio, _, VADIterator, collect_chunks) = utils
+
+all_durations = []
+
+audio_files = [f for f in os.listdir(input_dir) if f.lower().endswith(audio_extensions)]
+for audio_file in audio_files:
+    audio_path = os.path.join(input_dir, audio_file)
+    print(f"处理文件: {audio_file}")
+
+    # 1. 读入原始音频 + 采样率
+    wav, input_sr = torchaudio.load(audio_path)     # wav: Tensor [channel, time]
+    # 如果是多通道，转成单通道
+    if wav.ndim > 1:
+        wav = wav.mean(dim=0)
+    # 变成 1D Tensor
+    wav = wav.flatten()
+
+    # 2. 用真实 input_sr 做 VAD
+    start = time.time()
+    speech_timestamps = get_speech_timestamps(
+        wav,
+        model,
+        sampling_rate=input_sr,
+        min_speech_duration_ms=min_speech_duration_ms,
+        max_speech_duration_s=max_speech_duration_s,
+    )
+    end = time.time()
+    print(f"{audio_file} 的 VAD 耗时: {end - start:.2f}s")
+
+    # 3. 遍历每个语音片段，resample 到 16k 并保存
+    root, ext = os.path.splitext(audio_file)
+    for idx, ts in tqdm(enumerate(speech_timestamps),
+                        total=len(speech_timestamps),
+                        desc=f"保存切分片段 -> {audio_file}"):
+        segment = collect_chunks([ts], wav)  # 1D Tensor still @input_sr
+        # 如果需要，重采样到 16k
+        if input_sr != target_sr:
+            segment = F.resample(segment, orig_freq=input_sr, new_freq=target_sr)
+        save_name = f"{root}-{idx}.wav"
+        save_path_full = os.path.join(save_path, save_name)
+        save_audio(save_path_full, segment, sampling_rate=target_sr)
+
+        # 统计时长（秒）
+        all_durations.append(segment.shape[0] / target_sr)
+
+# 绘制时长分布
+plt.figure(figsize=(8, 5))
+plt.hist(all_durations, bins=20, color="skyblue", edgecolor="black")
+plt.xlabel("Segment Duration (s)")
+plt.ylabel("Count")
+plt.title("Segment Duration Distribution for All Files")
+plt.savefig("duration_distribution.png")
+plt.close()
+
+print("完成所有文件的 VAD 处理并绘制时长分布图")
+```
+
+关键点说明：
+- `torchaudio.load` 会返回 `(waveform, sr)`，`sr` 就是原始文件的采样率。
+- `get_speech_timestamps` 传入真实的 `sampling_rate=input_sr`，这样可以适应任意输入。
+- `collect_chunks` 得到的片段仍然保持 `input_sr`，最后用 `F.resample(..., new_freq=16000)` 统一变成 16 kHz 后保存。
+- 统计时长时也用 16 kHz 的采样率来计算。
 
 {% endfold %}
 
@@ -4272,22 +4603,22 @@ print("完成所有文件的 VAD 处理并绘制时长分布图")
 {% endfold %}
 
 ## 答案评价
-GPT-4.5 preview, o3-mini-high, Gemini 2.5 Pro 多引入了 `torchaudio` 依赖，手动做了转换，实现功能了但是有点冗余
+GPT-4.5 preview, o3-mini-high, o4-mini-high, Gemini 2.5 Pro 多引入了 `torchaudio` 依赖，手动做了转换，实现功能了但是有点冗余
 
 o1-preview 多引入了 `torchaudio` 依赖，其实 `read_audio` 自己就能重新采样成 16 kHz 的音频，而且能自动压成单声道，不需要再额外设置，这里用 `torchaudio.load` 而不用 `read_audio` 没有处理双声道直接报错了
 
 o1, Claude 3.7 Sonnet, DeepSeek-R1, Grok 3 的做法是正确做法
 
-Gemini 2.0 Pro 也报错了，不细看了
+GPT-4.1, Gemini 2.0 Pro 报错了，不细看了
 
 其中，o1 的描述更好，相比其他模型，更多解释了库本身的函数内容和修改的原理
 
 | 更好 |         好        |        中       |       差       |
 |:----:|:-----------------:|:---------------:|:--------------:|
 |  o1  | Claude 3.7 Sonnet | GPT-4.5 preview |   o1-preview   |
-|      |    DeepSeek-R1    |   o3-mini-high  | Gemini 2.0 Pro |
-|      |       Grok 3      |  Gemini 2.5 Pro |                |
-
+|      |    DeepSeek-R1    |   o3-mini-high  | GPT-4.1        |
+|      |       Grok 3      |   o4-mini-high  | Gemini 2.0 Pro |
+|      |                   |  Gemini 2.5 Pro |                |
 # 问题七
 ```
 下面mermaid代码有点不精简，优化一下，不要改动任何逻辑，保持显示效果的一致：
@@ -4514,6 +4845,29 @@ graph TD
 
 {% endfold %}
 
+## o4-mini-high
+OpenRouter，20250419
+
+{% fold info @展开查看回答 %}
+
+下面是等价且更精简的写法，逻辑和显示效果与原来完全一致：
+
+```
+graph TD
+  A[扫描高利率理财产品]
+  A --> N1[计算可用稳定币余额]
+  N1 --> N2{余额大于零}
+  N2 --否--> End[结束]
+  N2 --是--> N4{是否已经完全购买该产品}
+  N4 --是--> A
+  N4 --否--> B{查找资金或现货账户余额}
+  B --有--> C[直接转账到该产品]
+  B --没有--> D[查找其他稳定币] --> E[兑换] --> C
+  C --> A
+```
+
+{% endfold %}
+
 ## Claude 3.7 Sonnet
 claude-3-7-sonnet, thinking, 20250316
 
@@ -4702,7 +5056,7 @@ graph TD
 ## 答案评价
 因为 hexo fluid 不能很好地渲染 mermaid，没法用代码块语法，所以把答案都略微做了修改
 
-GPT-4.5 preview, GPT-4.1, o1-preview, o1-pro, o3-mini-high, DeepSeek-R1, Gemini 2.0 Pro 没有完成任务，把原图乱改
+GPT-4.5 preview, GPT-4.1, o1-preview, o1-pro, o3-mini-high, o4-mini-high, DeepSeek-R1, Gemini 2.0 Pro 没有完成任务，把原图乱改
 
 o1, Claude 3.7 Sonnet, Gemini 2.5 Pro, Grok 3 看起来完成了任务，但是对于描述也偷偷地修改了
 
@@ -4713,6 +5067,7 @@ o1, Claude 3.7 Sonnet, Gemini 2.5 Pro, Grok 3 看起来完成了任务，但是�
 |    |  Gemini 2.5 Pro   |    o1-preview   |
 |    |      Grok 3       |      o1-pro     |
 |    |                   |   o3-mini-high  |
+|    |                   |   o4-mini-high  |
 |    |                   |   DeepSeek-R1   |
 |    |                   |  Gemini 2.0 Pro |
 
