@@ -1662,18 +1662,18 @@ Claude 3.7 Sonnet, Gemini 2.5 Pro 还用了更好看的图标，只用了两次�
 
 o1-preview, GPT-4o 用了三次
 
-| 更好 | 好 | 中 | 差 |
-|:--:|:--:|:--:|:--:|
-|GPT-4.5 preview | Claude 3.7 Sonnet | o1-preview | o1 |
-|| Gemini 2.5 Pro | GPT-4o | o3-mini-high |
-|| | | o4-mini-high |
-|| | | Claude 3.5 Sonnet |
-|| | | DeepSeek-V3 |
-|| | | DeepSeek-R1 |
-|| | | Kimi-k1.5 |
-|| | | Gemini 2.0 Pro |
-|| | | Grok 3 |
-
+|       更好      |         好        |     中     |         差        |
+|:---------------:|:-----------------:|:----------:|:-----------------:|
+| GPT-4.5 preview | Claude 3.7 Sonnet | o1-preview |      GPT-4.1      |
+|                 |   Gemini 2.5 Pro  |   GPT-4o   |         o1        |
+|                 |                   |            |    o3-mini-high   |
+|                 |                   |            |    o4-mini-high   |
+|                 |                   |            | Claude 3.5 Sonnet |
+|                 |                   |            |    DeepSeek-V3    |
+|                 |                   |            |    DeepSeek-R1    |
+|                 |                   |            |     Kimi-k1.5     |
+|                 |                   |            |   Gemini 2.0 Pro  |
+|                 |                   |            |       Grok 3      |
 
 # 问题三
 ```
