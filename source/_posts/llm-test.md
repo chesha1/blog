@@ -1,5 +1,5 @@
 ---
-title: 自用大模型评测问题（20250418 持续更新中）
+title: 自用大模型评测问题（20250419 持续更新中）
 date: 2025-01-06 18:45
 excerpt: 个人使用场景下准备的一些问题，用于测试新的大模型，至少和 o1, Claude 3.7 Sonnet, Gemini 2.5 Pro, DeepSeek-R1 比较
 category: 生活
@@ -1479,6 +1479,11 @@ OpenRouter, 20250217
 
 第三次编译正常，有新增的按钮，但是点击报错
 
+## o4-mini-high
+OpenRouter, 20250419
+
+三次都没做出来
+
 
 ## Claude 3.7 Sonnet
 claude-3-7-sonnet, thinking, 20250225
@@ -1718,6 +1723,7 @@ o1-preview, GPT-4o 用了三次
 |:--:|:--:|:--:|:--:|
 |GPT-4.5 preview | Claude 3.7 Sonnet | o1-preview | o1 |
 || Gemini 2.5 Pro | GPT-4o | o3-mini-high |
+|| | | o4-mini-high |
 || | | Claude 3.5 Sonnet |
 || | | DeepSeek-V3 |
 || | | DeepSeek-R1 |
