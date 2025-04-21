@@ -1,5 +1,5 @@
 ---
-title: 自用大模型评测问题（20250419 持续更新中）
+title: 自用大模型评测问题（20250421 持续更新中）
 date: 2025-01-06 18:45
 excerpt: 个人使用场景下准备的一些问题，用于测试新的大模型，至少和 o1, Claude 3.7 Sonnet, Gemini 2.5 Pro, DeepSeek-R1 比较
 category: 生活
@@ -470,57 +470,68 @@ AiHubMix, 20250421
 
 {% fold info @展开查看回答 %}
 
-在 wrangler 里有两套完全独立的概念：
+结论先行
+`.dev.vars` 和 `wrangler.toml` 是两条互不相交的“流水线”：
 
-1. wrangler.toml ── 用来告诉 wrangler 怎么构建、上传和运行 Worker。
-2. .dev.vars ── **只在 `wrangler dev` 本地调试** 时，把里面写的键值注入到运行时的 `env`（也就是代码里的 `env.MY_KEY`）。
+• `.dev.vars` 只在执行 `wrangler dev` 时被 Wrangler 读取，用来把变量注入到本地开发 Worker 的 env 对象中。
+• 当 Wrangler 解析 `wrangler.toml` 时，`.dev.vars` 甚至还没有被读进去；因此 **wrangler.toml 里无法引用或插值 `.dev.vars` 里的值**。
+• 想在生产／预发／其他自定义环境里使用变量，应当直接在 `wrangler.toml` 的 `[vars]` 或 `[env.<name>.vars]` 节里写，或者用 `wrangler secret …`。
+• 如果只是想在本地调试时覆盖变量，把它们放到 `.dev.vars` 就够了，无需（也做不到）在 `wrangler.toml` 中“引用”它们。
 
-`.dev.vars` 并不会参与 wrangler.toml 的解析过程，也就是说 **wrangler.toml 里无法“引用” `.dev.vars` 里的内容**。如果你尝试在 toml 里写例如
+=================================================================
+为什么不能 “引用”
 
-```
-account_id = "${MY_ACCOUNT_ID}"
-```
+1. Wrangler 启动流程（简化版）
+   a. 先解析 wrangler.toml → 得到账号、路由、vars 等配置信息。
+   b. 如果是 `wrangler dev`，再去找 `.dev.vars`，把里面的 KEY=VALUE 加载成 **运行时变量**，并覆盖同名 vars。
+   c. 启动本地 Worker，运行时通过 `env.<KEY>` 访问。
+   因为 a 在 b 之前，toml 文件里自然拿不到来自 `.dev.vars` 的值。
 
-wrangler 只会去操作系统的环境变量里找 `MY_ACCOUNT_ID`，它不会去看 `.dev.vars`。
+2. toml 本身不提供 `${VAR}` 之类的环境变量插值功能；Wrangler 对少数字段（如 `account_id`）提供了 “用操作系统环境变量兜底” 的能力，但同样跟 `.dev.vars` 无关——`.dev.vars` 只在 dev 子命令里生效。
 
-————————————————
-如果你想让同一份值同时：
+=================================================================
+正确的做法示例
 
-• 在本地调试时可用
-• 在 wrangler.toml 里也能用（例如给不同环境赋值）
-
-就有三种选择：
-
-① 直接在 wrangler.toml 里写
-   ```
-   [vars]
-   MY_KEY = "value"
-   ```
-   这样 `wrangler dev` 和 `wrangler deploy` 都能用，不需要 .dev.vars。
-
-② 用操作系统环境变量 + toml 的插值语法
-   ```
-   [vars]
-   MY_KEY = "${MY_KEY}"
-   ```
-   运行 `export MY_KEY=value && wrangler dev`，本地和线上都能用。
-
-③ 保留 .dev.vars 让本地更方便，同时在 toml 里再写一份（或用 secret）让线上用
+1. 本地开发专用变量 —— `.dev.vars`
    ```
    # .dev.vars
-   MY_KEY=value
-
-   # wrangler.toml
-   [env.dev.vars]   # 本地 dev 环境
-   MY_KEY = "value"
-
-   [env.production.vars]  # 正式环境
-   MY_KEY = "value"
+   SUPABASE_URL=http://localhost:54321
+   SUPABASE_KEY=local-dev-key
    ```
 
-————————————————
-结论
-`.dev.vars` 只是简化本地调试的工具文件，不会被 wrangler.toml 读取，也无法在 toml 中做变量替换。如果确实需要把变量写一次、多处使用，请改用 `[vars]`、`[env.xxx]` 或操作系统环境变量。
+   • 运行 `wrangler dev` 时可通过 `env.SUPABASE_URL` 访问。
+   • 这些值不会被上传或写入版本库。
+
+2. 云端 / 生产变量 —— `wrangler.toml`
+   ```
+   name              = "my-worker"
+   compatibility_date = "2023-10-01"
+
+   [vars]                    # 默认（生产）环境
+   SUPABASE_URL = "https://db.example.com"
+   SUPABASE_KEY = "prod-key"
+
+   [env.staging.vars]        # 例：staging 环境
+   SUPABASE_URL = "https://staging-db.example.com"
+   SUPABASE_KEY = "staging-key"
+   ```
+
+   • 发布到生产：`wrangler publish` 使用 `[vars]`。
+   • 发布到预发：`wrangler publish --env staging` 使用 `[env.staging.vars]`。
+
+3. 敏感信息
+   对于 API_KEY 这类敏感值，不要写在 toml：
+   ```
+   wrangler secret put SUPABASE_KEY               # 针对默认环境
+   wrangler secret put SUPABASE_KEY --env staging # 针对指定环境
+   ```
+
+=================================================================
+总结
+
+• `.dev.vars` 只为 `wrangler dev` 提供本地覆盖，**不会**也**不能**被 `wrangler.toml` “调用”。
+• 线上或多环境配置请直接写 `[vars] / [env.<name>.vars]`，或用 `wrangler secret`。
+• 真要复用同一份值，只能靠脚本（例如 `dotenv` + `sed` 或 CI 注入环境变量）在发布前生成/修改 toml，而 Wrangler 原生并未支持把 `.dev.vars` 自动注入到 toml 配置里。
 
 {% endfold %}
 
@@ -1947,35 +1958,64 @@ AiHubMix, 20250421
 
 {% fold info @展开查看回答 %}
 
-简单回答
-1. 鼠标中键对应的是 button = 1（左键是 0，右键是 2）。
-2. 中键按下／抬起会触发 mousedown、mouseup（button=1）。
-3. 按规范 click 只针对「主按钮」(button=0)，因此**中键不会触发 click**。
-4. 现代浏览器在 mouseup 之后会再触发一个 auxclick（“辅助点击”）事件；浏览器就在 auxclick 的默认行为里把链接打开到新标签页。
+简短结论
+• 中键按下/抬起时一定会触发 mousedown 和 mouseup。
+• 在目前主流浏览器中，中键不会再触发 click，而是触发 auxclick。
+• 你只监听 click 是抓不到中键的；要拦截或识别中键，请监听 mousedown／mouseup，或监听新加的 auxclick，并检查 e.button==1 (旧版 DOM 用 e.which==2)。
+• 如果不想让浏览器“在新标签页打开链接”的默认行为发生，需要在这些事件中调用 event.preventDefault()。
 
-所以如果你写
+详细说明
 
+1. 事件顺序
+   进入链接 → mouseover / mouseenter
+   按下滚轮 → mousedown（button === 1）
+   抬起滚轮 → mouseup（button === 1）
+   抬起后     → auxclick（button === 1）
+   ‑‑ 如果没有被 cancel，浏览器随后执行默认动作：在新标签页（或后台标签）打开 <a href=""> 的 URL。
+
+2. click 与 auxclick
+   • 依据 W3C UI Events 规范，click 仅在“主按钮”(button==0，通常是左键) 释放时才会发送。
+   • 中键、右键等“非主键”统一使用 auxclick。
+   • Chrome 55+、Chromium‑based Edge、Firefox 53+、Opera、最近的 Safari 都已遵循此规则。
+   • 极老的浏览器（IE、老版 Chrome/Firefox）曾把中键也当成 click 发送，因此网上有“中键能触发 click”这一说法，但今天已不可靠。
+
+3. 如何检测/禁止中键
+
+原生 JS:
 ```js
-link.addEventListener('click',  fn);   // 捕不到中键
-link.addEventListener('auxclick',fn);  // 可以捕到中键（Chrome/Firefox/Edge）
-```
+link.addEventListener('auxclick', function (e) {
+  if (e.button === 1) {       // 中键
+    e.preventDefault();       // 阻止在新标签页打开
+    console.log('middle click on link!');
+  }
+});
 
-或者
-
-```js
-link.addEventListener('mousedown', e => {
-  if (e.button === 1) { … }           // 同样能捕到
+// 兼容旧浏览器的兜底方案
+link.addEventListener('mousedown', function (e) {
+  if (e.button === 1 || e.which === 2) {
+    e.preventDefault();
+  }
 });
 ```
 
-需要阻止中键打开新标签，只要在 mousedown／mouseup／auxclick 里
-`e.preventDefault()` 即可。
+jQuery:
+```js
+$(link).on('mousedown', function (e) {
+  if (e.which === 2) {        // 1=左键 2=中键 3=右键
+    e.preventDefault();
+    // ...
+  }
+});
+```
 
-（旧版 IE 曾经会把中键也当成 click，但主流浏览器已按规范实现，click 仅左键。）
+4. 常见疑问
+• 会触发 wheel 吗？——不会；只有滚轮滚动产生 wheel 事件，按下/抬起不算滚动。
+• 把 auxclick 监听装在 document 上行不行？——可以，但得注意冒泡阶段里已经有其它脚本/浏览器默认操作可能把事件取消。
+
+总结
+“中键点链接”在事件层面就是一次 mousedown+mouseup(+auxclick) 的“辅助点击”；现代浏览器不会再为它发送 click 事件。需要拦截或识别时，请监听 auxclick 或 mousedown/mouseup 并检查 e.button/e.which。
 
 {% endfold %}
-
-
 
 ## o4-mini-high
 OpenRouter, 20250418
@@ -2548,6 +2588,73 @@ console.log(regex.test('https://sub.example.com/path')); // true
 
 {% endfold %}
 
+## o3
+AiHubMix, 20250421
+
+{% fold info @展开查看回答 %}
+
+JavaScript 只有对 RegExp 的内置支持（`/xxx/.test(str)`、`str.match(/xxx/)` 等）。
+Chrome / Firefox 扩展、Userscript (`@match`) 等地方说的 “match pattern”，只是这些平台自己定义的一套 URL 通配语法（`*://*.example.com/*`、`<all_urls>` …）。浏览器在解析 manifest、过滤 webRequest、决定是否注入脚本时会用到它，但并没有把“把 match pattern 拿来 test 的函数”暴露给页面或扩展代码。也就是说：
+
+• 在普通 JS（网页脚本、Node.js 或扩展的 background / content script）里没有类似 `pattern.test(url)` 的内置函数。
+• 如果想在自己的代码里判断某个 URL 是否符合某条 match pattern，需要自己实现，或者用第三方库/Polyfill。
+
+可行方案
+
+1. 把 match pattern 翻译成正则以后再用 `RegExp.prototype.test`。
+   （下面给一个最小示例，未覆盖所有边界情况，仅供思路参考）
+
+```js
+function matchPatternToRegExp(pattern) {
+  if (pattern === '<all_urls>')
+    return /^(https?|ftp|file|ws|wss):\/\/.+/;
+
+  const m = pattern.match(/^(\*|http|https|file|ftp):\/\/([^\/]*)\/(.*)$/);
+  if (!m) throw new Error('非法 match pattern');
+
+  let [, scheme, host, path] = m;
+
+  // scheme
+  scheme = scheme === '*' ? '(https?|file|ftp)' : scheme;
+  // host
+  if (host === '*') {
+    host = '[^\\/]*';
+  } else if (host.startsWith('*.')) {
+    host = '(?:[^\\/]*\\.)?' + host.slice(2).replace(/\./g, '\\.');
+  } else {
+    host = host.replace(/\./g, '\\.');
+  }
+  // path
+  path = path.split('*').map(s => s.replace(/[.+?^${}()|[\]\\]/g, '\\$&')).join('.*');
+
+  return new RegExp('^' + scheme + '://' + host + '/' + path + '$');
+}
+
+// 用法
+const re = matchPatternToRegExp('*://*.example.com/*');
+console.log(re.test('https://sub.example.com/foo'));     // true
+console.log(re.test('http://example.org/'));             // false
+```
+
+2. 使用第三方实现
+   npm / CDN 上已有很多包，例如
+   • `webext-match-patterns`
+   • `match-pattern`（Firefox Add‑on SDK 里自带）
+   • `micromatch`（通用 glob 库，语法和扩展的 match pattern 略有差异）。
+
+3. 现代 Chrome / Edge 中可以尝试新的 URLPattern API（提案阶段，Fire‑fox/Safari 还不支持）：
+
+```js
+const p = new URLPattern('*://*.example.com/*');
+p.test('https://sub.example.com/foo');   // true
+```
+
+总结
+
+“match pattern” 只是浏览器扩展/Userscript 的专用语法，当前标准 JavaScript 不直接支持；若需要在代码里自行判断，只能手动转成正则或引入现成库（或者在支持的浏览器里用 URLPattern 实验性 API）。
+
+{% endfold %}
+
 
 ## o4-mini-high
 OpenRouter, 20250419
@@ -2949,7 +3056,7 @@ o3-mini-high 提供了一堆关于正则匹配的废话，最后才提到目前�
 
 Claude 3.5 Sonnet 提到了现在标准库中没有这种函数，并提供了第三方库和其他错误方法
 
-GPT-4.5 preview, GPT-4.1, Claude 3.7 Sonnet 提供了把 match patterns 转化成正则和使用第三方库两种正确的方法，以及其他错误方法
+GPT-4.5 preview, GPT-4.1, o3, Claude 3.7 Sonnet 提供了把 match patterns 转化成正则和使用第三方库两种正确的方法，以及其他错误方法
 
 DeepSeek-R1 也对正则匹配进行了一些废话，但还是提供了一个解决方法
 
@@ -2962,8 +3069,8 @@ o4-mini-high 也提到了 URL Pattern API，还有一些额外的方法
 | o4-mini-high | Gemini 2.5 Pro |  GPT-4.5 preview  |       GPT-4o      |
 |              |                |      GPT-4.1      |         o1        |
 |              |                |     o1-preview    |       o1-pro      |
-|              |                | Claude 3.7 Sonnet |    o3-mini-high   |
-|              |                |                   | Claude 3.5 Sonnet |
+|              |                |         o3        |    o3-mini-high   |
+|              |                | Claude 3.7 Sonnet | Claude 3.5 Sonnet |
 |              |                |                   |    DeepSeek-R1    |
 |              |                |                   |   Gemini 2.0 Pro  |
 |              |                |                   |       Grok 3      |
@@ -3075,6 +3182,28 @@ OpenRouter, 20250217
 
 {% endfold %}
 
+## o3
+AiHubMix, 20250421
+
+{% fold info @展开查看回答 %}
+
+【文言原文】
+（出自《后汉书·卷六十七·党锢列传·范滂》）
+
+滂闻征命，归省母，具以实告而辞行。
+母曰：“志士不忘在沟壑，勇士不忘丧其元。汝今以忠义赴难，吾复何忧！但勉之耳，毋以我为念。”
+滂抚背曰：“儿得与李、杜诸贤同死，实所愿也。”遂拜辞而行。
+门生故吏送者百余人。滂谓众曰：“范滂所贪，在于速死；所恋，在于母也。今送死不顾，义也；忘母恋生，情也。情义交争，非所能两全，各自努力！”
+遂就逮，颜色不异。
+
+【今译】
+范滂听到朝廷下令逮捕党人，便回家向母亲探望并说明情况，同时告别。
+母亲说：“有志之士即使身陷沟壑也不改其志，勇敢之士即使失去生命也不改其节。你这次是因忠义而去，我还有什么可忧虑的？只要振作精神，不要牵挂我。”
+范滂拍着母亲的背说：“我能和李膺、杜密这些贤士一起赴死，正是我心中的愿望。”于是磕头告别，上路而去。
+弟子、旧属一百多人哭着相送。范滂对大家说：“我范滂想要的，是快些死得其所；我唯一放心不下的，是母亲。如今舍生取义合乎大义，而挂念母亲出于人情，情与义相冲突，我无法两全。诸位各自保重吧！”
+说完就被押解入狱，脸色始终没有改变。
+
+{% endfold %}
 
 ## o4-mini-high
 OpenRouter, 20250419
@@ -3216,10 +3345,11 @@ o3-mini-high 直接否认了这个问题
 |     更好    |        好       |         中        |      差      |
 |:-----------:|:---------------:|:-----------------:|:------------:|
 | DeepSeek-R1 | GPT-4.5 preview |       GPT-4o      | o3-mini-high |
-|             |  Gemini 2.0 Pro |       GPT-4.1     |              |
+|             |  Gemini 2.0 Pro |      GPT-4.1      |              |
 |             |                 |         o1        |              |
 |             |                 |     o1-preview    |              |
-|             |                 | o4-mini-high      |              |
+|             |                 |         o3        |              |
+|             |                 |    o4-mini-high   |              |
 |             |                 | Claude 3.5 Sonnet |              |
 |             |                 | Claude 3.7 Sonnet |              |
 |             |                 |   Gemini 2.5 Pro  |              |
@@ -3777,7 +3907,103 @@ print("完成所有文件的 VAD 处理并绘制时长分布图")
 
 这样就不再依赖原始音频是否是 44100Hz、48000Hz 等，始终以 16k 作为处理及输出的采样率。
 
+## o3
+AiHubMix, 20250421
 
+{% fold info @展开查看回答 %}
+
+下面的代码去掉了对 48 kHz 的硬编码，
+不论输入文件原始采样率是多少，都会先自动重采样到 16 kHz，再做 VAD 和写盘，因而所有输出统一为 16 kHz。
+除此之外逻辑与原先保持一致。 
+
+```python
+import os
+import time
+from tqdm import tqdm
+import matplotlib.pyplot as plt
+import torch
+
+torch.set_num_threads(1)
+
+# ======================== 基本参数 ========================
+input_dir               = "raw"          # 原始音频目录
+save_path               = "after-vad"    # 分段后保存目录
+target_sr               = 16_000         # 统一输出采样率
+min_speech_duration_ms  = 1000
+max_speech_duration_s   = 20
+audio_extensions        = (".wav", ".mp3", ".flac", ".ogg", ".m4a", ".aac")
+
+os.makedirs(save_path, exist_ok=True)
+
+# ===================== 载入 Silero‑VAD =====================
+model, utils = torch.hub.load(
+    repo_or_dir="snakers4/silero-vad",
+    model="silero_vad",
+    trust_repo=True        # 避免提示
+)
+get_speech_timestamps, save_audio, read_audio, VADIterator, collect_chunks = utils
+
+# ========================= 主流程 =========================
+all_durations = []
+audio_files = [f for f in os.listdir(input_dir)
+               if f.lower().endswith(audio_extensions)]
+
+for audio_file in audio_files:
+    audio_path = os.path.join(input_dir, audio_file)
+    print(f"处理文件: {audio_file}")
+
+    # ---------- Step‑1 读取并重采样到 16 kHz ----------
+    # read_audio 内部会自动把任意采样率的文件重采样到 target_sr
+    wav = read_audio(audio_path, sampling_rate=target_sr)
+
+    # ---------- Step‑2 VAD ----------
+    start = time.time()
+    speech_timestamps = get_speech_timestamps(
+        wav,
+        model,
+        sampling_rate=target_sr,
+        min_speech_duration_ms=min_speech_duration_ms,
+        max_speech_duration_s=max_speech_duration_s,
+    )
+    print(f"{audio_file} 的 VAD 耗时: {time.time() - start:.2f}s")
+
+    # ---------- Step‑3 保存切分结果 ----------
+    root_name, _ = os.path.splitext(audio_file)
+    for idx, ts in tqdm(enumerate(speech_timestamps),
+                        total=len(speech_timestamps),
+                        desc=f"保存切分片段 -> {audio_file}"):
+        seg_name = f"{root_name}-{idx}.wav"
+        seg_path = os.path.join(save_path, seg_name)
+
+        # collect_chunks 按时间戳裁切
+        chunk = collect_chunks([ts], wav)
+        save_audio(seg_path, chunk, sampling_rate=target_sr)   # 始终 16 kHz
+
+        # 记录片段时长
+        all_durations.append((ts["end"] - ts["start"]) / target_sr)
+
+# ====================== 画直方图 ======================
+import numpy as np
+plt.figure(figsize=(8, 5))
+plt.hist(np.array(all_durations), bins=20,
+         color="skyblue", edgecolor="black")
+plt.xlabel("Segment Duration (s)")
+plt.ylabel("Count")
+plt.title("Segment Duration Distribution for All Files")
+plt.tight_layout()
+plt.savefig("duration_distribution.png")
+plt.close()
+
+print("完成所有文件的 VAD 处理并绘制时长分布图")
+```
+
+要点说明
+1. `target_sr = 16_000` 为唯一的采样率常量。
+2. `read_audio(audio_path, sampling_rate=target_sr)` 会把任何输入文件重采样到 16 kHz，因此后续全部使用 `target_sr`。
+3. `save_audio(..., sampling_rate=target_sr)` 保证写出的 wav 也为 16 kHz。
+4. 计算片段时长 `(end-start)/target_sr` 同样使用同一常量，避免手误。
+
+{% endfold %}
 
 ## o4-mini-high
 OpenRouter，20250419
@@ -4428,7 +4654,7 @@ GPT-4.5 preview, o3-mini-high, o4-mini-high, Gemini 2.5 Pro 多引入了 `torcha
 
 o1-preview 多引入了 `torchaudio` 依赖，其实 `read_audio` 自己就能重新采样成 16 kHz 的音频，而且能自动压成单声道，不需要再额外设置，这里用 `torchaudio.load` 而不用 `read_audio` 没有处理双声道直接报错了
 
-o1, Claude 3.7 Sonnet, DeepSeek-R1, Grok 3 的做法是正确做法
+o1, o3, Claude 3.7 Sonnet, DeepSeek-R1, Grok 3 的做法是正确做法
 
 GPT-4.1, Gemini 2.0 Pro 报错了，不细看了
 
@@ -4436,10 +4662,10 @@ GPT-4.1, Gemini 2.0 Pro 报错了，不细看了
 
 | 更好 |         好        |        中       |       差       |
 |:----:|:-----------------:|:---------------:|:--------------:|
-|  o1  | Claude 3.7 Sonnet | GPT-4.5 preview |   o1-preview   |
-|      |    DeepSeek-R1    |   o3-mini-high  | GPT-4.1        |
-|      |       Grok 3      |   o4-mini-high  | Gemini 2.0 Pro |
-|      |                   |  Gemini 2.5 Pro |                |
+|  o1  |         o3        | GPT-4.5 preview |     GPT-4.1    |
+|      | Claude 3.7 Sonnet |   o3-mini-high  |   o1-preview   |
+|      |    DeepSeek-R1    |   o4-mini-high  | Gemini 2.0 Pro |
+|      |       Grok 3      |  Gemini 2.5 Pro |                |
 # 问题七
 ```
 下面mermaid代码有点不精简，优化一下，不要改动任何逻辑，保持显示效果的一致：
@@ -4633,6 +4859,24 @@ graph TD
 
 {% endfold %}
 
+## o3
+AiHubMix, 20250421
+
+{% fold info @展开查看回答 %}
+
+```
+graph TD
+    A[扫描高利率理财产品] --> n1[计算可用稳定币余额] --> n2{余额大于零}
+    n2 -- 否 --> n3[结束]
+    n2 -- 是 --> n4{是否已经完全购买该产品}
+    n4 -- 是 --> A
+    n4 -- 否 --> B{查找资金或现货账户是否有足够对应币}
+    B -- 有 --> C[直接转账到该产品]
+    B -- 没有 --> D[查找其他稳定币] --> E[兑换] --> C
+    C --> A
+```
+
+{% endfold %}
 
 ## o4-mini-high
 OpenRouter，20250419
@@ -4851,10 +5095,11 @@ o1, Claude 3.7 Sonnet, Gemini 2.5 Pro, Grok 3 看起来完成了任务，但是�
 
 | 好 |         中        |        差       |
 |:--:|:-----------------:|:---------------:|
-|    |        o1         | GPT-4.5 preview |
-|    | Claude 3.7 Sonnet | GPT-4.1         |
-|    |  Gemini 2.5 Pro   |    o1-preview   |
-|    |      Grok 3       |      o1-pro     |
+|    |         o1        | GPT-4.5 preview |
+|    | Claude 3.7 Sonnet |     GPT-4.1     |
+|    |   Gemini 2.5 Pro  |    o1-preview   |
+|    |       Grok 3      |      o1-pro     |
+|    |                   |        o3       |
 |    |                   |   o3-mini-high  |
 |    |                   |   o4-mini-high  |
 |    |                   |   DeepSeek-R1   |
@@ -5024,6 +5269,14 @@ vegetables:
 
 {% endfold %}
 
+## o3
+AiHubMix, 20250421
+
+{% fold info @展开查看回答 %}
+
+
+
+{% endfold %}
 
 ## o4-mini-high
 OpenRouter, 20250418
