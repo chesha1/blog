@@ -32,7 +32,6 @@ openai o 系列模型比较特殊，现在它们不会优先输出 markdown 格�
 
 暂不测评的模型：
 - o1-pro（需要的余额太多，大几十美元才能问一个小问题）
-- o3（没有权限）
 
 曾参与现退出的模型（至少存在一个模型比退出的那个模型，在所有测评问题上都强大）：
 - GPT-4o
@@ -466,6 +465,64 @@ openRouter, max_tokens=80000, 20250325
 
 {% endfold %}
 
+## o3
+AiHubMix, 20250421
+
+{% fold info @展开查看回答 %}
+
+在 wrangler 里有两套完全独立的概念：
+
+1. wrangler.toml ── 用来告诉 wrangler 怎么构建、上传和运行 Worker。
+2. .dev.vars ── **只在 `wrangler dev` 本地调试** 时，把里面写的键值注入到运行时的 `env`（也就是代码里的 `env.MY_KEY`）。
+
+`.dev.vars` 并不会参与 wrangler.toml 的解析过程，也就是说 **wrangler.toml 里无法“引用” `.dev.vars` 里的内容**。如果你尝试在 toml 里写例如
+
+```
+account_id = "${MY_ACCOUNT_ID}"
+```
+
+wrangler 只会去操作系统的环境变量里找 `MY_ACCOUNT_ID`，它不会去看 `.dev.vars`。
+
+————————————————
+如果你想让同一份值同时：
+
+• 在本地调试时可用
+• 在 wrangler.toml 里也能用（例如给不同环境赋值）
+
+就有三种选择：
+
+① 直接在 wrangler.toml 里写
+   ```
+   [vars]
+   MY_KEY = "value"
+   ```
+   这样 `wrangler dev` 和 `wrangler deploy` 都能用，不需要 .dev.vars。
+
+② 用操作系统环境变量 + toml 的插值语法
+   ```
+   [vars]
+   MY_KEY = "${MY_KEY}"
+   ```
+   运行 `export MY_KEY=value && wrangler dev`，本地和线上都能用。
+
+③ 保留 .dev.vars 让本地更方便，同时在 toml 里再写一份（或用 secret）让线上用
+   ```
+   # .dev.vars
+   MY_KEY=value
+
+   # wrangler.toml
+   [env.dev.vars]   # 本地 dev 环境
+   MY_KEY = "value"
+
+   [env.production.vars]  # 正式环境
+   MY_KEY = "value"
+   ```
+
+————————————————
+结论
+`.dev.vars` 只是简化本地调试的工具文件，不会被 wrangler.toml 读取，也无法在 toml 中做变量替换。如果确实需要把变量写一次、多处使用，请改用 `[vars]`、`[env.xxx]` 或操作系统环境变量。
+
+{% endfold %}
 
 ## o4-mini-high
 OpenRouter, 20250417
@@ -874,20 +931,21 @@ OpenRouter, 20250327
 
 GPT-4o, o3-mini-high, Claude 3.5 Sonnet, Claude 3.7 Sonnet, DeepSeek-V3, Gemini 2.0 Pro 没有纠正引用这种错误说法
 
-GPT-4.5 preview, o1-preview, o1, o1-pro, o4-mini-high, DeepSeek-R1, Gemini 2.5 Pro, Grok 3 纠正了引用这种错误说法
+GPT-4.5 preview, o1-preview, o1, o1-pro, o3, o4-mini-high, DeepSeek-R1, Gemini 2.5 Pro, Grok 3 纠正了引用这种错误说法
 
 其中 Grok 3 的描述最清晰
 
-| 更好 | 好 | 中 | 差 |
-|:--:|:--:|:--:|:--:|
-| Grok 3 | GPT-4.5 preview | GPT-4o | Kimi-k1.5 |
-| | GPT-4.1 | o3-mini-high | |
-| | o1-preview | Claude 3.5 Sonnet | |
-| | o1 | Claude 3.7 Sonnet | |
-| | o1-pro | DeepSeek-V3 | |
-| | o4-mini-high | Gemini 2.0 Pro | |
-| | DeepSeek-R1 |  | |
-| | Gemini 2.5 Pro |  | |
+|  更好  |        好       |         中        |     差    |
+|:------:|:---------------:|:-----------------:|:---------:|
+| Grok 3 | GPT-4.5 preview |       GPT-4o      | Kimi-k1.5 |
+|        |     GPT-4.1     |    o3-mini-high   |           |
+|        |    o1-preview   | Claude 3.5 Sonnet |           |
+|        |        o1       | Claude 3.7 Sonnet |           |
+|        |      o1-pro     |    DeepSeek-V3    |           |
+|        |        o3       |   Gemini 2.0 Pro  |           |
+|        |   o4-mini-high  |                   |           |
+|        |   DeepSeek-R1   |                   |           |
+|        |  Gemini 2.0 Pro |                   |           |
 
 
 # 问题二
@@ -1884,6 +1942,40 @@ element.addEventListener('auxclick', (e) => {
 
 {% endfold %}
 
+## o3
+AiHubMix, 20250421
+
+{% fold info @展开查看回答 %}
+
+简单回答
+1. 鼠标中键对应的是 button = 1（左键是 0，右键是 2）。
+2. 中键按下／抬起会触发 mousedown、mouseup（button=1）。
+3. 按规范 click 只针对「主按钮」(button=0)，因此**中键不会触发 click**。
+4. 现代浏览器在 mouseup 之后会再触发一个 auxclick（“辅助点击”）事件；浏览器就在 auxclick 的默认行为里把链接打开到新标签页。
+
+所以如果你写
+
+```js
+link.addEventListener('click',  fn);   // 捕不到中键
+link.addEventListener('auxclick',fn);  // 可以捕到中键（Chrome/Firefox/Edge）
+```
+
+或者
+
+```js
+link.addEventListener('mousedown', e => {
+  if (e.button === 1) { … }           // 同样能捕到
+});
+```
+
+需要阻止中键打开新标签，只要在 mousedown／mouseup／auxclick 里
+`e.preventDefault()` 即可。
+
+（旧版 IE 曾经会把中键也当成 click，但主流浏览器已按规范实现，click 仅左键。）
+
+{% endfold %}
+
+
 
 ## o4-mini-high
 OpenRouter, 20250418
@@ -2110,19 +2202,20 @@ myLink.addEventListener('click', function(event) {
 ## 答案评价
 GPT-4o, DeepSeek-V3 深度思考, DeepSeek-R1, Gemini 2.0 Pro 没有提到 `auxclick`
 
-GPT-4.5 preview, o1-preview, o1, o4-mini-high, Claude 3.5 Sonnet, Claude 3.7 Sonnet, Gemini 2.5 Pro, Grok 3 还额外提到 `mousedown` 和 `mouseup`
+GPT-4.5 preview, o1-preview, o1, o3, o4-mini-high, Claude 3.5 Sonnet, Claude 3.7 Sonnet, Gemini 2.5 Pro, Grok 3 还额外提到 `mousedown` 和 `mouseup`
 
 后续又多试了几次 DeepSeek-R1 有时候能提到，有时候不能
 
-| 更好 | 好 | 中 | 差 |
-|:--:|:--:|:--:|:--:|
-| o4-mini-high | GPT-4.5 preview | GPT-4.1 | GPT-4o |
-|  | o1 | o3-mini-high | DeepSeek-V3 深度思考 |
-|  | DeepSeek-V3 | o1-preview | DeepSeek-R1 |
-|  | Claude 3.5 Sonnet |  | Kimi-k1.5 |
-|  | Claude 3.7 Sonnet |  | Gemini 2.0 Pro |
-|  | Gemini 2.5 Pro |  |  |
-|  | Grok 3 |  |  |
+|     更好     |         好        |      中      |          差          |
+|:------------:|:-----------------:|:------------:|:--------------------:|
+| o4-mini-high |  GPT-4.5 preview  |    GPT-4.1   |        GPT-4o        |
+|              |         o1        | o3-mini-high | DeepSeek-V3 深度思考 |
+|              |         o3        |  o1-preview  |      DeepSeek-R1     |
+|              | Claude 3.5 Sonnet |              |       Kimi-k1.5      |
+|              | Claude 3.7 Sonnet |              |    Gemini 2.0 Pro    |
+|              |    DeepSeek-V3    |              |                      |
+|              |   Gemini 2.5 Pro  |              |                      |
+|              |       Grok 3      |              |                      |
 
 
 # 问题四
@@ -5307,6 +5400,15 @@ o1-preview, 20250301
 
 ## o1
 OpenRouter, 20250301
+
+{% fold info @展开查看回答 %}
+
+
+
+{% endfold %}
+
+## o3
+AiHubMix, 20250421
 
 {% fold info @展开查看回答 %}
 
