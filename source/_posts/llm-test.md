@@ -1,5 +1,5 @@
 ---
-title: 自用大模型评测问题（20250421 持续更新中）
+title: 自用大模型评测问题（20250422 持续更新中）
 date: 2025-01-06 18:45
 excerpt: 个人使用场景下准备的一些问题，用于测试新的大模型，至少和 o1, Claude 3.7 Sonnet, Gemini 2.5 Pro, DeepSeek-R1 比较
 category: 生活
@@ -5270,11 +5270,71 @@ vegetables:
 {% endfold %}
 
 ## o3
-AiHubMix, 20250421
+AiHubMix, 20250422
 
 {% fold info @展开查看回答 %}
 
+不必一定是 2 个空格，但必须
 
+1. 用空格（不能用 Tab）
+2. 至少比父节点多 1 个空格
+3. 同一层里的元素对齐，整份文件最好保持一种缩进宽度
+
+换句话说，2 格只是绝大多数项目、资料或 linter 推荐的“编码风格”，并不是 YAML 语法的硬性规定。下面用几个例子把规则讲清楚。
+
+────────────────
+① 顶层序列：可以不缩进
+────────────────
+```yaml
+- apple
+- banana
+- cherry
+```
+这里序列本身就是顶层节点，没有“父节点”，所以可以直接顶格写 `-`。
+
+────────────────
+② 作为映射值的序列：必须比键多缩进 ≥1 格
+────────────────
+```yaml
+fruits:       # 键
+  - apple     # 多缩进 2（常见做法）
+  - banana
+  - cherry
+```
+把 2 格改成 1 格或 4 格都行，只要整段文件保持一致即可：
+
+```yaml
+# 一格缩进——语法上完全合法，只是看起来别扭
+fruits:
+ - apple
+ - banana
+ - cherry
+```
+
+```yaml
+# 四格缩进——也合法
+fruits:
+    - apple
+    - banana
+    - cherry
+```
+
+────────────────
+③ 完全不缩进会出错
+────────────────
+```yaml
+fruits:
+- apple      # ❌ “-” 与 fruits 同列，解析器会报错
+```
+因为解析器会把 `-` 看成与 `fruits` 同级的节点，而上一行已经开启了一个映射键 `fruits:`，却没有正确给出它的值。
+
+────────────────
+规则小结
+────────────────
+• “缩进宽度”可以是 1、2、4……任意个空格，但同一层级必须对齐。
+• 子节点一定要比父节点多 1 个或更多空格。
+• 顶层节点本身没有父节点，自然可以顶格。
+• 坚持一种缩进风格（通常 2 或 4 空格）可读性最好。
 
 {% endfold %}
 
@@ -5603,7 +5663,7 @@ fruits: [apple, banana, cherry]
 ## 答案评价
 GPT-4.5 preview, Claude 3.7 Sonnet, DeepSeek-R1 关于语法的回答是正确的
 
-GPT-4.1, o1-preview, o3-mini-high, o4-mini-high, Gemini 2.5 Pro, Grok 3 关于语法的回答是错误的
+GPT-4.1, o1-preview, o3, o3-mini-high, o4-mini-high, Gemini 2.5 Pro, Grok 3 关于语法的回答是错误的
 
 o1 回避了这个问题，而且描述有错，yaml 官方的数组不缩进
 
@@ -5616,6 +5676,7 @@ Claude 3.7 Sonnet 的描述最好
 | Claude 3.7 Sonnet | DeepSeek-R1 | GPT-4.5 preview |     GPT-4.1    |
 |                   |             |                 |   o1-preview   |
 |                   |             |                 |       o1       |
+|                   |             |                 |       o3       |
 |                   |             |                 |  o3-mini-high  |
 |                   |             |                 |  o4-mini-high  |
 |                   |             |                 | Gemini 2.5 Pro |
