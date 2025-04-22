@@ -1490,6 +1490,11 @@ OpenRouter, 20250217
 
 三次的回答都没有提供功能，也没有报错
 
+## o3
+AiHubMix, 20250422
+
+三次的回答都没有提供功能，也没有报错
+
 
 ## o4-mini-high
 OpenRouter, 20250419
@@ -1735,6 +1740,7 @@ o1-preview, GPT-4o 用了三次
 |:---------------:|:-----------------:|:----------:|:-----------------:|
 | GPT-4.5 preview | Claude 3.7 Sonnet | o1-preview |      GPT-4.1      |
 |                 |   Gemini 2.5 Pro  |   GPT-4o   |         o1        |
+|                 |                   |            |         o3        |
 |                 |                   |            |    o3-mini-high   |
 |                 |                   |            |    o4-mini-high   |
 |                 |                   |            | Claude 3.5 Sonnet |
