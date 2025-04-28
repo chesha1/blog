@@ -1,5 +1,5 @@
 ---
-title: 自用大模型评测问题（20250427 持续更新中）
+title: 自用大模型评测问题（20250428 持续更新中）
 date: 2025-01-06 18:45
 excerpt: 个人使用场景下准备的一些问题，用于测试新的大模型，至少和 o1, Claude 3.7 Sonnet, Gemini 2.5 Pro, DeepSeek-R1 比较
 category: 生活
@@ -6018,7 +6018,20 @@ DeepSeek-R1 猜出了这是恒定乘积 AMM，但是不够确定
 
 GPT-4.1, Claude 3.7 Sonnet, DeepSeek-R1, Grok 3 解释得比较浅
 
-o1, o3, o4-mini-high, Gemini 2.5 Pro 的解释不错
+o1, o3, o4-mini-high, Gemini 2.5 Pro 的解释不错，但是都还有提升空间，都有明显缺点
+
+o1 没有强调滑点这个重要问题
+
+o3, o4-mini-high 对部分名词解释得不清楚
+
+Gemini 2.5 Pro 没有提到不需要 limit order book 这个问题
+
+| 更好 |       好       |         中        |        差       |
+|:----:|:--------------:|:-----------------:|:---------------:|
+|      |       o1       |      GPT-4.1      | GPT-4.5 preview |
+|      |       o3       | Claude 3.7 Sonnet |                 |
+|      |  o4-mini-high  |    DeepSeek-R1    |                 |
+|      | Gemini 2.5 Pro |       Grok 3      |                 |
 
 # 问题 X
 ```
