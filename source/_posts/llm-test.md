@@ -1,5 +1,5 @@
 ---
-title: 自用大模型评测问题（20250428 持续更新中）
+title: 自用大模型评测问题（20250429 持续更新中）
 date: 2025-01-06 18:45
 excerpt: 个人使用场景下准备的一些问题，用于测试新的大模型，至少和 o1, Claude 3.7 Sonnet, Gemini 2.5 Pro, DeepSeek-R1 比较
 category: 生活
@@ -938,9 +938,81 @@ OpenRouter, 20250327
 
 希望这个解释清楚地解答了你的问题！如果还有疑问，欢迎进一步讨论。
 
+## Qwen3-235B-A22B
+OpenRouter, 20250429
+
+{% fold info @展开查看回答 %}
+
+在 Cloudflare Workers 中，`wrangler.toml` 是用于配置项目的文件，而 `.dev.vars` 文件用于存储开发环境中的环境变量。你可以在 `.dev.vars` 文件中定义变量，然后在 `wrangler.toml` 中引用这些变量。
+
+### 步骤：
+
+1. **创建 `.dev.vars` 文件**：
+   在项目根目录下创建一个 `.dev.vars` 文件，并在其中定义你的环境变量。例如：
+
+   ```properties
+   API_KEY=your_api_key_here
+   API_URL=https://api.example.com
+   ```
+
+2. **在 `wrangler.toml` 中引用变量**：
+   在 `wrangler.toml` 文件中，你可以通过 `${env.VARIABLE_NAME}` 的语法来引用 `.dev.vars` 文件中定义的环境变量。例如：
+
+   ```toml
+   [dev]
+   port = 8787
+
+   [build]
+   command = "npm run build"
+   watch_dir = "src"
+
+   [build.upload]
+   format = "modules"
+
+   [vars]
+   API_KEY = "${env.API_KEY}"
+   API_URL = "${env.API_URL}"
+   ```
+
+3. **在 Worker 代码中使用变量**：
+   在你的 Worker 代码中，可以通过 `env` 对象访问这些变量。例如：
+
+   ```javascript
+   export default {
+     async fetch(request, env) {
+       const apiKey = env.API_KEY;
+       const apiUrl = env.API_URL;
+
+       return new Response(`API Key: ${apiKey}, API URL: ${apiUrl}`);
+     }
+   };
+   ```
+
+### 注意事项：
+
+- `.dev.vars` 文件仅在开发环境中使用，生产环境中的变量需要在 Cloudflare Dashboard 中设置，或者在 `wrangler.toml` 的 `[vars]` 部分直接定义。
+- 确保 `.dev.vars` 文件不会被提交到版本控制系统中（例如 Git），以避免敏感信息泄露。你可以在 `.gitignore` 文件中添加 `.dev.vars`。
+
+### 示例项目结构：
+
+```
+my-worker/
+├── .dev.vars
+├── wrangler.toml
+├── src/
+│   └── index.js
+└── .gitignore
+```
+
+### 总结：
+
+通过在 `.dev.vars` 文件中定义变量，并在 `wrangler.toml` 中使用 `${env.VARIABLE_NAME}` 语法引用这些变量，你可以在开发环境中方便地管理环境变量。
+
+{% endfold %}
+
 ## 答案评价
 
-GPT-4o, o3-mini-high, Claude 3.5 Sonnet, Claude 3.7 Sonnet, DeepSeek-V3, Gemini 2.0 Pro 没有纠正引用这种错误说法
+GPT-4o, o3-mini-high, Claude 3.5 Sonnet, Claude 3.7 Sonnet, DeepSeek-V3, Gemini 2.0 Pro, Qwen3-235B-A22B 没有纠正引用这种错误说法
 
 GPT-4.5 preview, o1-preview, o1, o1-pro, o3, o4-mini-high, DeepSeek-R1, Gemini 2.5 Pro, Grok 3 纠正了引用这种错误说法
 
@@ -954,9 +1026,10 @@ GPT-4.5 preview, o1-preview, o1, o1-pro, o3, o4-mini-high, DeepSeek-R1, Gemini 2
 |        |        o1       | Claude 3.7 Sonnet |           |
 |        |      o1-pro     |    DeepSeek-V3    |           |
 |        |        o3       |   Gemini 2.0 Pro  |           |
-|        |   o4-mini-high  |                   |           |
+|        |   o4-mini-high  |  Qwen3-235B-A22B  |           |
 |        |   DeepSeek-R1   |                   |           |
 |        |  Gemini 2.0 Pro |                   |           |
+|        |                 |                   |           |
 
 
 # 问题二
