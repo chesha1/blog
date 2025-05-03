@@ -7,7 +7,7 @@ category: 生活
 # 背景
 一直有新的大模型出现，每个都很好，但是很多都是宣传没输过，体验没赢过
 
-考虑到很多模型会针对开源数据集刷榜（不然可以看官方 benchmark 和 [LiveBench](https://livebench.ai/#/)）所以就直接准备几个个人实际使用中的，有一点难度的问题，看看大模型会怎么反馈，这里姑且记录一下
+考虑到很多模型会针对开源数据集刷榜（不然可以看官方 benchmark, [LiveBench](https://livebench.ai/#/), [lmarena](https://lmarena.ai/), [aider](https://aider.chat/docs/leaderboards/)）所以就直接准备几个个人实际使用中的，有一点难度的问题，看看大模型会怎么反馈，这里姑且记录一下
 
 为了防止官网降智，我都尽量用 api 输出答案
 
