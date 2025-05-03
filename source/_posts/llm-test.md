@@ -1,5 +1,5 @@
 ---
-title: 自用大模型评测问题（20250429 持续更新中）
+title: 自用大模型评测问题（20250503 持续更新中）
 date: 2025-01-06 18:45
 excerpt: 个人使用场景下准备的一些问题，用于测试新的大模型，至少和 o1, Claude 3.7 Sonnet, Gemini 2.5 Pro, DeepSeek-R1 比较
 category: 生活
