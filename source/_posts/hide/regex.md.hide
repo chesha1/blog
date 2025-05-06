@@ -98,3 +98,12 @@ CallRuntime(Runtime::kRegExpExec, context, regexp, string, last_index, SmiFromIn
 
 # TODO
 先不研究实现细节了，研究一下算法
+
+# 参考文献
+https://v8.dev/blog/non-backtracking-regexp
+
+https://v8.dev/blog/speeding-up-regular-expressions
+
+https://regex101.com/
+
+以及再搜索一下 v8 blog 和互联网资源
