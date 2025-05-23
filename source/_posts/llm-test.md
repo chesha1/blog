@@ -24,8 +24,8 @@ openai o 系列模型比较特殊，现在它们不会优先输出 markdown 格�
 发现某个模型在任何情况下都被另一个模型全面超过，所以才会淘汰这个模型
 
 还在测评中的模型：
-- GPT-4.5 preview, GPT-4.1, o1, o4-mini
-- Claude 3.7 Sonnet
+- GPT-4.5 preview, GPT-4.1, o1, o3, o4-mini
+- Claude 3.7 Sonnet, Claude Opus 4
 - DeepSeek-R1
 - Gemini 2.5 Pro
 - Grok 3
@@ -35,6 +35,7 @@ openai o 系列模型比较特殊，现在它们不会优先输出 markdown 格�
 
 曾参与现退出的模型（至少存在一个模型比退出的那个模型，在所有测评问题上都强大）：
 - GPT-4o
+- o1-preview
 - o3-mini-high
 - Claude 3.5 Sonnet
 - DeepSeek-V3
@@ -627,108 +628,6 @@ export default {
 - 部署到生产环境时会使用 `wrangler.toml` 中的值或 Cloudflare 控制台设置的值
 
 希望这个解释对你有帮助！
-
-{% endfold %}
-
-## Claude Sonnet 4
-Claude workbench, 20250523
-
-{% fold info @展开查看回答 %}
-
-在 Cloudflare Workers 开发中，`.dev.vars` 和 `wrangler.toml` 有不同的用途，通常不是直接在 `wrangler.toml` 中引用 `.dev.vars` 的变量。让我详细解释正确的使用方式：
-
-### 1. .dev.vars 文件的作用
-
-`.dev.vars` 文件用于**本地开发环境**的环境变量：
-
-```bash
-# .dev.vars
-API_KEY=your-local-api-key
-DATABASE_URL=your-local-database-url
-DEBUG=true
-```
-
-### 2. wrangler.toml 中的变量配置
-
-在 `wrangler.toml` 中，你可以为不同环境定义变量：
-
-```toml
-name = "my-worker"
-main = "src/index.js"
-compatibility_date = "2024-01-01"
-
-# 开发环境配置
-[env.development]
-vars = { ENVIRONMENT = "development" }
-
-# 生产环境配置  
-[env.production]
-vars = { ENVIRONMENT = "production", API_BASE_URL = "https://api.prod.com" }
-
-# 或者直接在主配置中定义
-[vars]
-GLOBAL_VAR = "some-value"
-```
-
-### 3. 正确的使用模式
-
-#### 本地开发时：
-```bash
-# 使用 .dev.vars 中的变量
-wrangler dev
-```
-
-#### 部署到特定环境：
-```bash
-# 部署到开发环境
-wrangler deploy --env development
-
-# 部署到生产环境  
-wrangler deploy --env production
-```
-
-### 4. 在 Worker 代码中访问变量
-
-```javascript
-export default {
-  async fetch(request, env, ctx) {
-    // 访问环境变量
-    const apiKey = env.API_KEY;        // 来自 .dev.vars (本地) 或 Cloudflare dashboard
-    const environment = env.ENVIRONMENT; // 来自 wrangler.toml
-    
-    return new Response(`Environment: ${environment}, API Key: ${apiKey}`);
-  }
-}
-```
-
-### 5. 生产环境变量设置
-
-对于生产环境，建议通过以下方式设置敏感变量：
-
-#### 使用 wrangler CLI：
-```bash
-wrangler secret put API_KEY
-```
-
-#### 或在 wrangler.toml 中引用 secrets：
-```toml
-[[env.production.secrets]]
-name = "API_KEY"
-```
-
-### 6. 最佳实践
-
-1. **敏感信息**：使用 secrets 而不是 vars
-2. **环境区分**：用不同的 env 配置区分开发/生产环境
-3. **本地开发**：使用 `.dev.vars` 存储本地开发变量
-4. **版本控制**：将 `.dev.vars` 添加到 `.gitignore`
-
-```gitignore
-# .gitignore
-.dev.vars
-```
-
-这样的设置确保了环境变量的安全性和环境隔离。
 
 {% endfold %}
 
@@ -1585,11 +1484,6 @@ export { Calendar }
 
 {% endfold %}
 
-## Claude Sonnet 4
-Claude workbench, 20250523
-
-一次完成，而且用了正确的图标，较为美观
-
 ## Claude Opus 4
 Claude workbench, 20250523
 
@@ -1946,78 +1840,6 @@ document.addEventListener('auxclick', function(event) {
 
 {% endfold %}
 
-## Claude Sonnet 4
-Claude workbench, 20250523
-
-{% fold info @展开查看回答 %}
-
-鼠标中键点击链接有以下特点：
-
-### 实际行为
-鼠标中键点击链接会：
-- **在新标签页中打开链接**（浏览器默认行为）
-- 保持当前页面不变
-- 新标签页在后台打开（不会自动切换到新标签页）
-
-### 事件触发情况
-
-#### 不会触发 click 事件
-```javascript
-// 这个事件监听器不会被中键点击触发
-link.addEventListener('click', function(e) {
-    console.log('不会被中键点击触发');
-});
-```
-
-#### 会触发的事件
-```javascript
-// 会触发这些事件
-link.addEventListener('mousedown', function(e) {
-    if (e.button === 1) { // 1 表示中键
-        console.log('中键按下');
-    }
-});
-
-link.addEventListener('mouseup', function(e) {
-    if (e.button === 1) {
-        console.log('中键释放');
-    }
-});
-
-link.addEventListener('auxclick', function(e) {
-    if (e.button === 1) {
-        console.log('中键辅助点击'); // 专门用于非主要按钮的点击
-    }
-});
-```
-
-### 检测中键点击
-```javascript
-link.addEventListener('auxclick', function(e) {
-    if (e.button === 1) { // 中键
-        e.preventDefault(); // 阻止默认的新标签页打开行为
-        console.log('中键点击被检测到');
-        // 自定义行为
-    }
-});
-
-// 或者使用 mousedown/mouseup
-link.addEventListener('mousedown', function(e) {
-    if (e.button === 1) {
-        e.preventDefault();
-        // 处理中键点击
-    }
-});
-```
-
-### 按钮值对照
-- `e.button === 0`：左键
-- `e.button === 1`：中键（滚轮）
-- `e.button === 2`：右键
-
-**总结**：中键点击不会触发 `click` 事件，但会触发 `auxclick`、`mousedown`、`mouseup` 等事件，默认行为是在新标签页打开链接。
-
-{% endfold %}
 
 ## Claude Opus 4
 Claude workbench, 20250523
@@ -2773,120 +2595,6 @@ const isMatch = testMatchPattern("https://example.com/*", "https://example.com/p
 
 {% endfold %}
 
-## Claude Sonnet 4
-Claude workbench, 20250523
-
-{% fold info @展开查看回答 %}
-
-在JavaScript中，对于**match patterns**（匹配模式），没有像正则表达式的`test()`函数那样的内置方法，但有几种解决方案：
-
-### 1. 将 Match Pattern 转换为正则表达式
-
-```javascript
-function matchPatternToRegex(pattern) {
-  // 转义特殊字符，但保留 * 通配符
-  const escaped = pattern
-    .replace(/[.+?^${}()|[\]\\]/g, '\\$&') // 转义正则特殊字符
-    .replace(/\\\*/g, '.*'); // 将 * 转换为 .*
-  
-  return new RegExp('^' + escaped + '$');
-}
-
-// 使用示例
-const pattern = "https://*.example.com/*";
-const regex = matchPatternToRegex(pattern);
-
-console.log(regex.test("https://www.example.com/path")); // true
-console.log(regex.test("https://sub.example.com/foo"));  // true
-console.log(regex.test("http://example.com/"));          // false
-```
-
-### 2. 专门的 URL Match Pattern 函数
-
-```javascript
-function testUrlMatchPattern(pattern, url) {
-  // 处理协议
-  const [scheme, rest] = pattern.split('://');
-  const [urlScheme, urlRest] = url.split('://');
-  
-  if (scheme !== '*' && scheme !== urlScheme) {
-    return false;
-  }
-  
-  // 处理主机和路径
-  const [host, ...pathParts] = rest.split('/');
-  const [urlHost, ...urlPathParts] = urlRest.split('/');
-  
-  // 检查主机
-  if (!matchWithWildcard(host, urlHost)) {
-    return false;
-  }
-  
-  // 检查路径
-  const patternPath = pathParts.join('/');
-  const urlPath = urlPathParts.join('/');
-  
-  return matchWithWildcard(patternPath, urlPath);
-}
-
-function matchWithWildcard(pattern, str) {
-  const regex = new RegExp('^' + pattern.replace(/\*/g, '.*') + '$');
-  return regex.test(str);
-}
-
-// 使用示例
-console.log(testUrlMatchPattern("https://*.example.com/*", "https://www.example.com/path")); // true
-console.log(testUrlMatchPattern("*://*.google.com/*", "http://mail.google.com/inbox"));      // true
-```
-
-### 3. 使用第三方库
-
-#### 使用 `minimatch` 库（适用于文件路径模式）
-
-```javascript
-// npm install minimatch
-const minimatch = require('minimatch');
-
-// 测试文件路径模式
-console.log(minimatch('bar.foo', '*.foo'));     // true
-console.log(minimatch('bar.foo', '*.bar'));     // false
-console.log(minimatch('foo/bar.js', 'foo/*.js')); // true
-```
-
-#### 使用 `micromatch` 库（更强大的模式匹配）
-
-```javascript
-// npm install micromatch
-const micromatch = require('micromatch');
-
-const files = ['foo.js', 'bar.js', 'baz.css'];
-console.log(micromatch.isMatch('foo.js', '*.js')); // true
-console.log(micromatch(files, '*.js')); // ['foo.js', 'bar.js']
-```
-
-### 4. 简单的自定义测试函数
-
-```javascript
-function testMatchPattern(pattern, str) {
-  // 简单的通配符匹配
-  const regexPattern = pattern
-    .replace(/[.+?^${}()|[\]\\]/g, '\\$&') // 转义特殊字符
-    .replace(/\\\*/g, '.*')                // * 转为 .*
-    .replace(/\\\?/g, '.');                // ? 转为 .
-  
-  const regex = new RegExp('^' + regexPattern + '$', 'i');
-  return regex.test(str);
-}
-
-// 使用示例
-console.log(testMatchPattern('*.txt', 'file.txt'));        // true
-console.log(testMatchPattern('test*.js', 'test-file.js')); // true
-console.log(testMatchPattern('**/src/*.js', 'app/src/main.js')); // 需要更复杂的实现
-```
-
-根据你的具体需求选择合适的方案。如果是处理URL模式，推荐方案2；如果是文件路径，推荐使用`minimatch`或`micromatch`库。
-
-{% endfold %}
 
 ## Claude Opus 4
 Claude workbench, 20250523
@@ -3390,26 +3098,6 @@ claude-3-7-sonnet, thinking, 20250225
 
 {% endfold %}
 
-## Claude Sonnet 4
-Claude workbench, 20250523
-
-{% fold info @展开查看回答 %}
-
-根据《后汉书·范滂传》的记载，范滂在得知自己将被抓捕后，主动回家向母亲辞别时说的话：
-
-**原文：**
-滂顿首辞母曰："滂受性刚直，不能曲心协俗，今以党人见收，得与李杜齐名，死亦何恨！惟恨不孝，无以报德。"
-
-母曰："汝今得与李杜齐名，死亦何恨！既有令名，复求寿考，可兼得乎？"
-
-**翻译：**
-范滂向母亲跪拜辞别说："我生性刚直，不能违背本心去迎合世俗，如今因为党人身份被抓捕，能够与李膺、杜密齐名，死了又有什么遗恨呢！只是遗憾不能尽孝道，无法报答您的恩德。"
-
-母亲说："你现在能够与李膺、杜密齐名，死了还有什么遗憾呢！既然已经有了好名声，再要求长寿，这两样能够兼而得之吗？"
-
-这段对话体现了范滂的气节和他母亲的大义，成为了中国历史上母子大义的典型例子。李杜指的是当时同为党人的李膺和杜密，都是德高望重的名士。
-
-{% endfold %}
 
 ## Claude Opus 4
 Claude workbench, 20250523
@@ -4987,6 +4675,87 @@ graph TD
 
 {% endfold %}
 
+## Claude Sonnet 4
+Claude workbench, 20250523
+
+{% fold info @展开查看回答 %}
+
+这是优化后的mermaid代码：
+
+```
+graph TD
+    A["扫描高利率理财产品"]
+    n1["计算可用稳定币余额"]
+    n2@{ shape: "diam", label: "余额大于零" }
+    n3["结束"]
+    n4@{ shape: "diam", label: "是否已经完全购买该产品" }
+    B{"查找资金或现货账户是否有足够对应币"}
+    C["转账到该产品"]
+    D["查找其他稳定币"]
+    E["兑换"]
+    
+    A --> n1
+    n1 --> n2
+    n2 ---|"否"| n3
+    n2 ---|"是"| n4
+    n4 ---|"是"| A
+    n4 ---|"否"| B
+    B -->|有| C
+    B -->|没有| D
+    D --> E
+    E --> C
+    C --> A
+```
+
+主要优化点：
+1. 移除了重复的节点定义
+2. 清理了断开的连接线
+3. 统一了连接方式，使用`-->`和`---`
+4. 保持了原有的所有逻辑分支和循环结构
+5. 保持了菱形判断节点的样式
+
+{% endfold %}
+
+## Claude Opus 4
+Claude workbench, 20250523
+
+{% fold info @展开查看回答 %}
+
+这是优化后的mermaid代码：
+
+```
+graph TD
+    A["扫描高利率理财产品"]
+    n1["计算可用稳定币余额"]
+    n2{{"余额大于零"}}
+    n3["结束"]
+    n4{{"是否已经完全购买该产品"}}
+    B{"查找资金或现货账户是否有足够对应币"}
+    C["转账到该产品"]
+    D["查找其他稳定币"]
+    E["兑换"]
+    
+    A --- n1
+    n1 --- n2
+    n2 ---|"否"| n3
+    n2 ---|"是"| n4
+    n4 ---|"是"| A
+    n4 ---|"否"| B
+    B -->|有| C
+    B -->|没有| D
+    D --> E
+    E --> C
+    C --> A
+```
+
+主要优化点：
+1. 去除了重复的节点定义
+2. 使用 `` 替代 `` 的菱形语法
+3. 简化了节点之间的连接关系
+4. 保持了原有的逻辑流程和显示效果
+
+{% endfold %}
+
 ## DeepSeek-R1
 网页版，无联网搜索，20250316
 
@@ -5144,7 +4913,7 @@ graph TD
 ## 答案评价
 因为 hexo fluid 不能很好地渲染 mermaid，没法用代码块语法，所以把答案都略微做了修改
 
-GPT-4.5 preview, GPT-4.1, o1-preview, o1-pro, o3-mini-high, o4-mini-high, DeepSeek-R1, Gemini 2.0 Pro 没有完成任务，把原图乱改
+GPT-4.5 preview, GPT-4.1, o1-preview, o1-pro, o3-mini-high, o4-mini-high, Claude Sonnet 4, Claude Opus 4, DeepSeek-R1, Gemini 2.0 Pro 没有完成任务，把原图乱改
 
 o1, Claude 3.7 Sonnet, Gemini 2.5 Pro, Grok 3 看起来完成了任务，但是对于描述也偷偷地修改了
 
@@ -5157,6 +4926,8 @@ o1, Claude 3.7 Sonnet, Gemini 2.5 Pro, Grok 3 看起来完成了任务，但是�
 |    |                   |        o3       |
 |    |                   |   o3-mini-high  |
 |    |                   |   o4-mini-high  |
+|    |                   | Claude Sonnet 4 |
+|    |                   |  Claude Opus 4  |
 |    |                   |   DeepSeek-R1   |
 |    |                   |  Gemini 2.0 Pro |
 
@@ -5452,6 +5223,138 @@ fruits:
 
 总结：不缩进在技术上是可行的，但建议遵循2格缩进的约定以提高代码可读性和可维护性。
 
+## Claude Sonnet 4
+Claude workbench, 20250523
+
+{% fold info @展开查看回答 %}
+
+在 YAML 中，数组的缩进规则取决于你使用的语法格式：
+
+### 1. 块序列（Block Sequence）- 需要缩进
+
+使用短横线 `-` 的数组**需要缩进**，但不一定是 2 格，只要保持一致即可：
+
+```yaml
+# 缩进 2 格（推荐）
+items:
+  - apple
+  - banana
+  - orange
+
+# 缩进 4 格（也可以）
+items:
+    - apple
+    - banana
+    - orange
+
+# 错误：不缩进会报错
+items:
+- apple
+- banana
+```
+
+### 2. 流序列（Flow Sequence）- 不需要缩进
+
+使用方括号 `[]` 的数组**不需要缩进**：
+
+```yaml
+# 单行数组
+items: [apple, banana, orange]
+
+# 多行数组（不需要缩进）
+items: [
+  apple,
+  banana,
+  orange
+]
+```
+
+### 3. 嵌套数组示例
+
+```yaml
+# 块序列 - 需要缩进
+categories:
+  - name: fruits
+    items:
+      - apple
+      - banana
+  - name: vegetables
+    items:
+      - carrot
+      - tomato
+
+# 流序列 - 不需要缩进
+categories: [
+  {name: fruits, items: [apple, banana]},
+  {name: vegetables, items: [carrot, tomato]}
+]
+```
+
+### 总结
+
+- **块序列**（`-`）：必须缩进，推荐 2 格
+- **流序列**（`[]`）：不需要缩进
+- 缩进必须使用空格，不能使用 Tab
+
+{% endfold %}
+
+## Claude Opus 4
+Claude workbench, 20250523
+
+{% fold info @展开查看回答 %}
+
+在 YAML 中，数组的缩进取决于你使用的语法：
+
+### 1. **块序列（Block Sequence）- 需要缩进**
+使用 `-` 符号的数组**必须缩进**：
+
+```yaml
+# ✅ 正确 - 有缩进
+fruits:
+  - apple
+  - banana
+  - orange
+
+# ❌ 错误 - 没有缩进
+fruits:
+- apple
+- banana
+- orange
+```
+
+### 2. **流序列（Flow Sequence）- 不需要缩进**
+使用 `[]` 的数组可以不缩进：
+
+```yaml
+# ✅ 都正确
+fruits: [apple, banana, orange]
+
+# 或者
+fruits: 
+  [apple, banana, orange]
+```
+
+### 3. **嵌套结构示例**
+
+```yaml
+# 复杂结构中的数组
+users:
+  - name: John
+    hobbies:
+      - reading
+      - swimming
+  - name: Mary
+    hobbies: [dancing, singing]  # 流序列可以不缩进
+```
+
+### 4. **缩进规则**
+- 缩进通常是 2 个空格（也可以是其他数量，但要保持一致）
+- 不能使用 Tab 键
+- 同一层级的元素必须对齐
+
+**总结**：如果使用 `-` 形式的数组，必须缩进；如果使用 `[]` 形式，则不需要缩进。
+
+{% endfold %}
 ## DeepSeek-R1
 网页版，无联网搜索，20250418
 
@@ -5681,7 +5584,7 @@ fruits: [apple, banana, cherry]
 ## 答案评价
 GPT-4.5 preview, Claude 3.7 Sonnet, DeepSeek-R1 关于语法的回答是正确的
 
-GPT-4.1, o1-preview, o3, o3-mini-high, o4-mini-high, Gemini 2.5 Pro, Grok 3 关于语法的回答是错误的
+GPT-4.1, o1-preview, o3, o3-mini-high, o4-mini-high, Claude Sonnet 4, Claude Opus 4, Gemini 2.5 Pro, Grok 3 关于语法的回答是错误的
 
 o1 回避了这个问题，而且描述有错，yaml 官方的数组不缩进
 
@@ -5689,16 +5592,18 @@ GPT-4.5 preview 的描述有一点小错，k8s 描述数组时一般不缩进
 
 Claude 3.7 Sonnet 的描述最好
 
-|        更好       |      好     |        中       |       差       |
-|:-----------------:|:-----------:|:---------------:|:--------------:|
-| Claude 3.7 Sonnet | DeepSeek-R1 | GPT-4.5 preview |     GPT-4.1    |
-|                   |             |                 |   o1-preview   |
-|                   |             |                 |       o1       |
-|                   |             |                 |       o3       |
-|                   |             |                 |  o3-mini-high  |
-|                   |             |                 |  o4-mini-high  |
-|                   |             |                 | Gemini 2.5 Pro |
-|                   |             |                 |     Grok 3     |
+|        更好       |      好     |        中       |        差       |
+|:-----------------:|:-----------:|:---------------:|:---------------:|
+| Claude 3.7 Sonnet | DeepSeek-R1 | GPT-4.5 preview |     GPT-4.1     |
+|                   |             |                 |    o1-preview   |
+|                   |             |                 |        o1       |
+|                   |             |                 |        o3       |
+|                   |             |                 |   o3-mini-high  |
+|                   |             |                 |   o4-mini-high  |
+|                   |             |                 | Claude Sonnet 4 |
+|                   |             |                 |  Claude Opus 4  |
+|                   |             |                 |  Gemini 2.5 Pro |
+|                   |             |                 |      Grok 3     |
 
 # 问题九
 ```
@@ -5890,6 +5795,81 @@ claude-3-7-sonnet, thinking, 20250427
 
 {% endfold %}
 
+## Claude Sonnet 4
+Claude workbench, 20250523
+
+{% fold info @展开查看回答 %}
+
+我需要更多上下文来准确回答您的问题。"Product Constance AMM" 这个组合对我来说不是一个明确的、广为人知的产品或概念。
+
+可能的解释包括：
+
+1. **如果是DeFi/加密货币领域**：
+   - AMM通常指"Automated Market Maker"（自动做市商）
+   - Constance可能是某个项目或协议的名称
+
+2. **如果是其他技术产品**：
+   - AMM可能是某种技术缩写
+   - Constance可能是产品名或公司名
+
+为了给您更准确的答案，能否提供更多信息：
+- 这是在什么领域或行业的产品？
+- 您是在哪里看到或听到这个名称的？
+- 有没有更多的上下文信息？
+
+这样我就能为您提供更有针对性的解答了。
+
+{% endfold %}
+
+## Claude Opus 4
+Claude workbench, 20250523
+
+{% fold info @展开查看回答 %}
+
+Product Constant AMM（恒定乘积自动做市商）是DeFi中最常见的自动做市商模型，主要特点如下：
+
+### 基本原理
+使用公式 **x × y = k**，其中：
+- x = 代币A的数量
+- y = 代币B的数量  
+- k = 常数（恒定乘积）
+
+### 工作机制
+
+#### 1. 价格决定
+- 价格 = y/x （用代币A计价的代币B价格）
+- 交易会改变x和y的值，但k保持不变
+- 价格随供需自动调整
+
+#### 2. 交易过程
+```
+初始状态: 100 ETH × 200,000 USDT = 20,000,000
+用户买入1 ETH后: 99 ETH × 202,020.20 USDT = 20,000,000
+价格从2000变为2040.61 USDT/ETH
+```
+
+### 主要特点
+
+**优点：**
+- 简单高效
+- 永远有流动性
+- 无需订单簿
+- 去中心化
+
+**缺点：**
+- 滑点问题（大额交易影响大）
+- 无常损失风险
+- 资本效率相对较低
+
+### 典型应用
+- **Uniswap V2**
+- **SushiSwap**
+- **PancakeSwap**
+
+这种模型虽然简单，但为DeFi生态系统提供了重要的流动性基础设施。
+
+{% endfold %}
+
 ## DeepSeek-R1
 网页版，无联网搜索，20250427
 
@@ -6015,27 +5995,24 @@ Uniswap 是最知名的使用恒定乘积公式的 AMM 之一。它的设计允�
 {% endfold %}
 
 ## 答案评价
-GPT-4.5 preview 完全没有猜出这是什么
+
+GPT-4.5 preview, Claude Sonnet 4 完全没有猜出这是什么
 
 DeepSeek-R1 猜出了这是恒定乘积 AMM，但是不够确定
 
-GPT-4.1, Claude 3.7 Sonnet, DeepSeek-R1, Grok 3 解释得比较浅
+GPT-4.1, Claude 3.7 Sonnet, Grok 3 解释得比较浅，没有提到特点
 
-o1, o3, o4-mini-high, Gemini 2.5 Pro 的解释不错，但是都还有提升空间，都有明显缺点
-
-o1 没有强调滑点这个重要问题
-
-o1-preview, o3, o4-mini-high 对部分名词解释得不清楚
+o1 没有提到滑点，o3 没有强调滑点这个重要问题
 
 Gemini 2.5 Pro 没有提到不需要 limit order book 这个问题
 
-| 更好 |       好       |         中        |         差        |
-|:----:|:--------------:|:-----------------:|:-----------------:|
-|      |   o1-preview   |      GPT-4.1      |      GPT-4.1      |
-|      |       o1       | Claude 3.7 Sonnet | Claude 3.7 Sonnet |
-|      |       o3       |    DeepSeek-R1    |    DeepSeek-R1    |
-|      |  o4-mini-high  |       Grok 3      |       Grok 3      |
-|      | Gemini 2.5 Pro |                   |                   |
+o4-mini-high, Claude Opus 4 的解释不错
+
+|      更好     |       好       |         中        |        差       |
+|:-------------:|:--------------:|:-----------------:|:---------------:|
+|  o4-mini-high |       o1       |      GPT-4.1      | GPT-4.5 preview |
+| Claude Opus 4 |       o3       | Claude 3.7 Sonnet | Claude Sonnet 4 |
+|               | Gemini 2.5 Pro |       Grok 3      |   DeepSeek-R1   |
 
 # 问题 X
 ```
@@ -6087,6 +6064,15 @@ OpenRouter, 20250301
 
 ## Claude 3.7 Sonnet
 claude-3-7-sonnet, thinking, 20250301
+
+{% fold info @展开查看回答 %}
+
+
+
+{% endfold %}
+
+## Claude Opus 4
+???, 20250523
 
 {% fold info @展开查看回答 %}
 
