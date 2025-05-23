@@ -1,7 +1,7 @@
 ---
-title: 自用大模型评测问题（20250503 持续更新中）
-date: 2025-01-06 18:45
-excerpt: 个人使用场景下准备的一些问题，用于测试新的大模型，至少和 o1, Claude 3.7 Sonnet, Gemini 2.5 Pro, DeepSeek-R1 比较
+title: 自用大模型评测问题
+date: 2025-05-23 09:42
+excerpt: 个人使用场景下准备的一些问题，用于测试新的大模型，至少和 o1, Claude 4, Gemini 2.5 Pro, DeepSeek-R1 比较
 category: 生活
 ---
 # 背景
@@ -689,6 +689,221 @@ export default {
 
 {% endfold %}
 
+## Claude Sonnet 4
+Claude workbench, 20250523
+
+{% fold info @展开查看回答 %}
+
+在 Cloudflare Workers 开发中，`.dev.vars` 和 `wrangler.toml` 有不同的用途，通常不是直接在 `wrangler.toml` 中引用 `.dev.vars` 的变量。让我详细解释正确的使用方式：
+
+### 1. .dev.vars 文件的作用
+
+`.dev.vars` 文件用于**本地开发环境**的环境变量：
+
+```bash
+# .dev.vars
+API_KEY=your-local-api-key
+DATABASE_URL=your-local-database-url
+DEBUG=true
+```
+
+### 2. wrangler.toml 中的变量配置
+
+在 `wrangler.toml` 中，你可以为不同环境定义变量：
+
+```toml
+name = "my-worker"
+main = "src/index.js"
+compatibility_date = "2024-01-01"
+
+# 开发环境配置
+[env.development]
+vars = { ENVIRONMENT = "development" }
+
+# 生产环境配置  
+[env.production]
+vars = { ENVIRONMENT = "production", API_BASE_URL = "https://api.prod.com" }
+
+# 或者直接在主配置中定义
+[vars]
+GLOBAL_VAR = "some-value"
+```
+
+### 3. 正确的使用模式
+
+#### 本地开发时：
+```bash
+# 使用 .dev.vars 中的变量
+wrangler dev
+```
+
+#### 部署到特定环境：
+```bash
+# 部署到开发环境
+wrangler deploy --env development
+
+# 部署到生产环境  
+wrangler deploy --env production
+```
+
+### 4. 在 Worker 代码中访问变量
+
+```javascript
+export default {
+  async fetch(request, env, ctx) {
+    // 访问环境变量
+    const apiKey = env.API_KEY;        // 来自 .dev.vars (本地) 或 Cloudflare dashboard
+    const environment = env.ENVIRONMENT; // 来自 wrangler.toml
+    
+    return new Response(`Environment: ${environment}, API Key: ${apiKey}`);
+  }
+}
+```
+
+### 5. 生产环境变量设置
+
+对于生产环境，建议通过以下方式设置敏感变量：
+
+#### 使用 wrangler CLI：
+```bash
+wrangler secret put API_KEY
+```
+
+#### 或在 wrangler.toml 中引用 secrets：
+```toml
+[[env.production.secrets]]
+name = "API_KEY"
+```
+
+### 6. 最佳实践
+
+1. **敏感信息**：使用 secrets 而不是 vars
+2. **环境区分**：用不同的 env 配置区分开发/生产环境
+3. **本地开发**：使用 `.dev.vars` 存储本地开发变量
+4. **版本控制**：将 `.dev.vars` 添加到 `.gitignore`
+
+```gitignore
+# .gitignore
+.dev.vars
+```
+
+这样的设置确保了环境变量的安全性和环境隔离。
+
+{% endfold %}
+
+## Claude Opus 4
+Claude workbench, 20250523
+
+{% fold info @展开查看回答 %}
+
+在 Cloudflare Workers 中，`.dev.vars` 和 `wrangler.toml` 有不同的用途：
+
+### 文件用途说明
+
+#### `.dev.vars`
+- 用于存储**本地开发环境**的敏感变量
+- 不应该提交到版本控制系统
+- 仅在运行 `wrangler dev` 时使用
+
+#### `wrangler.toml`
+- 项目的主配置文件
+- 可以提交到版本控制系统
+- 用于配置非敏感的环境变量
+
+### 使用方法
+
+#### 1. 创建 `.dev.vars` 文件
+
+```bash
+# .dev.vars
+API_KEY=your-secret-api-key
+DATABASE_URL=postgresql://localhost:5432/mydb
+SECRET_TOKEN=super-secret-token
+```
+
+#### 2. 在 `wrangler.toml` 中配置非敏感变量
+
+```toml
+# wrangler.toml
+name = "my-worker"
+main = "src/index.js"
+
+[vars]
+# 非敏感的环境变量
+APP_NAME = "My Application"
+API_ENDPOINT = "https://api.example.com"
+ENVIRONMENT = "development"
+```
+
+#### 3. 在代码中访问变量
+
+```javascript
+// src/index.js
+export default {
+  async fetch(request, env, ctx) {
+    // 访问 .dev.vars 中的变量（仅在本地开发时）
+    const apiKey = env.API_KEY;
+    
+    // 访问 wrangler.toml 中的变量
+    const appName = env.APP_NAME;
+    
+    return new Response(`App: ${appName}, API Key exists: ${!!apiKey}`);
+  },
+};
+```
+
+### 重要说明
+
+1. **`.dev.vars` 中的变量不能直接在 `wrangler.toml` 中引用**
+2. 两个文件的变量会在运行时合并，`.dev.vars` 的优先级更高
+
+### 最佳实践
+
+#### 1. 使用环境特定配置
+
+```toml
+# wrangler.toml
+[env.production]
+vars = { ENVIRONMENT = "production" }
+
+[env.staging]
+vars = { ENVIRONMENT = "staging" }
+```
+
+#### 2. 创建 `.dev.vars.example`
+
+```bash
+# .dev.vars.example
+API_KEY=your-api-key-here
+DATABASE_URL=your-database-url-here
+```
+
+#### 3. 在 `.gitignore` 中忽略 `.dev.vars`
+
+```bash
+# .gitignore
+.dev.vars
+```
+
+### 生产环境的密钥管理
+
+对于生产环境的敏感变量，使用 Wrangler CLI：
+
+```bash
+# 设置生产环境的密钥
+wrangler secret put API_KEY
+
+# 列出所有密钥
+wrangler secret list
+
+# 删除密钥
+wrangler secret delete API_KEY
+```
+
+这样可以确保敏感信息的安全性，同时保持开发的便利性。
+
+{% endfold %}
+
 ## DeepSeek-R1
 网页版，20250121
 
@@ -1048,9 +1263,9 @@ export default {
 
 ## 答案评价
 
-GPT-4o, o3-mini-high, Claude 3.5 Sonnet, Claude 3.7 Sonnet, DeepSeek-V3, Gemini 2.0 Pro, Qwen3-235B-A22B 没有纠正引用这种错误说法
+GPT-4o, o3-mini-high, Claude 3.5 Sonnet, Claude 3.7 Sonnet, Claude Sonnet 4, DeepSeek-V3, Gemini 2.0 Pro, Qwen3-235B-A22B 没有纠正引用这种错误说法
 
-GPT-4.5 preview, o1-preview, o1, o1-pro, o3, o4-mini-high, DeepSeek-R1, Gemini 2.5 Pro, Grok 3 纠正了引用这种错误说法
+GPT-4.5 preview, o1-preview, o1, o1-pro, o3, o4-mini-high, Claude Opus 4, DeepSeek-R1, Gemini 2.5 Pro, Grok 3 纠正了引用这种错误说法
 
 其中 Grok 3 的描述最清晰
 
@@ -1060,12 +1275,12 @@ GPT-4.5 preview, o1-preview, o1, o1-pro, o3, o4-mini-high, DeepSeek-R1, Gemini 2
 |        |     GPT-4.1     |    o3-mini-high   |           |
 |        |    o1-preview   | Claude 3.5 Sonnet |           |
 |        |        o1       | Claude 3.7 Sonnet |           |
-|        |      o1-pro     |    DeepSeek-V3    |           |
-|        |        o3       |   Gemini 2.0 Pro  |           |
-|        |   o4-mini-high  |  Qwen3-235B-A22B  |           |
+|        |      o1-pro     |  Claude Sonnet 4  |           |
+|        |        o3       |    DeepSeek-V3    |           |
+|        |   o4-mini-high  |   Gemini 2.0 Pro  |           |
+|        |  Claude Opus 4  |  Qwen3-235B-A22B  |           |
 |        |   DeepSeek-R1   |                   |           |
 |        |  Gemini 2.0 Pro |                   |           |
-|        |                 |                   |           |
 
 
 # 问题二
