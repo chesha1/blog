@@ -2437,6 +2437,164 @@ document.addEventListener('auxclick', function(event) {
 
 {% endfold %}
 
+## Claude Sonnet 4
+Claude workbench, 20250523
+
+{% fold info @展开查看回答 %}
+
+鼠标中键点击链接有以下特点：
+
+### 实际行为
+鼠标中键点击链接会：
+- **在新标签页中打开链接**（浏览器默认行为）
+- 保持当前页面不变
+- 新标签页在后台打开（不会自动切换到新标签页）
+
+### 事件触发情况
+
+#### 不会触发 click 事件
+```javascript
+// 这个事件监听器不会被中键点击触发
+link.addEventListener('click', function(e) {
+    console.log('不会被中键点击触发');
+});
+```
+
+#### 会触发的事件
+```javascript
+// 会触发这些事件
+link.addEventListener('mousedown', function(e) {
+    if (e.button === 1) { // 1 表示中键
+        console.log('中键按下');
+    }
+});
+
+link.addEventListener('mouseup', function(e) {
+    if (e.button === 1) {
+        console.log('中键释放');
+    }
+});
+
+link.addEventListener('auxclick', function(e) {
+    if (e.button === 1) {
+        console.log('中键辅助点击'); // 专门用于非主要按钮的点击
+    }
+});
+```
+
+### 检测中键点击
+```javascript
+link.addEventListener('auxclick', function(e) {
+    if (e.button === 1) { // 中键
+        e.preventDefault(); // 阻止默认的新标签页打开行为
+        console.log('中键点击被检测到');
+        // 自定义行为
+    }
+});
+
+// 或者使用 mousedown/mouseup
+link.addEventListener('mousedown', function(e) {
+    if (e.button === 1) {
+        e.preventDefault();
+        // 处理中键点击
+    }
+});
+```
+
+### 按钮值对照
+- `e.button === 0`：左键
+- `e.button === 1`：中键（滚轮）
+- `e.button === 2`：右键
+
+**总结**：中键点击不会触发 `click` 事件，但会触发 `auxclick`、`mousedown`、`mouseup` 等事件，默认行为是在新标签页打开链接。
+
+{% endfold %}
+
+## Claude Opus 4
+Claude workbench, 20250523
+
+{% fold info @展开查看回答 %}
+
+鼠标中键点击链接的行为：
+
+### 默认行为
+
+鼠标中键点击链接时，**不会触发 `click` 事件**，而是会触发 `auxclick` 事件和 `mouseup` 事件。
+
+```javascript
+// 测试代码
+document.querySelector('a').addEventListener('click', (e) => {
+  console.log('click事件', e.button); // 中键点击时不会执行
+});
+
+document.querySelector('a').addEventListener('auxclick', (e) => {
+  console.log('auxclick事件', e.button); // 输出: auxclick事件 1
+});
+
+document.querySelector('a').addEventListener('mouseup', (e) => {
+  console.log('mouseup事件', e.button); // 输出: mouseup事件 1
+});
+```
+
+### 事件对象的 button 属性
+
+```javascript
+// e.button 的值：
+// 0 - 左键
+// 1 - 中键（滚轮）
+// 2 - 右键
+```
+
+### 浏览器的默认行为
+
+中键点击链接时，大多数浏览器会：
+- **在新标签页中打开链接**
+- 不会改变当前页面
+
+### 如何处理中键点击
+
+```javascript
+// 方法1：使用 auxclick 事件
+link.addEventListener('auxclick', (e) => {
+  if (e.button === 1) { // 中键
+    e.preventDefault(); // 阻止默认行为
+    // 自定义处理逻辑
+  }
+});
+
+// 方法2：使用 mousedown/mouseup 组合
+link.addEventListener('mousedown', (e) => {
+  if (e.button === 1) {
+    e.preventDefault();
+    // 处理中键按下
+  }
+});
+
+// 方法3：统一处理所有鼠标按键
+link.addEventListener('pointerup', (e) => {
+  switch(e.button) {
+    case 0: // 左键
+      break;
+    case 1: // 中键
+      e.preventDefault();
+      // 自定义行为
+      break;
+    case 2: // 右键
+      break;
+  }
+});
+```
+
+### 兼容性注意事项
+
+- `auxclick` 是较新的事件，旧浏览器可能不支持
+- 可以使用 `mouseup` 作为后备方案
+- 某些浏览器可能有不同的中键行为配置
+
+总结：中键点击**不触发 click 事件**，而是触发 `auxclick` 事件，默认在新标签页打开链接。
+
+{% endfold %}
+
 ## DeepSeek-R1
 网页版，20250228
 
@@ -2651,21 +2809,22 @@ myLink.addEventListener('click', function(event) {
 ## 答案评价
 GPT-4o, DeepSeek-V3 深度思考, DeepSeek-R1, Gemini 2.0 Pro 没有提到 `auxclick`
 
-GPT-4.5 preview, o1-preview, o1, o3, o4-mini-high, Claude 3.5 Sonnet, Claude 3.7 Sonnet, Gemini 2.5 Pro, Grok 3, Qwen3-235B-A22B 还额外提到 `mousedown` 和 `mouseup`
+GPT-4.5 preview, o1-preview, o1, o3, o4-mini-high, Claude 3.5 Sonnet, Claude 3.7 Sonnet, Claude Sonnet 4, Claude Opus 4, Gemini 2.5 Pro, Grok 3, Qwen3-235B-A22B 还额外提到 `mousedown` 和 `mouseup`
 
 后续又多试了几次 DeepSeek-R1 有时候能提到，有时候不能
 
-|     更好     |         好        |      中      |          差          |
-|:------------:|:-----------------:|:------------:|:--------------------:|
-| o4-mini-high |  GPT-4.5 preview  |    GPT-4.1   |        GPT-4o        |
-|              |         o1        | o3-mini-high | DeepSeek-V3 深度思考 |
-|              |         o3        |  o1-preview  |      DeepSeek-R1     |
-|              | Claude 3.5 Sonnet |              |       Kimi-k1.5      |
-|              | Claude 3.7 Sonnet |              |    Gemini 2.0 Pro    |
-|              |    DeepSeek-V3    |              |                      |
-|              |   Gemini 2.5 Pro  |              |                      |
-|              |       Grok 3      |              |                      |
-|              |  Qwen3-235B-A22B  |              |                      |
+|     更好     |         好        |        中       |          差          |
+|:------------:|:-----------------:|:---------------:|:--------------------:|
+| o4-mini-high |  GPT-4.5 preview  |     GPT-4.1     |        GPT-4o        |
+|              |         o1        |   o3-mini-high  | DeepSeek-V3 深度思考 |
+|              |         o3        |    o1-preview   |      DeepSeek-R1     |
+|              | Claude 3.5 Sonnet | Claude Sonnet 4 |       Kimi-k1.5      |
+|              | Claude 3.7 Sonnet |                 |    Gemini 2.0 Pro    |
+|              |   Claude Opus 4   |                 |                      |
+|              |    DeepSeek-V3    |                 |                      |
+|              |   Gemini 2.5 Pro  |                 |                      |
+|              |       Grok 3      |                 |                      |
+|              |  Qwen3-235B-A22B  |                 |                      |
 
 # 问题四
 ```
@@ -3210,6 +3369,200 @@ const isMatch = testMatchPattern("https://example.com/*", "https://example.com/p
 
 {% endfold %}
 
+## Claude Sonnet 4
+Claude workbench, 20250523
+
+{% fold info @展开查看回答 %}
+
+在JavaScript中，对于**match patterns**（匹配模式），没有像正则表达式的`test()`函数那样的内置方法，但有几种解决方案：
+
+### 1. 将 Match Pattern 转换为正则表达式
+
+```javascript
+function matchPatternToRegex(pattern) {
+  // 转义特殊字符，但保留 * 通配符
+  const escaped = pattern
+    .replace(/[.+?^${}()|[\]\\]/g, '\\$&') // 转义正则特殊字符
+    .replace(/\\\*/g, '.*'); // 将 * 转换为 .*
+  
+  return new RegExp('^' + escaped + '$');
+}
+
+// 使用示例
+const pattern = "https://*.example.com/*";
+const regex = matchPatternToRegex(pattern);
+
+console.log(regex.test("https://www.example.com/path")); // true
+console.log(regex.test("https://sub.example.com/foo"));  // true
+console.log(regex.test("http://example.com/"));          // false
+```
+
+### 2. 专门的 URL Match Pattern 函数
+
+```javascript
+function testUrlMatchPattern(pattern, url) {
+  // 处理协议
+  const [scheme, rest] = pattern.split('://');
+  const [urlScheme, urlRest] = url.split('://');
+  
+  if (scheme !== '*' && scheme !== urlScheme) {
+    return false;
+  }
+  
+  // 处理主机和路径
+  const [host, ...pathParts] = rest.split('/');
+  const [urlHost, ...urlPathParts] = urlRest.split('/');
+  
+  // 检查主机
+  if (!matchWithWildcard(host, urlHost)) {
+    return false;
+  }
+  
+  // 检查路径
+  const patternPath = pathParts.join('/');
+  const urlPath = urlPathParts.join('/');
+  
+  return matchWithWildcard(patternPath, urlPath);
+}
+
+function matchWithWildcard(pattern, str) {
+  const regex = new RegExp('^' + pattern.replace(/\*/g, '.*') + '$');
+  return regex.test(str);
+}
+
+// 使用示例
+console.log(testUrlMatchPattern("https://*.example.com/*", "https://www.example.com/path")); // true
+console.log(testUrlMatchPattern("*://*.google.com/*", "http://mail.google.com/inbox"));      // true
+```
+
+### 3. 使用第三方库
+
+#### 使用 `minimatch` 库（适用于文件路径模式）
+
+```javascript
+// npm install minimatch
+const minimatch = require('minimatch');
+
+// 测试文件路径模式
+console.log(minimatch('bar.foo', '*.foo'));     // true
+console.log(minimatch('bar.foo', '*.bar'));     // false
+console.log(minimatch('foo/bar.js', 'foo/*.js')); // true
+```
+
+#### 使用 `micromatch` 库（更强大的模式匹配）
+
+```javascript
+// npm install micromatch
+const micromatch = require('micromatch');
+
+const files = ['foo.js', 'bar.js', 'baz.css'];
+console.log(micromatch.isMatch('foo.js', '*.js')); // true
+console.log(micromatch(files, '*.js')); // ['foo.js', 'bar.js']
+```
+
+### 4. 简单的自定义测试函数
+
+```javascript
+function testMatchPattern(pattern, str) {
+  // 简单的通配符匹配
+  const regexPattern = pattern
+    .replace(/[.+?^${}()|[\]\\]/g, '\\$&') // 转义特殊字符
+    .replace(/\\\*/g, '.*')                // * 转为 .*
+    .replace(/\\\?/g, '.');                // ? 转为 .
+  
+  const regex = new RegExp('^' + regexPattern + '$', 'i');
+  return regex.test(str);
+}
+
+// 使用示例
+console.log(testMatchPattern('*.txt', 'file.txt'));        // true
+console.log(testMatchPattern('test*.js', 'test-file.js')); // true
+console.log(testMatchPattern('**/src/*.js', 'app/src/main.js')); // 需要更复杂的实现
+```
+
+根据你的具体需求选择合适的方案。如果是处理URL模式，推荐方案2；如果是文件路径，推荐使用`minimatch`或`micromatch`库。
+
+{% endfold %}
+
+## Claude Opus 4
+Claude workbench, 20250523
+
+{% fold info @展开查看回答 %}
+
+在 JavaScript 中，对于 match patterns（匹配模式），没有像正则表达式的 `test()` 那样的内置函数。但根据你的具体需求，有以下几种解决方案：
+
+### 1. URL Match Patterns（浏览器扩展常用）
+
+如果你指的是 Chrome 扩展中的 URL 匹配模式，可以自己实现一个测试函数：
+
+```javascript
+function testMatchPattern(pattern, url) {
+  // 将 match pattern 转换为正则表达式
+  const regexPattern = pattern
+    .replace(/[.+?^${}()|[\]\\]/g, '\\$&') // 转义特殊字符
+    .replace(/\*/g, '.*') // * 转换为 .*
+    .replace(/^<all_urls>$/, '.*'); // 处理 <all_urls>
+  
+  const regex = new RegExp(`^${regexPattern}$`);
+  return regex.test(url);
+}
+
+// 使用示例
+console.log(testMatchPattern("*://*.example.com/*", "https://www.example.com/page")); // true
+console.log(testMatchPattern("https://example.com/*", "http://example.com/page")); // false
+```
+
+### 2. Glob Patterns（文件路径匹配）
+
+如果是文件路径的 glob 模式，可以使用 `minimatch` 库：
+
+```javascript
+// 安装：npm install minimatch
+const minimatch = require('minimatch');
+
+// 使用示例
+console.log(minimatch("foo.txt", "*.txt")); // true
+console.log(minimatch("bar/foo.js", "**/*.js")); // true
+```
+
+### 3. 简单的通配符匹配
+
+对于简单的通配符匹配，可以实现一个基础函数：
+
+```javascript
+function matchPattern(pattern, str) {
+  // 将 pattern 转换为正则表达式
+  const regexPattern = pattern
+    .split('*').map(s => s.replace(/[.+?^${}()|[\]\\]/g, '\\$&'))
+    .join('.*');
+  
+  const regex = new RegExp(`^${regexPattern}$`);
+  return regex.test(str);
+}
+
+// 使用示例
+console.log(matchPattern("hello*world", "hello beautiful world")); // true
+console.log(matchPattern("*.txt", "document.txt")); // true
+```
+
+### 4. 使用第三方库
+
+还有一些专门的库可以处理各种模式匹配：
+
+- **micromatch**：功能强大的 glob 匹配库
+- **picomatch**：轻量级的 glob 匹配库
+- **matcher**：简单的通配符匹配
+
+```javascript
+// 使用 micromatch
+const micromatch = require('micromatch');
+console.log(micromatch.isMatch('foo.txt', '*.txt')); // true
+```
+
+选择哪种方案取决于你的具体使用场景。如果能详细说明你的 match patterns 是什么类型，我可以提供更精确的解决方案。
+
+{% endfold %}
+
 ## DeepSeek-R1
 网页版，20250201
 
@@ -3573,7 +3926,7 @@ o3-mini-high 提供了一堆关于正则匹配的废话，最后才提到目前�
 
 Claude 3.5 Sonnet 提到了现在标准库中没有这种函数，并提供了第三方库和其他错误方法
 
-GPT-4.5 preview, GPT-4.1, o3, Claude 3.7 Sonnet 提供了把 match patterns 转化成正则和使用第三方库两种正确的方法，以及其他错误方法
+GPT-4.5 preview, GPT-4.1, o3, Claude 3.7 Sonnet, Claude Sonnet 4, Claude Opus 4 提供了把 match patterns 转化成正则和使用第三方库两种正确的方法
 
 DeepSeek-R1 也对正则匹配进行了一些废话，但还是提供了一个解决方法
 
@@ -3587,8 +3940,8 @@ o4-mini-high 也提到了 URL Pattern API，还有一些额外的方法
 |              |                |      GPT-4.1      |         o1        |
 |              |                |     o1-preview    |       o1-pro      |
 |              |                | Claude 3.7 Sonnet |    o3-mini-high   |
-|              |                |                   | Claude 3.5 Sonnet |
-|              |                |                   |    DeepSeek-R1    |
+|              |                |  Claude Sonnet 4  | Claude 3.5 Sonnet |
+|              |                |   Claude Opus 4   |    DeepSeek-R1    |
 |              |                |                   |   Gemini 2.0 Pro  |
 |              |                |                   |       Grok 3      |
 |              |                |                   |  Qwen3-235B-A22B  |
