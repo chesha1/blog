@@ -2108,3 +2108,11 @@ OpenRouter, 20250418
 所以，虽然 YAML 没有硬性要求必须缩进 2 格，但 **不按层级正确缩进** 会让 YAML 解析器无法正确理解数据结构，从而出现错误。
 
 {% endfold %}
+
+# 尝试淘汰记录
+在某个问题中是唯一 SOTA 所以无法淘汰：
+- o4-mini-high
+- DeepSeek-R1
+- Grok 3
+- o1
+- Claude 3.7 Sonnet（？）

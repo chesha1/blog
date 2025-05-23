@@ -21,10 +21,10 @@ category: 生活
 
 openai o 系列模型比较特殊，现在它们不会优先输出 markdown 格式的回答，所以它们的 prompt 加上了 `Formatting re-enabled`
 
-在经过几个问题的测评后，随着模型的迭代，发现某些模型在任何情况下都被其他模型全面超过，所以
+发现某个模型在任何情况下都被另一个模型全面超过，所以才会淘汰这个模型
 
 还在测评中的模型：
-- GPT-4.5 preview, GPT-4.1, o1-prevew, o1, o4-mini
+- GPT-4.5 preview, GPT-4.1, o1, o4-mini
 - Claude 3.7 Sonnet
 - DeepSeek-R1
 - Gemini 2.5 Pro
@@ -279,65 +279,6 @@ project-root/
 如需进一步自动化变量同步或有特殊需求，也可用第三方工具管理 env 文件。
 
 {% endfold %}
-
-## o1-preview
-o1-preview-2024-09-12, 20250105
-
-{% fold info @展开查看回答 %}
-
-要在 Cloudflare 的 Wrangler 项目中使用 `.dev.vars` 文件中的变量，您可以按照以下步骤操作：
-
-1. **创建 `.dev.vars` 文件：**
-
-   在您项目的根目录下创建一个名为 `.dev.vars` 的文件，用于存储开发环境的变量。文件内容应采用 `KEY=VALUE` 的格式，每行一个变量。例如：
-
-   ```plaintext
-   API_KEY=abc123
-   SECRET_TOKEN=def456
-   ```
-
-2. **在代码中访问变量：**
-
-   在您的 Worker 代码中，您可以通过 `env` 对象访问这些变量。`env` 参数通常在 `fetch` 事件处理程序或模块导出的对象中提供。
-
-   ```javascript
-   export default {
-     async fetch(request, env) {
-       const apiKey = env.API_KEY;
-       const secretToken = env.SECRET_TOKEN;
-       // 使用变量执行您的逻辑
-     }
-   }
-   ```
-
-3. **运行 `wrangler dev`：**
-
-   当您运行 `wrangler dev` 命令时，Wrangler 会自动加载 `.dev.vars` 文件中的变量，并在本地开发环境中提供给您的 Worker。这些变量不会在生产环境中使用，适用于本地开发和调试。
-
-   ```shell
-   wrangler dev
-   ```
-
-**注意：**
-
-- 您不需要在 `wrangler.toml` 文件中引用或包含 `.dev.vars` 文件。Wrangler 会自动处理它。
-- `.dev.vars` 文件通常不应该提交到版本控制系统（如 Git）。建议将其添加到 `.gitignore` 文件中，以防止敏感信息泄露。
-- 如果您需要在生产环境使用变量，应在 `wrangler.toml` 文件中使用 `vars` 字段或设置环境变量。
-
-**示例 `wrangler.toml`：**
-
-```toml
-name = "your-worker-name"
-compatibility_date = "2023-10-20"
-# 生产环境的变量可以在这里定义
-# [vars]
-# PRODUCTION_VAR = "value"
-```
-
-通过以上步骤，您就可以在 Cloudflare Workers 的本地开发环境中使用 `.dev.vars` 文件中的变量，而无需在 `wrangler.toml` 中进行额外配置。
-
-{% endfold %}
-
 
 ## o1
 OpenRouter, 20250217
@@ -1434,274 +1375,6 @@ poe, 20250418
 
 三次回答（来回）没有实现功能
 
-## o1-preview
-o1-preview-2024-09-12, 20250106
-
-由于回答太长就不放上来了，第一次的答案会报错，但是在保持原本组件功能的同时，已经有另外两个按钮的样式出现
-
-把报错提供给它之后，第二次的答案修复了第一次的报错，但是还有报错
-
-再次把报错提供给它之后，第三次提供了基本可用的正常答案：
-
-{% fold info @展开查看回答 %}
-
-抱歉给您带来了困扰。您遇到的错误：
-
-```
-TypeError: props.onNextMonthClick is not a function
-```
-
-这是因为在 `CaptionProps` 中并没有 `onNextMonthClick` 和 `onPrevMonthClick` 这两个属性。
-
-要解决这个问题，我们需要修改自定义的 `CustomCaption` 组件，使用 `useNavigation` 提供的导航函数来处理月份的切换。
-
-以下是详细的解决方案：
-
----
-
-### **1. 使用 `useNavigation` 来导航月份**
-
-首先，从 `react-day-picker` 导入 `useNavigation`：
-
-```jsx
-import { useNavigation } from "react-day-picker"
-```
-
-然后，在 `CustomCaption` 组件中，使用 `useNavigation` 获取 `goToMonth` 函数。
-
-### **2. 更新 `CustomCaption` 组件**
-
-**完整的更新后的代码如下：**
-
-```jsx
-import { format } from "date-fns"
-import { CaptionProps, useNavigation } from "react-day-picker"
-import { ChevronLeft, ChevronRight } from "lucide-react"
-
-// 假设您已经定义了 cn 和 buttonVariants 函数，根据您的实际情况调整
-
-function CustomCaption(props: CaptionProps) {
-  const { displayMonth, locale } = props
-  const { goToMonth } = useNavigation()
-
-  // 处理前一个月
-  const handlePrevMonth = () => {
-    const prevMonth = new Date(displayMonth)
-    prevMonth.setMonth(prevMonth.getMonth() - 1)
-    goToMonth(prevMonth)
-  }
-
-  // 处理后一个月
-  const handleNextMonth = () => {
-    const nextMonth = new Date(displayMonth)
-    nextMonth.setMonth(nextMonth.getMonth() + 1)
-    goToMonth(nextMonth)
-  }
-
-  // 处理前一年
-  const handlePrevYear = () => {
-    const prevYear = new Date(displayMonth)
-    prevYear.setFullYear(prevYear.getFullYear() - 1)
-    goToMonth(prevYear)
-  }
-
-  // 处理后一年
-  const handleNextYear = () => {
-    const nextYear = new Date(displayMonth)
-    nextYear.setFullYear(nextYear.getFullYear() + 1)
-    goToMonth(nextYear)
-  }
-
-  return (
-    <div className="flex items-center justify-between pt-1">
-      <div className="flex items-center">
-        {/* 前一年按钮 */}
-        <button
-          type="button"
-          onClick={handlePrevYear}
-          className={cn(
-            buttonVariants({ variant: "outline" }),
-            "h-7 w-7 bg-transparent p-0 opacity-50 hover:opacity-100 mr-2"
-          )}
-        >
-          {"<<"}
-        </button>
-        {/* 前一个月按钮 */}
-        <button
-          type="button"
-          onClick={handlePrevMonth}
-          className={cn(
-            buttonVariants({ variant: "outline" }),
-            "h-7 w-7 bg-transparent p-0 opacity-50 hover:opacity-100"
-          )}
-        >
-          <ChevronLeft className="h-4 w-4" />
-        </button>
-      </div>
-      {/* 显示当前月份和年份 */}
-      <div className="text-sm font-medium">
-        {format(displayMonth, "LLLL yyyy", { locale })}
-      </div>
-      <div className="flex items-center">
-        {/* 下一个月按钮 */}
-        <button
-          type="button"
-          onClick={handleNextMonth}
-          className={cn(
-            buttonVariants({ variant: "outline" }),
-            "h-7 w-7 bg-transparent p-0 opacity-50 hover:opacity-100"
-          )}
-        >
-          <ChevronRight className="h-4 w-4" />
-        </button>
-        {/* 下一年按钮 */}
-        <button
-          type="button"
-          onClick={handleNextYear}
-          className={cn(
-            buttonVariants({ variant: "outline" }),
-            "h-7 w-7 bg-transparent p-0 opacity-50 hover:opacity-100 ml-2"
-          )}
-        >
-          {">>"}
-        </button>
-      </div>
-    </div>
-  )
-}
-```
-
-### **3. 解释**
-
-- **问题原因**：`CaptionProps` 并不包含 `onNextMonthClick` 和 `onPrevMonthClick` 方法，所以直接调用 `props.onNextMonthClick` 会导致报错。
-  
-- **解决方案**：使用 `useNavigation` 提供的 `goToMonth` 函数来导航月份。同样地，我们可以定义 `handlePrevMonth` 和 `handleNextMonth` 方法，在这些方法中计算上一个月或下一个月的日期，然后调用 `goToMonth` 进行导航。
-
-- **导航年份**：`handlePrevYear` 和 `handleNextYear` 方法与之前一致，使用 `goToMonth` 来导航年份。
-
-### **4. 不需要修改 `Calendar` 组件**
-
-因为您只需要修改 `CustomCaption` 组件即可，`Calendar` 组件不需要进一步修改。
-
----
-
-### **完整示例**
-
-以下是完整的代码，包括 `CustomCaption` 和 `Calendar` 组件：
-
-```jsx
-import { DayPicker, DateRange, useNavigation } from "react-day-picker"
-import { format } from "date-fns"
-import { ChevronLeft, ChevronRight } from "lucide-react"
-
-// 假设您已经定义了 cn 和 buttonVariants 函数，根据您的实际情况调整
-
-// 自定义的 Caption 组件
-function CustomCaption(props: CaptionProps) {
-  const { displayMonth, locale } = props
-  const { goToMonth } = useNavigation()
-
-  const handlePrevMonth = () => {
-    const prevMonth = new Date(displayMonth)
-    prevMonth.setMonth(prevMonth.getMonth() - 1)
-    goToMonth(prevMonth)
-  }
-
-  const handleNextMonth = () => {
-    const nextMonth = new Date(displayMonth)
-    nextMonth.setMonth(nextMonth.getMonth() + 1)
-    goToMonth(nextMonth)
-  }
-
-  const handlePrevYear = () => {
-    const prevYear = new Date(displayMonth)
-    prevYear.setFullYear(prevYear.getFullYear() - 1)
-    goToMonth(prevYear)
-  }
-
-  const handleNextYear = () => {
-    const nextYear = new Date(displayMonth)
-    nextYear.setFullYear(nextYear.getFullYear() + 1)
-    goToMonth(nextYear)
-  }
-
-  return (
-    <div className="flex items-center justify-between pt-1">
-      <div className="flex items-center">
-        {/* 前一年按钮 */}
-        <button
-          type="button"
-          onClick={handlePrevYear}
-          className={cn(
-            buttonVariants({ variant: "outline" }),
-            "h-7 w-7 bg-transparent p-0 opacity-50 hover:opacity-100 mr-2"
-          )}
-        >
-          {"<<"}
-        </button>
-        {/* 前一个月按钮 */}
-        <button
-          type="button"
-          onClick={handlePrevMonth}
-          className={cn(
-            buttonVariants({ variant: "outline" }),
-            "h-7 w-7 bg-transparent p-0 opacity-50 hover:opacity-100"
-          )}
-        >
-          <ChevronLeft className="h-4 w-4" />
-        </button>
-      </div>
-      {/* 显示当前月份和年份 */}
-      <div className="text-sm font-medium">
-        {format(displayMonth, "LLLL yyyy", { locale })}
-      </div>
-      <div className="flex items-center">
-        {/* 下一个月按钮 */}
-        <button
-          type="button"
-          onClick={handleNextMonth}
-          className={cn(
-            buttonVariants({ variant: "outline" }),
-            "h-7 w-7 bg-transparent p-0 opacity-50 hover:opacity-100"
-          )}
-        >
-          <ChevronRight className="h-4 w-4" />
-        </button>
-        {/* 下一年按钮 */}
-        <button
-          type="button"
-          onClick={handleNextYear}
-          className={cn(
-            buttonVariants({ variant: "outline" }),
-            "h-7 w-7 bg-transparent p-0 opacity-50 hover:opacity-100 ml-2"
-          )}
-        >
-          {">>"}
-        </button>
-      </div>
-    </div>
-  )
-}
-
-// Calendar 组件
-function Calendar({
-  className,
-  classNames,
-  showOutsideDays = true,
-  ...props
-}: CalendarProps) {
-  return (
-    <DayPicker
-      showOutsideDays={showOutsideDays}
-      className={cn("p-3", className)}
-      classNames={{
-        // 您现有的 classNames 配置
-        months: "flex flex-col sm:flex-row space-y-4 sm:space-x-4 sm:space-y-0",
-        month: "space-y
-```
-
-{% endfold %}
-
 ## o1
 OpenRouter, 20250217
 
@@ -2092,58 +1765,6 @@ document.querySelector('a').addEventListener('auxclick', function(e) {
 
 **结论：**  
 用鼠标中键点击链接**不会触发 `click` 事件**，会触发 `auxclick` 事件。默认会在新标签页打开链接。需要自定义行为时，监听 `auxclick` 并判断 `event.button` 是否为 `1`（中键）。
-
-{% endfold %}
-
-## o1-preview
-o1-preview-2024-09-12, 20250114
-
-{% fold info @展开查看回答 %}
-当你用鼠标中键点击一个链接时，浏览器通常会在新标签页中打开该链接，这是浏览器对鼠标中键点击的默认行为。
-
-从JavaScript的角度来看，**鼠标中键点击并不会触发元素的`click`事件**。`click`事件通常仅由鼠标左键点击触发。
-
-然而，鼠标中键点击时会触发其他事件：
-
-1. **`mousedown`和`mouseup`事件**：鼠标任何按钮的按下和释放都会触发这两个事件。你可以通过事件对象的`button`属性来判断是哪个鼠标按钮：
-   - `event.button === 0`：左键
-   - `event.button === 1`：中键
-   - `event.button === 2`：右键
-
-2. **`auxclick`事件**：这是专门为处理非左键点击（如中键、右键）而设计的事件。鼠标中键点击会触发`auxclick`事件，你可以监听这个事件来捕获中键点击。
-
-**示例：**
-
-```javascript
-document.addEventListener('mousedown', function(event) {
-  if (event.button === 1) {
-    console.log('鼠标中键按下');
-  }
-});
-
-document.addEventListener('auxclick', function(event) {
-  if (event.button === 1) {
-    console.log('鼠标中键点击');
-  }
-});
-```
-
-**注意事项：**
-
-- **默认行为**：中键点击链接的默认行为是打开新标签页。如果你想阻止这个默认行为，可以在事件处理函数中调用`event.preventDefault()`。
-  
-  ```javascript
-  document.addEventListener('auxclick', function(event) {
-    if (event.button === 1) {
-      event.preventDefault(); // 阻止打开新标签页
-      console.log('中键点击被捕获，默认行为已阻止');
-    }
-  });
-  ```
-
-- **兼容性**：并非所有浏览器都支持`auxclick`事件。为确保兼容性，最好同时监听`mousedown`或`mouseup`事件，并结合`event.button`进行判断。
-
-**总结**：鼠标中键点击不会触发`click`事件，但会触发`mousedown`、`mouseup`和`auxclick`等事件。因此，如果你需要在中键点击时执行特定逻辑，建议监听`auxclick`事件，并根据需要阻止默认行为。
 
 {% endfold %}
 
@@ -2842,49 +2463,6 @@ minimatch('hello.txt', '*.txt'); // true
 - **没有直接等价于 `.test()` 的“通配符模式”方法**，需要自己实现或用库。
 
 如果你有具体的“模式”格式需求，欢迎补充，我可以帮你写更具体的代码！
-
-{% endfold %}
-
-## o1-preview
-o1-preview, 20250201
-
-{% fold info @展开查看回答 %}
-
-截至 2023 年 10 月,JavaScript 中的 `RegExp.prototype.test()` 方法用于测试字符串是否匹配正则表达式。如果您想测试字符串是否匹配特定的模式(如通配符模式),JavaScript 还没有内置的类似于 `test()` 的函数直接用于非正则表达式的模式匹配。
-
-如果您需要匹配类似通配符(如 `*.txt`)的模式,您可以:
-
-1. **手动将模式转换为正则表达式**:将通配符模式中的特殊字符替换成正则表达式对应的字符,然后使用 `test()` 方法。例如:
-
-   ```javascript
-   function wildcardToRegex(pattern) {
-     return new RegExp('^' + pattern.split('*').map(s => s.replace(/([.+^=!:${}()|\[\]\/\\])/g, '\\$1')).join('.*') + '$');
-   }
-
-   const pattern = '*.txt';
-   const regex = wildcardToRegex(pattern);
-   console.log(regex.test('document.txt')); // 输出 true
-   ```
-
-2. **使用第三方库**:有一些库可以帮助您处理模式匹配,例如 `minimatch` 或 `micromatch`。使用这些库,您可以方便地匹配复杂的模式。
-
-   ```javascript
-   // 使用 minimatch
-   const minimatch = require('minimatch');
-
-   console.log(minimatch('document.txt', '*.txt')); // 输出 true
-   ```
-
-3. **使用字符串方法进行简单匹配**:对于简单的模式,您可以使用字符串的 `includes()`、`startsWith()` 和 `endsWith()` 方法。
-
-   ```javascript
-   const filename = 'document.txt';
-   console.log(filename.endsWith('.txt')); // 输出 true
-   ```
-
-如果您指的是**模式匹配(Pattern Matching)**功能,即类似于其他语言中的模式匹配(如 Haskell、Scala),目前 JavaScript 中并未正式支持。然而,TC39 已经针对模式匹配提出了提案([Pattern Matching 提案](https://github.com/tc39/proposal-pattern-matching)),但尚未在主流 JavaScript 引擎中实现。
-
-因此,虽然 JavaScript 中有用于正则表达式匹配的 `test()` 方法,但对于其他类型的模式匹配,您需要使用上述方法之一或者等待未来的语言特性更新。
 
 {% endfold %}
 
@@ -3710,34 +3288,6 @@ poe, 20250418
 
 {% endfold %}
 
-## o1-preview
-o1-preview, 20250207
-
-{% fold info @展开查看回答 %}
-
-当范滂被捕时,他与母亲有一段对话,原文如下:
-
-**《后汉书·范滂传》:**
-
-> 滂归至家,收拾行装,将诣狱,母送之至门。滂稽首曰:“儿不能以此身免祸,重为母忧。”母泣曰:“汝行道以正,死亦何恨!吾今年七十,幸得送汝于道,复何恨乎!”滂遂就逮。
-
-**翻译:**
-
-范滂回到家中,整理行装,准备前往监狱。他的母亲送他到门口。范滂深深地拜下,说:“儿子不能用自己的身体避免灾祸,再次让母亲忧虑了。”母亲流着泪说:“你以正直的方式行道,即使死了,又有什么遗憾!我今年七十岁了,能够送你走上正道,还有什么遗憾呢!”于是范滂前去受捕。
-
-**注释:**
-
-- **滂稽首曰**:范滂拜倒叩首说。
-- **儿不能以此身免祸,重为母忧**:我不能避免这场灾祸,再次让母亲担忧了。
-- **汝行道以正,死亦何恨**:你以正直之道行事,即使死了,又有什么遗憾呢?
-- **吾今年七十,幸得送汝于道,复何恨乎**:我今年七十岁了,能亲自送你走上正途,还有什么遗憾呢?
-
-**背景:**
-
-范滂是东汉时期的名士,以清正廉洁著称。在党锢之祸中被捕入狱。他明知自己将要面对死亡,但仍坚定自己的信念。他与母亲的这段对话,表现了他母亲的高尚情操和对儿子追求正义的支持,也展现了范滂的孝道和无畏精神。
-
-{% endfold %}
-
 ## o1
 OpenRouter, 20250217
 
@@ -4324,122 +3874,6 @@ print("完成所有文件的 VAD 处理并绘制时长分布图")
 ---
 
 如需支持多通道音频，这里做了强制单声道处理（`.mean(dim=0)`），如需保留多通道可调整。
-
-{% endfold %}
-
-## o1-preview
-o1-preview-2024-09-12，20250301
-{% fold info @展开查看回答 %}
-
-您好，以下是修改后的代码，已经将输入采样率调整为适应任何输入文件的采样率，并确保输出的音频采样率始终为16kHz：
-
-```python
-import torch
-import torchaudio
-import os
-import time
-from tqdm import tqdm
-import matplotlib.pyplot as plt
-import numpy as np
-
-torch.set_num_threads(1)
-
-# 参数配置
-input_dir = "raw"  # 原始音频所在目录
-save_path = "after-vad"  # 分段后音频保存目录
-min_speech_duration_ms = 1000
-max_speech_duration_s = 20
-audio_extensions = (".wav", ".mp3", ".flac", ".ogg", ".m4a", ".aac")
-
-# 如果输出目录不存在，则创建
-os.makedirs(save_path, exist_ok=True)
-
-# 加载 Silero VAD 模型
-model, utils = torch.hub.load(repo_or_dir="snakers4/silero-vad", model="silero_vad")
-(get_speech_timestamps, save_audio, read_audio, VADIterator, collect_chunks) = utils
-
-# 用于累积所有音频片段时长（秒），绘制直方图
-all_durations = []
-
-# 遍历目录，筛选音频后缀文件
-audio_files = [f for f in os.listdir(input_dir) if f.lower().endswith(audio_extensions)]
-
-for audio_file in audio_files:
-    audio_path = os.path.join(input_dir, audio_file)
-    print(f"处理文件: {audio_file}")
-
-    # 获取不带后缀的原始文件名（例如“1.wav” -> “1”）
-    original_root, original_ext = os.path.splitext(audio_file)
-
-    # 读取音频并获取采样率
-    waveform, sample_rate = torchaudio.load(audio_path)
-
-    # 执行 VAD
-    start = time.time()
-    speech_timestamps = get_speech_timestamps(
-        waveform,
-        model,
-        sampling_rate=sample_rate,
-        min_speech_duration_ms=min_speech_duration_ms,
-        max_speech_duration_s=max_speech_duration_s,
-    )
-    end = time.time()
-    print(f"{audio_file} 的 VAD 耗时: {end - start:.2f}s")
-
-    # 保存切分后的音频片段，不再单独创建文件夹，直接在文件名加入后缀
-    for idx, timestamp in tqdm(
-        enumerate(speech_timestamps),
-        total=len(speech_timestamps),
-        desc=f"保存切分片段 -> {audio_file}",
-    ):
-        # 构建新的文件名，例如：1.wav -> 1-0.wav
-        segment_file_name = f"{original_root}-{idx}.wav"
-        save_file_path = os.path.join(save_path, segment_file_name)
-
-        # 保存切分结果
-        audio_chunk = collect_chunks([timestamp], waveform)
-
-        # 记录片段时长
-        duration = (timestamp["end"] - timestamp["start"]) / sample_rate
-        all_durations.append(duration)
-
-        # 将音频片段重采样到16kHz
-        resampler = torchaudio.transforms.Resample(orig_freq=sample_rate, new_freq=16000)
-        resampled_chunk = resampler(audio_chunk)
-
-        # 保存重采样后的音频片段
-        save_audio(save_file_path, resampled_chunk, sampling_rate=16000)
-
-# 绘制所有切分结果的时长分布
-plt.figure(figsize=(8, 5))
-plt.hist(all_durations, bins=20, color="skyblue", edgecolor="black")
-plt.xlabel("Segment Duration (s)")
-plt.ylabel("Count")
-plt.title("Segment Duration Distribution for All Files")
-plt.savefig("duration_distribution.png")
-plt.close()
-
-print("完成所有文件的 VAD 处理并绘制时长分布图")
-```
-
-**修改说明：**
-
-- **读取音频**：使用 `torchaudio.load` 函数读取音频文件，得到音频波形和采样率 `waveform, sample_rate = torchaudio.load(audio_path)`。这样可以适应任何输入采样率的音频文件。
-
-- **VAD 处理**：在调用 `get_speech_timestamps` 时，使用读取的 `sample_rate`，即 `sampling_rate=sample_rate`。
-
-- **时长计算**：在计算音频片段的时长时，使用对应的采样率 `duration = (timestamp["end"] - timestamp["start"]) / sample_rate`。
-
-- **重采样**：在保存音频片段之前，使用 `torchaudio.transforms.Resample` 将音频片段重采样到16kHz：
-
-  ```python
-  resampler = torchaudio.transforms.Resample(orig_freq=sample_rate, new_freq=16000)
-  resampled_chunk = resampler(audio_chunk)
-  ```
-
-- **保存音频**：使用 `save_audio` 函数保存重采样后的音频片段，指定采样率为16kHz：`save_audio(save_file_path, resampled_chunk, sampling_rate=16000)`。
-
-这样修改后，代码可以适应任何输入采样率的音频文件，处理后输出的音频片段始终为16kHz的采样率。
 
 {% endfold %}
 
@@ -5417,26 +4851,6 @@ graph TD
 
 {% endfold %}
 
-## o1-preview
-o1-preview，20250316
-
-{% fold info @展开查看回答 %}
-
-```
-graph TD
-    A["扫描高利率理财产品"] --> n1["计算可用稳定币余额"]
-    n1 --> n2{"余额大于零？"}
-    n2 -- 否 --> n3["结束"]
-    n2 -- 是 --> n4{"是否已经完全购买该产品？"}
-    n4 -- 是 --> A
-    n4 -- 否 --> B{查找资金或现货账户是否有足够对应币}
-    B -- 有 --> C["直接转账到该产品"] --> A
-    B -- 没有 --> D["查找其他稳定币"] --> E["兑换"] --> C
-    C --> A
-```
-
-{% endfold %}
-
 ## o1
 OpenRouter，20250316
 
@@ -5833,43 +5247,6 @@ fruits:
 始终让数组元素 `-` 和其父 key 缩进对应，保持 2 个空格缩进最佳实践。
 
 如果你有实际 YAML 文件报错，可以贴出来，我帮你分析具体原因。
-
-{% endfold %}
-
-## o1-preview
-OpenRouter，20250418
-
-{% fold info @展开查看回答 %}
-
-在 YAML 中，缩进用于表示数据的层级关系，缩进的空格数量并没有硬性规定必须是 2 个空格。关键是保持缩进的一致性和正确的层级结构。
-
-也就是说，你可以使用 2 个、4 个或其他数量的空格来缩进，只要在同一文件中保持一致即可。例如：
-
-```yaml
-fruits:
-  - apple
-  - banana
-  - orange
-```
-
-在上面的例子中，`-` 前有两个空格的缩进，表示列表项是 `fruits` 键的值。如果你选择不缩进，可能会导致解析器无法正确解析层级关系：
-
-```yaml
-fruits:
-- apple
-- banana
-- orange
-```
-
-虽然有些解析器可能仍然能够处理未缩进的列表项，但为了可读性和兼容性，建议对列表项进行适当的缩进。
-
-**总结：**
-
-- **缩进的空格数量可以不是 2 个，但要保持一致性。**
-- **缩进用于表示层级关系，正确的缩进有助于解析器正确理解数据结构。**
-- **为了提高可读性和避免潜在的解析错误，建议对数组（列表）项进行缩进。**
-
-因此，虽然不缩进有时也行，但为了确保 YAML 文件的可靠性和可读性，建议对数组进行一致且正确的缩进。
 
 {% endfold %}
 
@@ -6383,35 +5760,6 @@ x * y = k
 
 {% endfold %}
 
-## o1-preview
-o1-preview, 20250427
-
-{% fold info @展开查看回答 %}
-
-“常数乘积自动做市商”（Product Constant AMM）是一种在去中心化金融（DeFi）领域中广泛使用的自动做市机制。它通过数学公式 \( x \times y = k \)（其中 \( x \) 和 \( y \) 分别表示两种不同代币的储备量，\( k \) 是一个常数）来确定交易价格和维持市场流动性。
-
-当用户在这种机制下进行交易时，买入一种代币会导致其储备量减少、价格上升；卖出则相反。这种供需关系通过保持 \( x \times y = k \) 的恒定来自动调节，而无需传统的订单簿。此外，这种机制允许任何人向流动性池中添加资金，从而赚取交易手续费。
-
-**优点：**
-
-- **简化交易流程**：无需中间商或中央机构，交易直接在智能合约中执行。
-- **增强流动性**：任何人都可以成为流动性提供者，增加市场深度。
-- **价格自动调节**：通过公式自动平衡供需关系。
-
-**缺点：**
-
-- **无常损失**：流动性提供者可能面临由于价格波动导致的潜在损失。
-- **滑点**：大型交易可能导致价格大幅波动，增加交易成本。
-
-**著名应用：**
-
-- **Uniswap**：最早也是最知名的常数乘积 AMM，支持以太坊及其代币的交换。
-- **PancakeSwap**：运行在币安智能链上的 AMM，功能类似于 Uniswap。
-
-总的来说，常数乘积 AMM 是 DeFi 领域的一项重要创新，促进了去中心化交易和金融服务的发展。
-
-{% endfold %}
-
 ## o1
 OpenRouter, 20250427
 
@@ -6703,15 +6051,6 @@ gpt-4.5-preview, 20250301
 
 ## GPT-4.1
 poe, 20250301
-
-{% fold info @展开查看回答 %}
-
-
-
-{% endfold %}
-
-## o1-preview
-o1-preview, 20250301
 
 {% fold info @展开查看回答 %}
 
