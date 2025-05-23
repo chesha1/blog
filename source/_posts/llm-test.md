@@ -2019,6 +2019,15 @@ export { Calendar }
 
 {% endfold %}
 
+## Claude Sonnet 4
+Claude workbench, 20250523
+
+一次完成，而且用了正确的图标，较为美观
+
+## Claude Opus 4
+Claude workbench, 20250523
+
+一次完成，而且用了正确的图标，较为美观
 
 ## DeepSeek-R1
 网页版，20250121
@@ -2054,13 +2063,15 @@ OpenRouter, 20250327
 第二次完成任务，但是样式比较丑
 
 ## 答案评价
-GPT-4.5 preview, o1-preview, GPT-4o, Claude 3.7 Sonnet, Gemini 2.5 Pro, Qwen3-235B-A22B 完成了问题
+GPT-4.5 preview, o1-preview, GPT-4o, Claude 3.7 Sonnet, Claude Sonnet 4, Claude Opus 4, Gemini 2.5 Pro, Qwen3-235B-A22B 完成了问题
 
 其中：
 
 GPT-4.5 preview 只用了一次回答
 
-Claude 3.7 Sonnet, Gemini 2.5 Pro 还用了更好看的图标，只用了两次回答
+Claude Sonnet 4, Claude Opus 4 只用了一次回答，而且用了正确的图标，较为美观
+
+Claude 3.7 Sonnet, Gemini 2.5 Pro 用了更好看的图标，只用了两次回答
 
 Qwen3-235B-A22B 用了两次，但是样式比较丑
 
@@ -2069,8 +2080,8 @@ o1-preview, GPT-4o 用了三次
 |       更好      |         好        |     中     |         差        |
 |:---------------:|:-----------------:|:----------:|:-----------------:|
 | GPT-4.5 preview | Claude 3.7 Sonnet | o1-preview |      GPT-4.1      |
-|                 |   Gemini 2.5 Pro  |   GPT-4o   |         o1        |
-|                 |  Qwen3-235B-A22B  |            |    o3-mini-high   |
+| Claude Sonnet 4 |   Gemini 2.5 Pro  |   GPT-4o   |         o1        |
+|  Claude Opus 4  |  Qwen3-235B-A22B  |            |    o3-mini-high   |
 |                 |                   |            |    o4-mini-high   |
 |                 |                   |            | Claude 3.5 Sonnet |
 |                 |                   |            |    DeepSeek-V3    |
