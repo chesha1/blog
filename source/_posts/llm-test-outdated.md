@@ -2432,6 +2432,5 @@ OpenRouter, 20250418
 在某个问题中是唯一 SOTA 所以无法淘汰：
 - o4-mini-high
 - DeepSeek-R1
-- Grok 3
 - o1
 - Claude 3.7 Sonnet
