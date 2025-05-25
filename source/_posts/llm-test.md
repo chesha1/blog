@@ -37,6 +37,7 @@ openai o 系列模型比较特殊，现在它们不会优先输出 markdown 格�
 - o1-preview
 - o3-mini-high
 - Claude 3.5 Sonnet
+- Claude Sonnet 4
 - DeepSeek-V3
 - Kimi-k1.5（输出格式过于幽默）
 - Gemini 2.0 Pro
