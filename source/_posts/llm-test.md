@@ -1,6 +1,6 @@
 ---
 title: 自用大模型评测问题
-date: 2025-05-23 09:42
+date: 2025-05-25 12:24
 excerpt: 个人使用场景下准备的一些问题，用于测试新的大模型，至少和 o1, Claude 4, Gemini 2.5 Pro, DeepSeek-R1 比较
 category: 生活
 ---
@@ -3726,6 +3726,290 @@ print("完成所有文件的 VAD 处理并绘制时长分布图")
 
 {% endfold %}
 
+## Claude Sonnet 4
+Claude workbench, 20250525
+
+{% fold info @展开查看回答 %}
+
+这里是修改后的代码，能够自动适应任何输入采样率，并始终输出16kHz采样率的音频：
+
+```python
+import torch
+import torchaudio
+import os
+import time
+from tqdm import tqdm
+import matplotlib.pyplot as plt
+import numpy as np
+
+torch.set_num_threads(1)
+
+# 参数配置
+input_dir = "raw"  # 原始音频所在目录
+save_path = "after-vad"  # 分段后音频保存目录
+min_speech_duration_ms = 1000
+max_speech_duration_s = 20
+target_sampling_rate = 16000  # 目标输出采样率
+audio_extensions = (".wav", ".mp3", ".flac", ".ogg", ".m4a", ".aac")
+
+# 如果输出目录不存在，则创建
+os.makedirs(save_path, exist_ok=True)
+
+# 加载 Silero VAD 模型
+model, utils = torch.hub.load(repo_or_dir="snakers4/silero-vad", model="silero_vad")
+(get_speech_timestamps, save_audio, read_audio, VADIterator, collect_chunks) = utils
+
+# 用于累积所有音频片段时长（秒），绘制直方图
+all_durations = []
+
+# 遍历目录，筛选音频后缀文件
+audio_files = [f for f in os.listdir(input_dir) if f.lower().endswith(audio_extensions)]
+
+for audio_file in audio_files:
+    audio_path = os.path.join(input_dir, audio_file)
+    print(f"处理文件: {audio_file}")
+
+    # 获取不带后缀的原始文件名（例如"1.wav" -> "1"）
+    original_root, original_ext = os.path.splitext(audio_file)
+
+    # 使用torchaudio读取音频并获取采样率
+    wav, original_sampling_rate = torchaudio.load(audio_path)
+    wav = wav.squeeze()  # 确保是一维张量，适配silero-vad
+    print(f"检测到采样率: {original_sampling_rate} Hz")
+
+    # 执行 VAD
+    start = time.time()
+    speech_timestamps = get_speech_timestamps(
+        wav,
+        model,
+        sampling_rate=original_sampling_rate,
+        min_speech_duration_ms=min_speech_duration_ms,
+        max_speech_duration_s=max_speech_duration_s,
+    )
+    end = time.time()
+    print(f"{audio_file} 的 VAD 耗时: {end - start:.2f}s")
+
+    # 保存切分后的音频片段，不再单独创建文件夹，直接在文件名加入后缀
+    for idx, timestamp in tqdm(
+        enumerate(speech_timestamps),
+        total=len(speech_timestamps),
+        desc=f"保存切分片段 -> {audio_file}",
+    ):
+        # 构建新的文件名，例如：1.wav -> 1-0.wav
+        segment_file_name = f"{original_root}-{idx}.wav"
+        save_file_path = os.path.join(save_path, segment_file_name)
+
+        # 获取切分结果
+        audio_chunk = collect_chunks([timestamp], wav)
+        
+        # 如果需要重采样到目标采样率
+        if original_sampling_rate != target_sampling_rate:
+            # 重采样到目标采样率
+            resampler = torchaudio.transforms.Resample(
+                orig_freq=original_sampling_rate, 
+                new_freq=target_sampling_rate
+            )
+            audio_chunk = resampler(audio_chunk)
+        
+        # 保存音频（使用torchaudio以确保正确的采样率）
+        torchaudio.save(save_file_path, audio_chunk.unsqueeze(0), target_sampling_rate)
+
+        # 记录片段时长（使用原始采样率计算时长）
+        duration = (timestamp["end"] - timestamp["start"]) / original_sampling_rate
+        all_durations.append(duration)
+
+# 绘制所有切分结果的时长分布
+plt.figure(figsize=(8, 5))
+plt.hist(all_durations, bins=20, color="skyblue", edgecolor="black")
+plt.xlabel("Segment Duration (s)")
+plt.ylabel("Count")
+plt.title("Segment Duration Distribution for All Files")
+plt.savefig("duration_distribution.png")
+plt.close()
+
+print("完成所有文件的 VAD 处理并绘制时长分布图")
+```
+
+主要修改内容：
+
+1. **导入torchaudio模块**：用于音频读取、重采样和保存
+2. **自动检测采样率**：使用`torchaudio.load()`读取音频文件，自动获取原始采样率
+3. **添加目标采样率配置**：设置`target_sampling_rate = 16000`
+4. **动态VAD处理**：VAD处理时使用检测到的原始采样率
+5. **智能重采样**：如果原始采样率不是16kHz，则使用`torchaudio.transforms.Resample()`进行重采样
+6. **标准化保存**：使用`torchaudio.save()`保存音频，确保输出采样率始终为16kHz
+
+现在这个代码可以处理任意采样率的输入音频文件，并始终输出16kHz采样率的音频片段。
+
+{% endfold %}
+
+## Claude Opus 4
+Claude workbench, 20250525
+
+{% fold info @展开查看回答 %}
+
+我来帮你修改代码，使其能够自适应任意输入采样率，并始终输出16kHz的音频：
+
+```python
+import torch
+import os
+import time
+from tqdm import tqdm
+import matplotlib.pyplot as plt
+import numpy as np
+import torchaudio
+import librosa
+
+torch.set_num_threads(1)
+
+# 参数配置
+input_dir = "raw"  # 原始音频所在目录
+save_path = "after-vad"  # 分段后音频保存目录
+min_speech_duration_ms = 1000
+max_speech_duration_s = 20
+audio_extensions = (".wav", ".mp3", ".flac", ".ogg", ".m4a", ".aac")
+output_sampling_rate = 16000  # 输出采样率固定为16kHz
+
+# 如果输出目录不存在，则创建
+os.makedirs(save_path, exist_ok=True)
+
+# 加载 Silero VAD 模型
+model, utils = torch.hub.load(repo_or_dir="snakers4/silero-vad", model="silero_vad")
+(get_speech_timestamps, _, read_audio, VADIterator, collect_chunks) = utils
+
+def read_audio_auto_sr(audio_path):
+    """读取音频文件并自动检测采样率"""
+    try:
+        # 使用 torchaudio 获取音频信息
+        info = torchaudio.info(audio_path)
+        original_sr = info.sample_rate
+        
+        # 使用 silero 的 read_audio 读取音频
+        wav = read_audio(audio_path, sampling_rate=original_sr)
+        return wav, original_sr
+    except:
+        # 如果 torchaudio 失败，尝试使用 librosa
+        wav_np, original_sr = librosa.load(audio_path, sr=None, mono=True)
+        wav = torch.from_numpy(wav_np)
+        return wav, original_sr
+
+def save_audio_resampled(file_path, audio_tensor, original_sr, target_sr=16000):
+    """保存音频并重采样到目标采样率"""
+    # 如果采样率不同，进行重采样
+    if original_sr != target_sr:
+        # 使用 torchaudio 进行重采样
+        resampler = torchaudio.transforms.Resample(
+            orig_freq=original_sr, 
+            new_freq=target_sr
+        )
+        audio_tensor = resampler(audio_tensor)
+    
+    # 保存音频
+    torchaudio.save(file_path, audio_tensor.unsqueeze(0), target_sr)
+
+# 用于累积所有音频片段时长（秒），绘制直方图
+all_durations = []
+
+# 遍历目录，筛选音频后缀文件
+audio_files = [f for f in os.listdir(input_dir) if f.lower().endswith(audio_extensions)]
+
+for audio_file in audio_files:
+    audio_path = os.path.join(input_dir, audio_file)
+    print(f"处理文件: {audio_file}")
+
+    # 获取不带后缀的原始文件名（例如"1.wav" -> "1"）
+    original_root, original_ext = os.path.splitext(audio_file)
+
+    try:
+        # 读取音频并自动检测采样率
+        wav, original_sr = read_audio_auto_sr(audio_path)
+        print(f"  检测到采样率: {original_sr} Hz")
+
+        # 执行 VAD
+        start = time.time()
+        speech_timestamps = get_speech_timestamps(
+            wav,
+            model,
+            sampling_rate=original_sr,  # 使用实际的采样率
+            min_speech_duration_ms=min_speech_duration_ms,
+            max_speech_duration_s=max_speech_duration_s,
+        )
+        end = time.time()
+        print(f"  VAD 耗时: {end - start:.2f}s")
+        print(f"  检测到 {len(speech_timestamps)} 个语音片段")
+
+        # 保存切分后的音频片段
+        for idx, timestamp in tqdm(
+            enumerate(speech_timestamps),
+            total=len(speech_timestamps),
+            desc=f"保存切分片段",
+        ):
+            # 构建新的文件名，例如：1.wav -> 1-0.wav
+            segment_file_name = f"{original_root}-{idx}.wav"
+            save_file_path = os.path.join(save_path, segment_file_name)
+
+            # 收集音频片段
+            audio_chunk = collect_chunks([timestamp], wav)
+            
+            # 保存音频并重采样到16kHz
+            save_audio_resampled(save_file_path, audio_chunk, original_sr, output_sampling_rate)
+
+            # 记录片段时长（使用原始采样率计算）
+            duration = (timestamp["end"] - timestamp["start"]) / original_sr
+            all_durations.append(duration)
+
+    except Exception as e:
+        print(f"  处理文件 {audio_file} 时出错: {str(e)}")
+        continue
+
+# 绘制所有切分结果的时长分布
+if all_durations:
+    plt.figure(figsize=(8, 5))
+    plt.hist(all_durations, bins=20, color="skyblue", edgecolor="black")
+    plt.xlabel("Segment Duration (s)")
+    plt.ylabel("Count")
+    plt.title("Segment Duration Distribution for All Files")
+    plt.savefig("duration_distribution.png")
+    plt.close()
+    
+    # 打印统计信息
+    print(f"\n统计信息:")
+    print(f"总片段数: {len(all_durations)}")
+    print(f"平均时长: {np.mean(all_durations):.2f}s")
+    print(f"最短时长: {np.min(all_durations):.2f}s")
+    print(f"最长时长: {np.max(all_durations):.2f}s")
+
+print("\n完成所有文件的 VAD 处理并绘制时长分布图")
+print(f"所有输出文件已重采样至 {output_sampling_rate} Hz")
+```
+
+主要修改内容：
+
+1. **自动检测采样率**：
+   - 添加了 `read_audio_auto_sr()` 函数，使用 `torchaudio.info()` 自动检测音频文件的原始采样率
+   - 如果 torchaudio 失败，使用 librosa 作为备选方案
+
+2. **自适应VAD处理**：
+   - VAD 处理时使用检测到的实际采样率，而不是硬编码的 48000
+
+3. **输出重采样**：
+   - 添加了 `save_audio_resampled()` 函数，在保存音频时自动重采样到 16kHz
+   - 使用 `torchaudio.transforms.Resample` 进行高质量重采样
+
+4. **时长计算修正**：
+   - 计算片段时长时使用实际的采样率，而不是硬编码的值
+
+5. **错误处理**：
+   - 添加了 try-except 块来处理可能的错误
+   - 添加了更多的日志输出，便于调试
+
+6. **依赖项**：
+   - 需要额外安装 `librosa`（作为备选方案）：`pip install librosa`
+
+这样修改后，代码可以处理任意采样率的输入音频文件，并且所有输出都会被重采样到 16kHz。
+
+{% endfold %}
+
 ## DeepSeek-R1
 网页版，无联网搜索，20250301
 
@@ -4029,22 +4313,23 @@ print("\n完成所有文件的 VAD 处理。")
 {% endfold %}
 
 ## 答案评价
-GPT-4.5 preview, o3-mini-high, o4-mini-high, Gemini 2.5 Pro 多引入了 `torchaudio` 依赖，手动做了转换，实现功能了但是有点冗余
+GPT-4.5 preview, o3-mini-high, o4-mini-high, Claude Opus 4, Gemini 2.5 Pro 多引入了 `torchaudio` 依赖，手动做了转换，实现功能了但是有点冗余
 
 o1-preview 多引入了 `torchaudio` 依赖，其实 `read_audio` 自己就能重新采样成 16 kHz 的音频，而且能自动压成单声道，不需要再额外设置，这里用 `torchaudio.load` 而不用 `read_audio` 没有处理双声道直接报错了
 
 o1, o3, Claude 3.7 Sonnet, DeepSeek-R1, Grok 3 的做法是正确做法
 
-GPT-4.1, Gemini 2.0 Pro 报错了，不细看了
+GPT-4.1, Claude Sonnet 4, Gemini 2.0 Pro 报错了，不细看了
 
 其中，o1 的描述更好，相比其他模型，更多解释了库本身的函数内容和修改的原理
 
-| 更好 |         好        |        中       |       差       |
-|:----:|:-----------------:|:---------------:|:--------------:|
-|  o1  |         o3        | GPT-4.5 preview |     GPT-4.1    |
-|      | Claude 3.7 Sonnet |   o3-mini-high  |   o1-preview   |
-|      |    DeepSeek-R1    |   o4-mini-high  | Gemini 2.0 Pro |
-|      |       Grok 3      |  Gemini 2.5 Pro |                |
+| 更好 |         好        |        中       |        差       |
+|:----:|:-----------------:|:---------------:|:---------------:|
+|  o1  |         o3        | GPT-4.5 preview |     GPT-4.1     |
+|      | Claude 3.7 Sonnet |   o3-mini-high  |    o1-preview   |
+|      |    DeepSeek-R1    |   o4-mini-high  | Claude Sonnet 4 |
+|      |       Grok 3      |  Claude Opus 4  |  Gemini 2.0 Pro |
+|      |                   |  Gemini 2.5 Pro |                 |
 # 问题七
 ```
 下面mermaid代码有点不精简，优化一下，不要改动任何逻辑，保持显示效果的一致：
