@@ -9,9 +9,9 @@ category: 生活
 
 考虑到很多模型会针对开源数据集刷榜（不然可以看官方 benchmark, [LiveBench](https://livebench.ai/#/), [lmarena](https://lmarena.ai/), [aider](https://aider.chat/docs/leaderboards/)）所以就直接准备几个个人实际使用中的，有一点难度的问题，看看大模型会怎么反馈，这里姑且记录一下
 
-为了防止官网降智，我都尽量用 api 输出答案
+为了防止官网降智，我都尽量用 api 输出答案，同时尽最大努力推理（比如 reasoning_effort 设置为 high）
 
-每个回答下面，附上了使用的具体模型和测试时间
+每个回答下面，附上了使用的具体模型和测试时间，用的都是最新版本，比如 2025 年 6 月测评的问题，用的是 DeepSeek-R1 的最新版本
 
 为了方便复制问题进行复现，所有问题的原文都放在代码块里了
 
@@ -5467,9 +5467,9 @@ o4-mini-high, Claude Opus 4 的解释不错
 ```
 uv怎么执行python -m
 ```
-## GPT-4.5 preview
 20250601
 
+## GPT-4.5 preview
 {% fold info @展开查看回答 %}
 
 如果你想在 Python 的虚拟环境（如通过 `uv` 工具创建和管理的环境）中执行 `python -m` 命令，可以参考以下步骤：
@@ -5536,8 +5536,6 @@ myenv\Scripts\python.exe -m module_name
 {% endfold %}
 
 ## GPT-4.1
-20250601
-
 {% fold info @展开查看回答 %}
 
 `uv` 是一个新的 Python 包管理器，类似于 `pip`，由 Astral 开发。
@@ -5609,8 +5607,6 @@ uv run -m http.server 8000
 {% endfold %}
 
 ## o1
-OpenRouter, 20250601
-
 {% fold info @展开查看回答 %}
 
 如果你想要执行某个已安装的 Python 模块（例如 uvicorn、pip 等），通常可以使用以下命令格式：
@@ -5640,8 +5636,6 @@ python -m uv
 {% endfold %}
 
 ## o3
-AiHubMix, 20250601
-
 {% fold info @展开查看回答 %}
 
 `uv` 本身并不是一条 “能直接接受 python -m 参数” 的命令，真正要在 uv 创建或选中的虚拟环境里执行
@@ -5678,8 +5672,6 @@ python -m xxx，有两种常见做法：
 {% endfold %}
 
 ## o4-mini-high
-OpenRouter, 20250601
-
 {% fold info @展开查看回答 %}
 
 你的问题有点笼统，先给出几种常见场景下“用 uv 去执行 python -m” 的做法，供你对号入座：
@@ -5748,8 +5740,6 @@ OpenRouter, 20250601
 {% endfold %}
 
 ## Claude 3.7 Sonnet
-claude-3-7-sonnet, thinking, 20250601
-
 {% fold info @展开查看回答 %}
 
 ### 使用 uv 执行 Python 模块
@@ -5779,8 +5769,6 @@ uv python -m http.server
 {% endfold %}
 
 ## Claude Opus 4
-???, 20250601
-
 {% fold info @展开查看回答 %}
 
 在 uv 中执行 `python -m` 命令有几种方式：
@@ -5874,8 +5862,6 @@ uv run mycommand
 {% endfold %}
 
 ## DeepSeek-R1
-网页版，无联网搜索，20250601
-
 {% fold info @展开查看回答 %}
 
 在Windows系统中使用`python -m`命令执行Python模块，需要按照以下步骤操作。这个命令用于将模块作为脚本运行（适用于内置模块、第三方库或自定义包）：
@@ -5973,8 +5959,6 @@ python -m 模块名称 [模块参数]
 {% endfold %}
 
 ## Gemini 2.5 Pro
-gemini-2.5-pro-exp-03-25, 20250601
-
 {% fold info @展开查看回答 %}
 
 `uv` 本身并不直接“执行” `python -m <module>`。`uv` 是一个 Python 包安装器和虚拟环境管理器，它的目标是取代 `pip` 和 `venv`（以及其他一些工具）。
@@ -6058,14 +6042,31 @@ uv run python -m black .  # 格式化当前目录
 ## 答案评价
 GPT-4.5 preview 的做法是对的，但是只谈了先激活环境这一种方法，有点麻烦
 
+GPT-4.1 是对的，这个是最佳实践
 
+o1, o4-mini 根本不清楚 uv 是什么
+
+o3 在最佳实践之外画蛇添足了
+
+Claude 3.7 Sonnet 使用了错误的命令
+
+Claude Opus 4, Gemini 2.5 Pro 包括了 uv run -m 和手动激活虚拟环境执行两种方法
+
+DeepSeek-R1 无视了问题
+
+|       好       |        中       |         差        |
+|:--------------:|:---------------:|:-----------------:|
+|     GPT-4.1    | GPT-4.5 preview |         o1        |
+|  Claude Opus 4 |        o3       |      o4-mini      |
+| Gemini 2.5 Pro |                 | Claude 3.7 Sonnet |
+|                |                 |    DeepSeek-R1    |
 
 # 问题 X
 ```
 ```
-## GPT-4.5 preview
-gpt-4.5-preview, 20250601
+20250601
 
+## GPT-4.5 preview
 {% fold info @展开查看回答 %}
 
 
@@ -6073,8 +6074,6 @@ gpt-4.5-preview, 20250601
 {% endfold %}
 
 ## GPT-4.1
-poe, 20250601
-
 {% fold info @展开查看回答 %}
 
 
@@ -6082,8 +6081,6 @@ poe, 20250601
 {% endfold %}
 
 ## o1
-OpenRouter, 20250601
-
 {% fold info @展开查看回答 %}
 
 
@@ -6091,17 +6088,13 @@ OpenRouter, 20250601
 {% endfold %}
 
 ## o3
-AiHubMix, 20250601
-
 {% fold info @展开查看回答 %}
 
 
 
 {% endfold %}
 
-## o4-mini-high
-OpenRouter, 20250601
-
+## o4-mini
 {% fold info @展开查看回答 %}
 
 
@@ -6109,8 +6102,6 @@ OpenRouter, 20250601
 {% endfold %}
 
 ## Claude 3.7 Sonnet
-claude-3-7-sonnet, thinking, 20250601
-
 {% fold info @展开查看回答 %}
 
 
@@ -6118,8 +6109,6 @@ claude-3-7-sonnet, thinking, 20250601
 {% endfold %}
 
 ## Claude Opus 4
-???, 20250601
-
 {% fold info @展开查看回答 %}
 
 
@@ -6127,8 +6116,6 @@ claude-3-7-sonnet, thinking, 20250601
 {% endfold %}
 
 ## DeepSeek-R1
-网页版，无联网搜索，20250601
-
 {% fold info @展开查看回答 %}
 
 
@@ -6136,8 +6123,6 @@ claude-3-7-sonnet, thinking, 20250601
 {% endfold %}
 
 ## Gemini 2.5 Pro
-gemini-2.5-pro-exp-03-25, 20250601
-
 {% fold info @展开查看回答 %}
 
 
