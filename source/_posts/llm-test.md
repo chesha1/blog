@@ -1441,7 +1441,8 @@ o1-preview, GPT-4o 用了三次
 |:---------------:|:-----------------:|:----------:|:-----------------:|
 | GPT-4.5 preview | Claude 3.7 Sonnet | o1-preview |      GPT-4.1      |
 | Claude Sonnet 4 |   Gemini 2.5 Pro  |   GPT-4o   |         o1        |
-|  Claude Opus 4  |  Qwen3-235B-A22B  |            |    o3-mini-high   |
+|  Claude Opus 4  |  Qwen3-235B-A22B  |            |         o3        |
+|                 |                   |            |    o3-mini-high   |
 |                 |                   |            |    o4-mini-high   |
 |                 |                   |            | Claude 3.5 Sonnet |
 |                 |                   |            |    DeepSeek-V3    |
@@ -2698,6 +2699,8 @@ o1-preview 提到了现在标准库中没有这种函数，并提供了把 match
 
 o1-pro 提供了手动转换这一种勉强可行的解决方法
 
+o3 擦边提到了 URLPattern，还提到了转成正则和使用第三方库
+
 o3-mini-high 提供了一堆关于正则匹配的废话，最后才提到目前没有匹配 match patterns 的标准库函数
 
 Claude 3.5 Sonnet 提到了现在标准库中没有这种函数，并提供了第三方库和其他错误方法
@@ -2712,8 +2715,8 @@ o4-mini-high 也提到了 URL Pattern API，还有一些额外的方法
 
 |     更好     |       好       |         中        |         差        |
 |:------------:|:--------------:|:-----------------:|:-----------------:|
-| o4-mini-high | Gemini 2.5 Pro |  GPT-4.5 preview  |       GPT-4o      |
-|              |                |      GPT-4.1      |         o1        |
+| o4-mini-high |       o3       |  GPT-4.5 preview  |       GPT-4o      |
+|              | Gemini 2.5 Pro |                   |         o1        |
 |              |                |     o1-preview    |       o1-pro      |
 |              |                | Claude 3.7 Sonnet |    o3-mini-high   |
 |              |                |  Claude Sonnet 4  | Claude 3.5 Sonnet |
