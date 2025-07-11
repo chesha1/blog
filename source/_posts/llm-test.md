@@ -1657,6 +1657,12 @@ volcengine, 20250612
 
 三次都没有做出来，双箭头的 icon 都写错了
 
+## Grok 4
+OpenRouter, 20250711
+
+两次完成，但是样式好看，用上图标了
+
+
 ## 答案评价
 GPT-4.5 preview, o1-preview, GPT-4o, Claude 3.7 Sonnet, Claude Sonnet 4, Claude Opus 4, Gemini 2.5 Pro, Qwen3-235B-A22B 完成了问题
 
@@ -1666,7 +1672,7 @@ GPT-4.5 preview 只用了一次回答
 
 Claude Sonnet 4, Claude Opus 4 只用了一次回答，而且用了正确的图标，较为美观
 
-Claude 3.7 Sonnet, Gemini 2.5 Pro 用了更好看的图标，只用了两次回答
+Claude 3.7 Sonnet, Gemini 2.5 Pro, Grok 4 用了更好看的图标，只用了两次回答
 
 Qwen3-235B-A22B 用了两次，但是样式比较丑
 
@@ -1677,7 +1683,7 @@ o1-preview, GPT-4o 用了三次
 | GPT-4.5 preview | Claude 3.7 Sonnet | o1-preview |          GPT-4.1         |
 | Claude Sonnet 4 |   Gemini 2.5 Pro  |   GPT-4o   |            o1            |
 |  Claude Opus 4  |  Qwen3-235B-A22B  |            |            o3            |
-|                 |                   |            |       o3-mini-high       |
+|                 |       Grok 4      |            |       o3-mini-high       |
 |                 |                   |            |       o4-mini-high       |
 |                 |                   |            |     Claude 3.5 Sonnet    |
 |                 |                   |            |        DeepSeek-V3       |
@@ -2989,6 +2995,110 @@ console.log(noMatchResult); // 输出: null
 
 {% endfold %}
 
+## Grok 4
+OpenRouter, 20250711
+
+{% fold info @展开查看回答 %}
+
+基于你的问题，我来详细解答一下。你提到在 JavaScript (JS) 中可以用正则表达式的 `test()` 方法来测试字符串是否匹配一个正则模式，这是正确的（例如：`/abc/.test('abc')` 返回 `true`）。现在，对于你说的“match patterns”（我猜测你指的是路径模式匹配、glob patterns 或类似 Chrome 扩展中的 URL match patterns，而不是标准的正则表达式），我来解释一下有没有类似的函数，以及如何处理。
+
+### 1. **什么是“match patterns”？**
+   - 如果你指的是**glob patterns**（通配符模式），如 `*.js`（匹配所有 JS 文件）、`**/foo/*.txt`（匹配目录下的 txt 文件），这是一种常见的文件路径或字符串模式匹配，常用于文件系统、构建工具（如 webpack、gulp）或 Node.js 中。
+   - 如果你指的是 **Chrome 扩展中的 match patterns**（如 `<all_urls>` 或 `http://*/*`），这是用于匹配 URL 的特殊模式字符串。
+   - 这些不同于正则表达式（RegExp），因为它们更简单、更专注于路径/URL 匹配，不支持复杂的正则语法（如捕获组或量词）。
+
+   **注意**：标准 JavaScript (ECMAScript) 中**没有内置**的函数直接像 `test()` 那样测试“match patterns”。正则的 `test()` 是 RegExp 对象的原生方法，但 match patterns 需要额外的实现或库。
+
+### 2. **有没有类似的函数？**
+- **标准 JS 中没有内置函数**：
+  - JS 的核心 API（如 String 或 RegExp）不支持直接测试 glob patterns 或 Chrome match patterns。你不能像 `/pattern/.test(str)` 那样直接用内置方法测试 `*.js` 是否匹配 `'file.js'`。
+  - 但是，你可以用**第三方库**或**手动实现**来模拟类似 `test()` 的功能。这些库会返回 `true`/`false`（是否匹配），类似于 `RegExp.test()`。
+
+- **推荐解决方案**：
+  - **对于 glob patterns（路径/文件模式匹配）**：
+    - 使用 **minimatch** 库（Node.js 和浏览器均支持）。这是最流行且简单的库，专门用于 glob 模式匹配。
+      - 安装：`npm install minimatch`（如果是 Node.js 项目）。
+      - 示例：
+        ```javascript
+        const minimatch = require('minimatch');  // Node.js
+        // 或 import minimatch from 'minimatch'; // ESM 模块
+
+        const pattern = '*.js';  // glob 模式
+        const str = 'example.js';
+
+        const isMatch = minimatch(str, pattern);  // 返回 true 或 false
+        console.log(isMatch);  // true
+
+        // 另一个例子：忽略大小写
+        console.log(minimatch('Example.JS', '*.js', { nocase: true }));  // true
+        ```
+      - `minimatch(str, pattern, options)` 类似于 `test()`：直接返回布尔值。
+      - 为什么推荐？它轻量、支持大多数 glob 语法（如 `*`、`?`、`**`、`!` 用于否定），并且是许多工具（如 Mocha、Grunt）的依赖。
+    - 其他库选项：
+      - **micromatch**：更现代、更快，支持更多功能。示例：`micromatch.isMatch('file.js', '*.js')` 返回 `true`。
+      - **picomatch**：非常轻量，适合浏览器。示例：`picomatch('*.js')('file.js')` 返回 `true`（它返回一个测试函数）。
+      - 安装这些库：`npm install micromatch` 或 `npm install picomatch`。
+
+  - **对于 Chrome 扩展中的 match patterns（URL 匹配）**：
+    - Chrome 有自己的 match patterns 语法（如 `http://example.com/*`），用于 manifest.json 中的权限或 content scripts。
+    - **没有内置的测试函数**，但你可以：
+      - 使用库如 **webext-patterns**（专为 Chrome 扩展设计的）。
+        - 安装：`npm install webext-patterns`。
+        - 示例：
+          ```javascript
+          import { patternToRegex } from 'webext-patterns';
+
+          const pattern = 'http://example.com/*';  // Chrome match pattern
+          const url = 'http://example.com/page.html';
+
+          const regex = patternToRegex(pattern);  // 转换为正则
+          const isMatch = regex.test(url);  // 使用 RegExp.test() 测试
+          console.log(isMatch);  // true
+          ```
+      - 或者手动转换 match patterns 为正则表达式，然后用 `test()` 测试（但这较复杂，推荐用库）。
+
+  - **Node.js 特定**：
+    - Node.js 内置了 `path` 模块，但它没有直接的模式匹配函数（只有 `path.match` 在实验阶段，且不是 glob）。
+    - 如果你在 Node.js 中处理文件路径，推荐用 `glob` 库（`npm install glob`）来实际查找匹配的文件，但如果你只想测试字符串是否匹配模式，还是用 minimatch。
+
+- **浏览器环境**：
+  - 如果不在 Node.js 中（纯浏览器 JS），你可以从 CDN 加载这些库（如 unpkg.com），例如：
+    ```html
+    <script src="https://unpkg.com/minimatch@latest/minimatch.js"></script>
+    <script>
+      console.log(minimatch('file.js', '*.js'));  // true
+    </script>
+    ```
+
+### 3. **手动实现（如果不想用库）**
+如果你只处理简单的模式，可以自己写一个函数（但不推荐用于复杂场景，因为 glob 语法有许多边缘情况）。
+
+- 示例：简单 glob 测试函数（仅支持 `*` 和 `?`）：
+  ```javascript
+  function simpleMatch(str, pattern) {
+    const regexStr = pattern
+      .replace(/\./g, '\\.')  // 转义点
+      .replace(/\*/g, '.*')   // * 匹配任意
+      .replace(/\?/g, '.');   // ? 匹配单个字符
+    const regex = new RegExp(`^${regexStr}$`);
+    return regex.test(str);
+  }
+
+  console.log(simpleMatch('example.js', '*.js'));  // true
+  console.log(simpleMatch('example.txt', '*.js')); // false
+  ```
+  - 这类似于将 pattern 转换为正则，然后用 `test()`。但对于高级 glob（如 `**` 或否定），这会失效——还是用库吧。
+
+### 4. **注意事项**
+- **性能**：如果频繁匹配，选择高效库如 picomatch。
+- **正则 vs. match patterns**：如果你能用正则实现需求，就用内置的 `test()`，因为它更快且无需依赖。但 match patterns 更易读用于路径/URL。
+- **未来 JS 特性**：ES 提案中有“pattern matching”（如 `match` 语句），但目前还未标准化（类似于其他语言的 switch/match）。如果你指的是这个，目前没有内置支持。
+- 如果你的“match patterns”指的是其他东西（比如模板匹配或特定框架），请提供更多细节，我可以调整解答！
+
+如果这不是你想要的，或者你有更多上下文（如具体代码或环境），欢迎补充！
+
+{% endfold %}
+
 ## 答案评价
 GPT-4o, o1, Gemini 2.0 Pro, Grok 3 全篇没有想到 match patterns 是和正则表达式不一样的东西
 
@@ -3006,7 +3116,7 @@ o3-mini-high 提供了一堆关于正则匹配的废话，最后才提到目前�
 
 Claude 3.5 Sonnet 提到了现在标准库中没有这种函数，并提供了第三方库和其他错误方法
 
-GPT-4.5 preview, GPT-4.1, o3, Claude 3.7 Sonnet, Claude Sonnet 4, Claude Opus 4 提供了把 match patterns 转化成正则和使用第三方库两种正确的方法
+GPT-4.5 preview, GPT-4.1, o3, Claude 3.7 Sonnet, Claude Sonnet 4, Claude Opus 4, Grok 4 提供了把 match patterns 转化成正则和使用第三方库两种正确的方法
 
 DeepSeek-R1 也对正则匹配进行了一些废话，但还是提供了一个解决方法
 
@@ -3021,7 +3131,7 @@ o4-mini-high 也提到了 URL Pattern API，还有一些额外的方法
 |              | Gemini 2.5 Pro | Claude 3.7 Sonnet |       o1-pro      |
 |              |                |  Claude Sonnet 4  |    o3-mini-high   |
 |              |                |   Claude Opus 4   | Claude 3.5 Sonnet |
-|              |                |                   |    DeepSeek-R1    |
+|              |                |       Grok 4      |    DeepSeek-R1    |
 |              |                |                   |   Gemini 2.0 Pro  |
 |              |                |                   |       Grok 3      |
 |              |                |                   |  Qwen3-235B-A22B  |
@@ -5470,10 +5580,113 @@ Okay, let's break down YAML array (sequence) indentation:
 
 {% endfold %}
 
+## Grok 4
+OpenRouter, 20250711
+
+{% fold info @展开查看回答 %}
+
+是的，关于 YAML 中的数组（也叫序列或列表）缩进问题，我来详细解释一下。YAML 的设计强调人类可读性和结构化，缩进是其核心机制之一，但并非所有情况下都强制要求“正好 2 格”。我会基于 YAML 1.2 规范（官方标准）来回答，并提供示例。
+
+### 1. **YAML 数组的基本表示**
+YAML 中的数组使用连字符（`-`）表示，每个项通常在一行开头以 `-` + 空格开头。例如：
+```yaml
+- item1
+- item2
+- item3
+```
+这是一个有效的根级别数组。它等价于 JSON 的 `["item1", "item2", "item3"]`。
+
+### 2. **数组需要缩进 2 格吗？**
+- **不一定需要正好 2 格**：
+  - YAML 规范 **不强制要求缩进量**（可以是 1 格、2 格、4 格等），但 **强烈推荐使用 2 个空格**（而不是 Tab），因为这是社区共识和大多数 YAML 解析器的默认期望（例如 PyYAML、js-yaml 等库）。
+  - 关键规则是：**缩进必须一致**。如果你在某个结构中使用 2 格缩进，整个文档的同级结构都必须保持一致。否则，解析器可能会报错或误解结构。
+  - 对于 **根级别数组**（文档最外层），**完全不需要缩进**。上面的示例就是这样，它是有效的。
+
+- **为什么推荐 2 格？**
+  - 这是 YAML 规范的建议（见 YAML 1.2 规范的风格指南），目的是提高可读性。
+  - 许多工具（如 Visual Studio Code、YAML Lint 等）会自动格式化为 2 格。
+  - 如果你使用 1 格或 4 格，只要一致，通常也能解析，但可能在某些严格的解析器中引发警告。
+
+### 3. **不缩进是否行？**
+- **根级别数组：可以不缩进**。
+  - 示例（有效）：
+    ```yaml
+    - apple
+    - banana
+    - cherry
+    ```
+    这会被正确解析为一个数组。
+
+- **嵌套数组或在映射（key-value）中：不行，不缩进会导致解析错误**。
+  - YAML 使用缩进来表示层次结构。如果不缩进，解析器无法区分结构，导致语法错误。
+  - **错误示例**（不缩进）：
+    ```yaml
+    fruits:
+    - apple  # 这里不缩进，会被解析为 fruits 是 null，然后是一个独立的列表项
+    - banana
+    ```
+    - 这可能会被解析为无效 YAML，或者被误解为两个独立的结构。解析器（如在线 YAML 验证工具）会报错：`mapping values are not allowed in this context` 或类似。
+
+  - **正确示例**（缩进 2 格）：
+    ```yaml
+    fruits:
+      - apple  # 相对于键 "fruits" 缩进 2 格
+      - banana
+      - cherry
+    ```
+    - 这会被正确解析为 `{ "fruits": ["apple", "banana", "cherry"] }`。
+    - 如果你想用 4 格缩进，也行（只要一致）：
+      ```yaml
+      fruits:
+          - apple  # 4 格缩进
+          - banana
+      ```
+
+- **内联数组（单行表示）：不需要缩进**。
+  - YAML 支持内联数组，使用方括号 `[]` 表示，不需要换行或缩进。
+  - 示例（有效）：
+    ```yaml
+    fruits: [apple, banana, cherry]  # 内联数组，无需缩进
+    ```
+    - 这在简单场景下很方便，但可读性不如多行列表好。
+
+### 4. **常见陷阱和最佳实践**
+- **陷阱**：
+  - 混合 Tab 和空格：YAML 规范不允许 Tab 用于缩进（必须用空格）。如果用了 Tab，解析器可能会失败。
+  - 不一致缩进：例如，一个项缩进 2 格，另一个 3 格，会导致错误。
+  - 嵌套结构：数组里面嵌套数组或映射时，必须额外缩进。
+    - 示例（嵌套）：
+      ```yaml
+      menu:
+        - name: fruits
+          items:  # 嵌套数组
+            - apple
+            - banana
+        - name: veggies
+          items:
+            - carrot
+            - broccoli
+      ```
+
+- **最佳实践**：
+  - 始终使用 2 个空格缩进（这是标准推荐）。
+  - 使用工具验证：如 [YAML Lint](https://www.yamllint.com/) 或 IDE 的 YAML 插件，来检查语法。
+  - 如果你的 YAML 是配置文件（例如 Docker Compose、Kubernetes），严格遵守 2 格缩进，以避免兼容性问题。
+  - 阅读官方规范：YAML 1.2 规范（yaml.org）有详细的缩进规则。
+
+### 5. **总结**
+- YAML 数组 **不强制需要缩进 2 格**，但推荐使用 2 格以提高可读性和兼容性。
+- **不缩进行不行？** 取决于上下文：
+  - 根级别或内联数组：可以不缩进。
+  - 嵌套结构：必须缩进，否则无效。
+如果你有具体的 YAML 示例代码，可以贴出来，我帮你分析是否有效！
+
+{% endfold %}
+
 ## 答案评价
 GPT-4.5 preview, Claude 3.7 Sonnet, DeepSeek-R1 关于语法的回答是正确的
 
-GPT-4.1, o1-preview, o3, o3-mini-high, o3-pro, o4-mini-high, Claude Sonnet 4, Claude Opus 4, Gemini 2.5 Pro, Grok 3 关于语法的回答是错误的
+GPT-4.1, o1-preview, o3, o3-mini-high, o3-pro, o4-mini-high, Claude Sonnet 4, Claude Opus 4, Gemini 2.5 Pro, Grok 3, Grok 4 关于语法的回答是错误的
 
 o1 回避了这个问题，而且描述有错，yaml 官方的数组不缩进
 
@@ -5494,6 +5707,7 @@ Claude 3.7 Sonnet 的描述最好
 |                   |                 |  Claude Opus 4  |
 |                   |                 |  Gemini 2.5 Pro |
 |                   |                 |      Grok 3     |
+|                   |                 |      Grok 4     |
 
 # 问题九
 ```
