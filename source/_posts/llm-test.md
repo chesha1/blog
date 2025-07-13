@@ -3099,6 +3099,76 @@ OpenRouter, 20250711
 
 {% endfold %}
 
+## Kimi K2
+官网, 20250713
+
+{% fold info @展开查看回答 %}
+
+在 JavaScript 中，**`RegExp.prototype.test()`** 是用于测试字符串是否匹配正则表达式的函数。  
+但如果你指的是 **Chrome 扩展中的 Match Patterns**（用于 `manifest.json` 的 `matches` 字段，或 `chrome.scripting.executeScript` 的 `matches` 等），它们并不是正则表达式，而是类似 `https://*/*` 这样的模式。
+
+### **Chrome 扩展的 Match Patterns 匹配检查**
+Chrome 扩展本身 **没有内置的 `test()` 类似函数**，但你可以用 **`chrome.runtime.getURL()` + `URL`** 或 **手动实现匹配逻辑**。
+
+#### **1. 手动实现匹配检查（类似 `test()`）**
+你可以写一个函数来检查 URL 是否符合某个 match pattern：
+
+```js
+function matchesPattern(url, pattern) {
+  // 处理特殊模式
+  if (pattern === '<all_urls>') return true;
+
+  // 解析 pattern
+  const match = pattern.match(/^(\*|https?|file|ftp):\/\/([^\/]+)\/(.*)$/);
+  if (!match) return false;
+
+  const [, scheme, host, path] = match;
+  const urlObj = new URL(url);
+
+  // 检查 scheme
+  if (scheme !== '*' && urlObj.protocol !== scheme + ':') return false;
+
+  // 检查 host
+  if (host !== '*') {
+    if (host.startsWith('*.')) {
+      // 通配子域名
+      const domain = host.slice(2);
+      if (!urlObj.hostname.endsWith(domain)) return false;
+    } else {
+      if (urlObj.hostname !== host) return false;
+    }
+  }
+
+  // 检查 path
+  const pathRegex = new RegExp('^' + path.replace(/\*/g, '.*') + '$');
+  return pathRegex.test(urlObj.pathname);
+}
+
+// 示例用法
+console.log(matchesPattern("https://example.com/test", "https://*/*")); // true
+console.log(matchesPattern("https://sub.example.com/test", "https://*.example.com/*")); // true
+console.log(matchesPattern("http://example.com/test", "https://*/*")); // false
+```
+
+#### **2. 使用 Chrome 扩展 API（如 `chrome.tabs.query`）**
+如果你需要检查某个 URL 是否匹配扩展的权限，可以用：
+```js
+chrome.permissions.contains({
+  origins: ["https://*/*"]
+}, (result) => {
+  console.log(result); // true 表示匹配
+});
+```
+
+### **总结**
+- **正则表达式** → 用 `RegExp.prototype.test()`
+- **Chrome Match Patterns** → **手动实现匹配**（如上），或用 `chrome.permissions.contains()` 检查权限。
+
+如果你使用的是 **Firefox 的 Match Patterns**，也有类似的库（如 `webextension-polyfill` 提供的工具）。
+
+{% endfold %}
+
+
 ## 答案评价
 GPT-4o, o1, Gemini 2.0 Pro, Grok 3 全篇没有想到 match patterns 是和正则表达式不一样的东西
 
@@ -3124,6 +3194,8 @@ Gemini 2.5 Pro 是提到了 URL Pattern API
 
 o4-mini-high 也提到了 URL Pattern API，还有一些额外的方法
 
+Kimi K2 提到了自己转换，还有一些额外不切实际的方法
+
 |     更好     |       好       |         中        |         差        |
 |:------------:|:--------------:|:-----------------:|:-----------------:|
 | o4-mini-high |       o3       |  GPT-4.5 preview  |       GPT-4o      |
@@ -3135,6 +3207,7 @@ o4-mini-high 也提到了 URL Pattern API，还有一些额外的方法
 |              |                |                   |   Gemini 2.0 Pro  |
 |              |                |                   |       Grok 3      |
 |              |                |                   |  Qwen3-235B-A22B  |
+|              |                |                   |      Kimi K2      |
 
 # 问题五
 ```
@@ -4610,8 +4683,241 @@ print("\n完成所有文件的 VAD 处理。")
 
 {% endfold %}
 
+## Grok 4
+OpenRouter, 20250713
+
+{% fold info @展开查看回答 %}
+
+```python
+import torch
+import os
+import time
+from tqdm import tqdm
+import matplotlib.pyplot as plt
+import numpy as np
+import torchaudio
+from torchaudio.transforms import Resample
+
+torch.set_num_threads(1)
+
+# 参数配置
+input_dir = "raw"  # 原始音频所在目录
+save_path = "after-vad"  # 分段后音频保存目录
+min_speech_duration_ms = 1000
+max_speech_duration_s = 20
+audio_extensions = (".wav", ".mp3", ".flac", ".ogg", ".m4a", ".aac")
+
+# VAD 和输出采样率配置
+sr_vad = 16000  # VAD 在 16kHz 上运行（模型优化采样率）
+output_sr = 16000  # 输出始终为 16kHz
+
+# 如果输出目录不存在，则创建
+os.makedirs(save_path, exist_ok=True)
+
+# 加载 Silero VAD 模型
+model, utils = torch.hub.load(repo_or_dir="snakers4/silero-vad", model="silero_vad")
+(get_speech_timestamps, save_audio, read_audio, VADIterator, collect_chunks) = utils
+
+# 用于累积所有音频片段时长（秒），绘制直方图
+all_durations = []
+
+# 遍历目录，筛选音频后缀文件
+audio_files = [f for f in os.listdir(input_dir) if f.lower().endswith(audio_extensions)]
+
+for audio_file in audio_files:
+    audio_path = os.path.join(input_dir, audio_file)
+    print(f"处理文件: {audio_file}")
+
+    # 获取不带后缀的原始文件名（例如“1.wav” -> “1”）
+    original_root, original_ext = os.path.splitext(audio_file)
+
+    # 读取原始音频和采样率
+    waveform, original_sr = torchaudio.load(audio_path)
+
+    # 转为 mono（如果多通道，取平均）
+    if waveform.shape[0] > 1:
+        original_mono = waveform.mean(dim=0)
+    else:
+        original_mono = waveform.view(-1)
+
+    # 对于 VAD，重采样到 sr_vad（如果需要）
+    if original_sr != sr_vad:
+        resampler = Resample(original_sr, sr_vad)
+        vad_wav = resampler(original_mono)
+    else:
+        vad_wav = original_mono
+
+    # 执行 VAD
+    start = time.time()
+    speech_timestamps = get_speech_timestamps(
+        vad_wav,
+        model,
+        sampling_rate=sr_vad,
+        min_speech_duration_ms=min_speech_duration_ms,
+        max_speech_duration_s=max_speech_duration_s,
+    )
+    end = time.time()
+    print(f"{audio_file} 的 VAD 耗时: {end - start:.2f}s")
+
+    # 保存切分后的音频片段，不再单独创建文件夹，直接在文件名加入后缀
+    for idx, timestamp in tqdm(
+        enumerate(speech_timestamps),
+        total=len(speech_timestamps),
+        desc=f"保存切分片段 -> {audio_file}",
+    ):
+        # 构建新的文件名，例如：1.wav -> 1-0.wav
+        segment_file_name = f"{original_root}-{idx}.wav"
+        save_file_path = os.path.join(save_path, segment_file_name)
+
+        # 计算 VAD 片段对应的时间（秒）
+        start_sample_vad = timestamp["start"]
+        end_sample_vad = timestamp["end"]
+        start_time = start_sample_vad / sr_vad
+        end_time = end_sample_vad / sr_vad
+
+        # 转换到原始采样率的样本索引（使用 round 以获得最近样本）
+        original_start = max(0, round(start_time * original_sr))
+        original_end = min(round(end_time * original_sr), len(original_mono))
+
+        # 如果 start >= end，跳过（罕见情况）
+        if original_start >= original_end:
+            continue
+
+        # 从原始 mono 中提取片段
+        audio_chunk = original_mono[original_start:original_end]
+
+        # 重采样到 output_sr（如果需要）
+        if original_sr != output_sr:
+            output_resampler = Resample(original_sr, output_sr)
+            output_chunk = output_resampler(audio_chunk)
+        else:
+            output_chunk = audio_chunk
+
+        # 保存切分结果
+        save_audio(save_file_path, output_chunk, sampling_rate=output_sr)
+
+        # 记录片段时长（使用 VAD 时间计算，确保精确）
+        duration = end_time - start_time
+        all_durations.append(duration)
+
+# 绘制所有切分结果的时长分布
+plt.figure(figsize=(8, 5))
+plt.hist(all_durations, bins=20, color="skyblue", edgecolor="black")
+plt.xlabel("Segment Duration (s)")
+plt.ylabel("Count")
+plt.title("Segment Duration Distribution for All Files")
+plt.savefig("duration_distribution.png")
+plt.close()
+
+print("完成所有文件的 VAD 处理并绘制时长分布图")
+```
+
+{% endfold %}
+
+## Kimi K2
+官网, 20250713
+
+{% fold info @展开查看回答 %}
+
+下面给出修改后的完整代码：  
+• 自动读取任意采样率的音频；  
+• 统一把采样率重采样到 16 kHz 后再做 VAD；  
+• 切分片段也以 16 kHz 保存；  
+• 所有与采样率相关的硬编码 48000 全部移除 / 替换为 16000。  
+
+```python
+import torch
+import os
+import time
+from tqdm import tqdm
+import matplotlib.pyplot as plt
+import numpy as np
+import librosa   # 新增：用 librosa 读音频并自动获取采样率
+
+torch.set_num_threads(1)
+
+# 参数配置
+input_dir = "raw"           # 原始音频所在目录
+save_path = "after-vad"     # 分段后音频保存目录
+min_speech_duration_ms = 1000
+max_speech_duration_s = 20
+audio_extensions = (".wav", ".mp3", ".flac", ".ogg", ".m4a", ".aac")
+TARGET_SR = 16_000          # 统一的目标采样率
+
+# 如果输出目录不存在，则创建
+os.makedirs(save_path, exist_ok=True)
+
+# 加载 Silero VAD 模型
+model, utils = torch.hub.load(repo_or_dir="snakers4/silero-vad", model="silero_vad")
+(get_speech_timestamps, save_audio, _, VADIterator, collect_chunks) = utils
+# 注意：read_audio 不再使用，改用 librosa.load
+
+# 用于累积所有音频片段时长（秒），绘制直方图
+all_durations = []
+
+# 遍历目录，筛选音频后缀文件
+audio_files = [f for f in os.listdir(input_dir) if f.lower().endswith(audio_extensions)]
+
+for audio_file in audio_files:
+    audio_path = os.path.join(input_dir, audio_file)
+    print(f"处理文件: {audio_file}")
+
+    # 不带后缀的原始文件名
+    original_root, _ = os.path.splitext(audio_file)
+
+    # 用 librosa 读音频，自动获取原始采样率并重采样到 16 kHz
+    wav_np, sr = librosa.load(audio_path, sr=TARGET_SR, mono=True)
+    wav = torch.from_numpy(wav_np)   # Silero VAD 需要 torch.Tensor
+
+    # 执行 VAD
+    start = time.time()
+    speech_timestamps = get_speech_timestamps(
+        wav,
+        model,
+        sampling_rate=TARGET_SR,
+        min_speech_duration_ms=min_speech_duration_ms,
+        max_speech_duration_s=max_speech_duration_s,
+    )
+    end = time.time()
+    print(f"{audio_file} 的 VAD 耗时: {end - start:.2f}s")
+
+    # 保存切分后的片段
+    for idx, timestamp in tqdm(
+        enumerate(speech_timestamps),
+        total=len(speech_timestamps),
+        desc=f"保存切分片段 -> {audio_file}",
+    ):
+        segment_file_name = f"{original_root}-{idx}.wav"
+        save_file_path = os.path.join(save_path, segment_file_name)
+
+        audio_chunk = collect_chunks([timestamp], wav)
+        save_audio(save_file_path, audio_chunk, sampling_rate=TARGET_SR)
+
+        # 以 16 kHz 计算时长
+        duration = (timestamp["end"] - timestamp["start"]) / TARGET_SR
+        all_durations.append(duration)
+
+# 绘制所有切分结果的时长分布
+plt.figure(figsize=(8, 5))
+plt.hist(all_durations, bins=20, color="skyblue", edgecolor="black")
+plt.xlabel("Segment Duration (s)")
+plt.ylabel("Count")
+plt.title("Segment Duration Distribution for All Files")
+plt.savefig("duration_distribution.png")
+plt.close()
+
+print("完成所有文件的 VAD 处理并绘制时长分布图")
+```
+
+依赖说明  
+• 需要安装 `librosa`（`pip install librosa`），它内部自动处理采样率转换。
+
+{% endfold %}
+
 ## 答案评价
-GPT-4.5 preview, o3-mini-high, o4-mini-high, Claude Opus 4, Gemini 2.5 Pro 多引入了 `torchaudio` 依赖，手动做了转换，实现功能了但是有点冗余
+GPT-4.5 preview, o3-mini-high, o4-mini-high, Claude Opus 4, Gemini 2.5 Pro, Grok 4 多引入了 `torchaudio` 依赖，手动做了转换，实现功能了但是有点冗余
+
+Kimi K2 也引入了冗余的依赖，但是没有报错，而且也实现了功能
 
 o1-preview 多引入了 `torchaudio` 依赖，其实 `read_audio` 自己就能重新采样成 16 kHz 的音频，而且能自动压成单声道，不需要再额外设置，这里用 `torchaudio.load` 而不用 `read_audio` 没有处理双声道直接报错了
 
@@ -4628,6 +4934,9 @@ GPT-4.1, Claude Sonnet 4, Gemini 2.0 Pro 报错了，不细看了
 |      |    DeepSeek-R1    |   o4-mini-high  | Claude Sonnet 4 |
 |      |       Grok 3      |  Claude Opus 4  |  Gemini 2.0 Pro |
 |      |                   |  Gemini 2.5 Pro |                 |
+|      |                   |      Grok 4     |                 |
+|      |                   |     Kimi K2     |                 |
+
 # 问题七
 ```
 下面mermaid代码有点不精简，优化一下，不要改动任何逻辑，保持显示效果的一致：
@@ -5683,10 +5992,69 @@ YAML 中的数组使用连字符（`-`）表示，每个项通常在一行开头
 
 {% endfold %}
 
+## Kimi K2
+官网, 20250713
+
+{% fold info @展开查看回答 %}
+
+在 YAML 中，数组（列表）的写法有两种主要方式：**块状序列**（block sequence）和**内联序列**（flow sequence）。是否需要缩进取决于你使用哪种写法：
+
+---
+
+### ✅ **1. 块状序列（Block Sequence）**
+这是最常见的写法，用 `-` 开头，每行一个元素，**必须缩进**：
+
+```yaml
+fruits:
+  - apple
+  - banana
+  - cherry
+```
+
+- `-` 符号本身也算缩进的一部分，通常缩进 **两个空格**（或更多，但需统一）。
+- **不能不缩进**，否则会报错或解析错误。
+
+---
+
+### ✅ **2. 内联序列（Flow Sequence）**
+用方括号 `[]` 表示，所有元素写在一行，**不需要缩进**：
+
+```yaml
+fruits: [apple, banana, cherry]
+```
+
+- 这种写法不需要换行和缩进，适合简洁表达。
+- 但可读性较差，不适合复杂结构。
+
+---
+
+### ❌ **错误示例：块状序列不缩进**
+```yaml
+fruits:
+- apple
+- banana
+- cherry
+```
+- 虽然很多解析器会容忍这种写法（`-` 顶格），但**不符合 YAML 规范**，可能导致错误（尤其在严格模式下）。
+
+---
+
+### ✅ **总结**
+| 写法类型       | 是否需要缩进 | 示例                          |
+|----------------|--------------|-------------------------------|
+| 块状序列       | ✅ 需要       | `- apple`（缩进2格）          |
+| 内联序列       | ❌ 不需要     | `[apple, banana]`             |
+
+**结论**：  
+- 用 `-` 开头的块状序列必须缩进（推荐2格）。  
+- 用 `[]` 的内联序列可以不缩进，但牺牲可读性。
+
+{% endfold %}
+
 ## 答案评价
 GPT-4.5 preview, Claude 3.7 Sonnet, DeepSeek-R1 关于语法的回答是正确的
 
-GPT-4.1, o1-preview, o3, o3-mini-high, o3-pro, o4-mini-high, Claude Sonnet 4, Claude Opus 4, Gemini 2.5 Pro, Grok 3, Grok 4 关于语法的回答是错误的
+GPT-4.1, o1-preview, o3, o3-mini-high, o3-pro, o4-mini-high, Claude Sonnet 4, Claude Opus 4, Gemini 2.5 Pro, Grok 3, Grok 4, Kimi K2 关于语法的回答是错误的
 
 o1 回避了这个问题，而且描述有错，yaml 官方的数组不缩进
 
@@ -5708,6 +6076,7 @@ Claude 3.7 Sonnet 的描述最好
 |                   |                 |  Gemini 2.5 Pro |
 |                   |                 |      Grok 3     |
 |                   |                 |      Grok 4     |
+|                   |                 |     Kimi K2     |
 
 # 问题九
 ```
