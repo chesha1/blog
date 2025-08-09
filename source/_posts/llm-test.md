@@ -24,21 +24,20 @@ openai o 系列模型比较特殊，现在它们不会优先输出 markdown 格�
 发现某个模型在任何情况下都被另一个模型全面超过，所以才会淘汰这个模型
 
 还在测评中的模型：
-- GPT-4.5 preview, GPT-4.1, o1, o3, o4-mini
+- GPT-5, o3
 - Claude 3.7 Sonnet, Claude Opus 4
 - DeepSeek-R1
 - Gemini 2.5 Pro
 
-暂不测评的模型：
-- o1-pro（需要的余额太多，大几十美元才能问一个小问题）
-
-曾参与现退出的模型（至少存在一个模型比退出的那个模型，在所有测评问题上都强大）：
+曾参与现退出的模型（至少存在一个模型比退出的那个模型，在所有测评问题上都强大，或者被官方废弃）：
 - GPT-4o
 - GPT-4.1
+- GPT-4.5 preview
 - o1
+- o1-pro
 - o1-preview
-- o3-mini-high
-- o4-mini-high
+- o3-mini
+- o4-mini
 - Claude 3.5 Sonnet
 - Claude Sonnet 4
 - DeepSeek-V3
@@ -46,6 +45,7 @@ openai o 系列模型比较特殊，现在它们不会优先输出 markdown 格�
 - Gemini 2.0 Pro
 - Grok 3
 - Qwen3-235B-A22B
+- Doubao-Seed-1.6-thinking
 
 退出的模型不再展示回答，结果全部转移[别的文章](/posts/llm-test-outdated/)中存档
 
@@ -60,117 +60,6 @@ gpt-4.5 和 o1-pro 也太贵了，沟槽的 altman
 cloudflare如何在wrangler.toml中使用.dev.vars中的变量
 ```
 
-## GPT-4.5 preview
-gpt-4.5-preview, 20250228
-
-{% fold info @展开查看回答 %}
-
-使用Cloudflare的Workers时，Cloudflare推荐使用`.dev.vars`文件作为本地环境配置，并将`.dev.vars`文件列入`.gitignore`以保护敏感信息。
-
-### 1. 使用步骤：
-
-#### 步骤一：创建并编写 .dev.vars 文件
-
-创建一个位于项目根目录下的 `.dev.vars` 文件，用于本地开发环境中的环境变量，例如：
-
-```
-API_KEY=your_local_api_key
-JWT_SECRET=your_jwt_secret
-```
-
-**注意**：`.dev.vars`文件不应该被上传至Git或其他版本控制系统，因此一定要将此文件添加到你的`.gitignore`。
-
-#### 步骤二：在 wrangler.toml 中定义变量名称（可选）
-
-实际上，`dev.vars`文件定义的变量，不需要在wrangler.toml文件中明确定义便可在本地环境使用。wrangler会自动读取`.dev.vars`中的变量并在worker中使用。
-
-**需要注意的是：wrangler.toml中并无配置项来指定`.dev.vars`，wrangler CLI默认就会自动载入。**
-
-### 2. 在Worker脚本内访问这些变量
-
-你可以使用标准的环境变量访问方式来使用这些变量：
-
-例如，在Cloudflare Worker (JavaScript)脚本中：
-
-```javascript
-export default {
-  async fetch(request, env) {
-    const apiKey = env.API_KEY;
-    const jwtSecret = env.JWT_SECRET;
-  
-    return new Response(`API_KEY是: ${apiKey}, JWT_SECRET 是: ${jwtSecret}`);
-  }
-};
-```
-
-**注意**：
-
-- Cloudflare Workers "Module Worker"的结构会自动注入一个名为`env`的参数。变量在运行时自动加入env对应的环境对象中。
-- 如果使用传统的“Service Worker”语法（非module模式），需要注意：直接访问这些环境变量并不被推荐。推荐升级使用Module Worker模式，以便更好支持环境变量以及敏感数据管理。
-
-### 3. Cloudflare实际生产环境部署时如何定义这些变量？
-
-注意区分：
-
-- **本地开发（wrangler dev）**：使用`.dev.vars`
-- **生产部署（wrangler publish）**：你需要使用 Cloudflare Workers Dashboard 或者使用wrangler CLI的命令或者Cloudflare Dashboard手动设置变量
-
-CLI方式添加生产环境Variables示例：
-
-```bash
-wrangler secret put API_KEY
-```
-上述命令将提示你在终端安全地输入一个值，从而避免暴露敏感数据。
-
-### 完整示例：
-
-你的项目目录结构：
-
-```
-my-worker/
-├── .dev.vars          # 存放本地敏感配置（本地部署自动加载）
-├── .gitignore         # 添加 .dev.vars 到这里
-├── wrangler.toml      # worker的主要配置
-└── src/
-    └── index.js       # worker 代码（用 env 访问变量）
-```
-
-**src/index.js**:
-
-```javascript
-export default {
-  fetch(request, env) {
-    return new Response(`API_KEY: ${env.API_KEY}`);
-  }
-};
-```
-
-**.dev.vars** (本地测试用):
-
-```
-API_KEY=test_key_for_dev
-```
-
-**.gitignore**:
-
-```
-# 忽略敏感信息
-.dev.vars
-```
-
-然后使用一下命令本地开发，就能访问到这些变量：
-
-```
-wrangler dev
-```
-
-总结起来：
-
-- 不用在`wrangler.toml`里显式写入`.dev.vars`的变量，这些变量本地开发环境会自动加载。
-- 直接在worker中通过`env`对象访问。
-- 生产环境部署使用`wrangler secret put`或Cloudflare界面手动设置变量值，`.dev.vars`不会上传到Cloudflare生产环境。
-
-{% endfold %}
 
 
 ## GPT-5
@@ -739,137 +628,6 @@ OpenRouter, 20250327
 
 {% endfold %}
 
-## Doubao-Seed-1.6-thinking
-volcengine, 20250612
-
-{% fold info @展开查看回答 %}
-
-要在 **Cloudflare Wrangler** 的 `wrangler.toml` 中使用 `.dev.vars` 中的变量，需要先理解两者的**作用边界**，再通过**环境变量插值**或**文件同步**的方式实现。以下是详细步骤和说明：
-
-
-### **1. 核心概念区分**
-- **`.dev.vars`**：仅用于**本地开发**（`wrangler dev`）时，向 Worker 运行时注入环境变量（如 `env.API_KEY` 或 `process.env.API_KEY`）。**不会直接影响 `wrangler.toml` 的配置**。
-- **`wrangler.toml`**：Wrangler 的核心配置文件，用于定义 Worker 的部署、构建、路由等选项。支持通过**环境变量插值**（`${VAR_NAME}`）引用**系统环境变量**或**根目录 `.env` 文件**中的变量。
-
-
-### **2. 场景1：Worker运行时使用`.dev.vars`变量（无需改`wrangler.toml`）**
-如果你的需求是**在Worker代码中使用`.dev.vars`里的变量**（如接口密钥、数据库地址），**不需要修改`wrangler.toml`**。`wrangler dev` 会自动将 `.dev.vars` 中的变量注入到 Worker 运行时：
-- **Module Worker**（推荐）：通过 `env` 参数访问：
-  ```javascript
-  export default {
-    async fetch(request, env) {
-      console.log(env.API_KEY); // 读取.dev.vars中的API_KEY
-      return new Response("Hello World");
-    },
-  };
-  ```
-- **Service Worker**：通过 `process.env` 访问：
-  ```javascript
-  addEventListener("fetch", (event) => {
-    console.log(process.env.API_KEY); // 读取.dev.vars中的API_KEY
-    event.respondWith(new Response("Hello World"));
-  });
-  ```
-
-
-### **3. 场景2：`wrangler.toml`配置项使用`.dev.vars`变量**
-如果你的需求是**在`wrangler.toml`的配置项中使用`.dev.vars`里的变量**（如路由、Zone ID、构建参数），需要将 `.dev.vars` 中的变量**同步到系统环境**或**根目录`.env`文件**，再通过 `(${VAR_NAME})` 插值引用。
-
-
-#### **方法1：通过`source`命令加载`.dev.vars`到系统环境**
-适用于**临时需要**将`.dev.vars`变量传递给`wrangler.toml`的场景（如本地调试配置）。
-步骤：
-1. 在 `.dev.vars` 中定义变量（如 `ROUTE=example.com/*`）：
-   ```env
-   # .dev.vars
-   API_KEY=my-dev-api-key
-   ROUTE=example.com/*
-   ```
-2. 使用 `source` 命令将 `.dev.vars` 中的变量加载到当前 shell 环境：
-   ```bash
-   # Unix/Linux/Mac
-   source .dev.vars && wrangler dev
- 
-   # Windows（需用PowerShell）
-   Get-Content .dev.vars | ForEach-Object { $env:$($_.Split('=')[0]) = $_.Split('=')[1] } ; wrangler dev
-   ```
-3. 在 `wrangler.toml` 中用 `${VAR_NAME}` 引用变量：
-   ```toml
-   # wrangler.toml
-   name = "my-worker"
-   route = "${ROUTE}" # 引用.dev.vars中的ROUTE变量
- 
-   [vars]
-   API_KEY = "${API_KEY}" # 引用.dev.vars中的API_KEY变量（但wrangler dev时会被.dev.vars覆盖）
-   ```
-
-
-#### **方法2：将`.dev.vars`复制到`.env`文件（持久化）**
-适用于**需要长期同步**`.dev.vars`变量到`wrangler.toml`的场景。Wrangler 会自动加载根目录 `.env` 文件中的变量到 `wrangler.toml` 的插值中。
-步骤：
-1. 将 `.dev.vars` 复制到根目录 `.env` 文件（注意：`.env` 不要提交到版本控制，用 `.env.example` 作为模板）：
-   ```bash
-   cp .dev.vars .env
-   ```
-2. 在 `wrangler.toml` 中用 `${VAR_NAME}` 引用变量：
-   ```toml
-   # wrangler.toml
-   name = "my-worker"
-   route = "${ROUTE}" # 引用.env中的ROUTE变量（来自.dev.vars的复制）
- 
-   [vars]
-   API_KEY = "${API_KEY}" # 引用.env中的API_KEY变量（wrangler dev时会被.dev.vars覆盖）
-   ```
-
-
-### **4. 关键注意事项**
-- **优先级**：`wrangler dev` 时，`.dev.vars` 中的变量**会覆盖**`wrangler.toml` 中 `[vars]` 选项的变量（即使 `[vars]` 中的变量来自 `.env` 或系统环境）。
-  例如：`wrangler.toml` 中 `[vars] API_KEY = "abc"`，`.dev.vars` 中 `API_KEY = "123"`，则 `wrangler dev` 时 Worker 中的 `env.API_KEY` 为 `123`。
-- **生产环境**：`wrangler publish` 时，`.dev.vars` 不会被使用，需通过**环境配置**（如 `[env.production]`）或** secrets**（`wrangler secret put`）管理生产环境变量。
-- **敏感信息**：`.dev.vars` 和 `.env` 都应添加到 `.gitignore`，避免敏感信息（如 API 密钥）泄露。
-
-
-### **5. 示例：完整流程**
-1. 定义 `.dev.vars`（本地开发变量）：
-   ```env
-   # .dev.vars
-   API_KEY=my-dev-api-key
-   ROUTE=localhost:8787/*
-   ```
-2. 复制到 `.env`（供`wrangler.toml`使用）：
-   ```bash
-   cp .dev.vars .env
-   ```
-3. 配置 `wrangler.toml`（引用`.env`中的变量）：
-   ```toml
-   # wrangler.toml
-   name = "my-worker"
-   type = "module"
-   route = "${ROUTE}" # 本地开发路由：localhost:8787/*
- 
-   [vars]
-   API_KEY = "${API_KEY}" # 本地开发API密钥（会被.dev.vars覆盖）
- 
-   [env.production]
-   route = "example.com/*" # 生产环境路由
-   vars = { API_KEY = "${PROD_API_KEY}" } # 生产环境API密钥（来自系统环境或.env）
-   ```
-4. 运行本地开发：
-   ```bash
-   wrangler dev
-   ```
-   - Worker 代码中通过 `env.API_KEY` 读取 `.dev.vars` 中的 `my-dev-api-key`。
-   - `wrangler.toml` 中的 `route` 为 `.env` 中的 `localhost:8787/*`。
-
-
-### **总结**
-- **Worker运行时**：直接用 `.dev.vars`，无需改 `wrangler.toml`。
-- **`wrangler.toml`配置**：通过 `source .dev.vars` 或复制到 `.env`，再用 `${VAR_NAME}` 插值。
-- **优先级**：`.dev.vars` > `wrangler.toml` > `.env`（仅`wrangler dev`时）。
-
-如需更灵活的环境管理，建议使用 Wrangler 的**环境配置**（`[env.staging]`、`[env.production]`）结合 `.env` 文件，分离不同环境的变量。
-
-{% endfold %}
 
 ## 答案评价
 
@@ -977,176 +735,6 @@ Calendar.displayName = "Calendar"
 export { Calendar }
 ```
 
-
-## GPT-4.5 preview
-OpenRouter, 20250417
-
----
-你可以通过自定义 DayPicker 的 `captionLayout` 和 `components.Caption` 来实现自定义的月份和年份切换按钮，以下是具体步骤：
-
-### 一、安装必要依赖：
-
-首先确认安装了 `date-fns`用来操作日期：
-
-```bash
-npm install date-fns
-```
-
-### 二、代码实现：
-
-修改 Calendar 组件，以在 caption 中自定义年月选择按钮：
-
-```tsx
-"use client"
-
-import * as React from "react"
-import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from "lucide-react"
-import { DayPicker, useNavigation } from "react-day-picker"
-import { cn } from "@/lib/utils"
-import { buttonVariants } from "@/components/ui/button"
-import { addMonths, subMonths, addYears, subYears, format } from "date-fns"
-
-export type CalendarProps = React.ComponentProps<typeof DayPicker>
-
-function CustomCaption(props: any) {
-  const { displayMonth } = props;
-  const { goToMonth } = useNavigation();
-
-  const handlePreviousYear = () => {
-    goToMonth(subYears(displayMonth, 1));
-  };
-  const handleNextYear = () => {
-    goToMonth(addYears(displayMonth, 1));
-  };
-
-  const handlePreviousMonth = () => {
-    goToMonth(subMonths(displayMonth, 1));
-  };
-  const handleNextMonth = () => {
-    goToMonth(addMonths(displayMonth, 1));
-  };
-
-  return (
-    <div className="flex justify-between items-center px-1">
-      <div className="space-x-1 flex">
-        <button
-          type="button"
-          onClick={handlePreviousYear}
-          className={cn(
-            buttonVariants({ variant: "outline" }),
-            "h-7 w-7 bg-transparent p-0 opacity-50 hover:opacity-100"
-          )}
-        >
-          <ChevronsLeft className="h-4 w-4" />
-        </button>
-        <button
-          type="button"
-          onClick={handlePreviousMonth}
-          className={cn(
-            buttonVariants({ variant: "outline" }),
-            "h-7 w-7 bg-transparent p-0 opacity-50 hover:opacity-100"
-          )}
-        >
-          <ChevronLeft className="h-4 w-4" />
-        </button>
-      </div>
-
-      <div className="text-sm font-medium">
-        {format(displayMonth, 'yyyy 年 MM 月')}
-      </div>
-
-      <div className="space-x-1 flex">
-        <button
-          type="button"
-          onClick={handleNextMonth}
-          className={cn(
-            buttonVariants({ variant: "outline" }),
-            "h-7 w-7 bg-transparent p-0 opacity-50 hover:opacity-100"
-          )}
-        >
-          <ChevronRight className="h-4 w-4" />
-        </button>
-        <button
-          type="button"
-          onClick={handleNextYear}
-          className={cn(
-            buttonVariants({ variant: "outline" }),
-            "h-7 w-7 bg-transparent p-0 opacity-50 hover:opacity-100"
-          )}
-        >
-          <ChevronsRight className="h-4 w-4" />
-        </button>
-      </div>
-    </div>
-  );
-}
-
-function Calendar({
-  className,
-  classNames,
-  showOutsideDays = true,
-  ...props
-}: CalendarProps) {
-  return (
-    <DayPicker
-      showOutsideDays={showOutsideDays}
-      className={cn("p-3", className)}
-      captionLayout="dropdown" // 保证 caption 可自定义
-      components={{
-        Caption: CustomCaption,
-        ...props.components,
-      }}
-      classNames={{
-        months: "flex flex-col sm:flex-row space-y-4 sm:space-x-4 sm:space-y-0",
-        month: "space-y-4",
-        caption: "flex justify-center pt-1 relative items-center",
-        caption_label: "text-sm font-medium",
-        nav: "space-x-1 flex items-center",
-        table: "w-full border-collapse space-y-1",
-        cell: cn(
-          "relative p-0 text-center text-sm focus-within:relative focus-within:z-20 [&:has([aria-selected])]:bg-accent [&:has([aria-selected].day-outside)]:bg-accent/50 [&:has([aria-selected].day-range-end)]:rounded-r-md",
-          props.mode === "range"
-            ? "[&:has(>.day-range-end)]:rounded-r-md [&:has(>.day-range-start)]:rounded-l-md first:[&:has([aria-selected])]:rounded-l-md last:[&:has([aria-selected])]:rounded-r-md"
-            : "[&:has([aria-selected])]:rounded-md"
-        ),
-        day: cn(
-          buttonVariants({ variant: "ghost" }),
-          "h-8 w-8 p-0 font-normal aria-selected:opacity-100"
-        ),
-        day_range_start: "day-range-start",
-        day_range_end: "day-range-end",
-        day_selected:
-          "bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground focus:bg-primary focus:text-primary-foreground",
-        day_today: "bg-accent text-accent-foreground",
-        day_outside:
-          "text-muted-foreground day-outside aria-selected:bg-accent/50 aria-selected:text-muted-foreground",
-        day_disabled: "text-muted-foreground opacity-50",
-        day_range_middle:
-          "aria-selected:bg-accent aria-selected:text-accent-foreground",
-        day_hidden: "invisible",
-        ...classNames,
-      }}
-      {...props}
-    />
-  )
-}
-Calendar.displayName = "Calendar"
-
-export { Calendar }
-```
-
-### 三、解释说明：
-
-- 使用 `useNavigation()` 来进行月份跳转；
-- 使用 date-fns 提供的日期计算函数 (`addMonths` / `subMonths` / `addYears` / `subYears`) 切换视图显示的月份和年份；
-- 新增了年份切换的按钮使用了 Lucide-React 图标中的 `ChevronsLeft` (<<) 和 `ChevronsRight` (>>)；
-- 通过自定义 `components.Caption` 替换了默认月份切换栏，重新实现了四个按钮：
-  - "<<" 上一年
-  - "<" 上一月
-  - ">" 下一月
-  - ">>" 下一年
-
-经过以上代码修改，现在你的 Calendar 组件就会既能切换月份，也能方便地一次切换一年了。
 
 
 ## GPT-5
@@ -1379,10 +967,6 @@ OpenRouter, 20250327
 
 第二次实现了功能
 
-## Doubao-Seed-1.6-thinking
-volcengine, 20250612
-
-三次都没有做出来，双箭头的 icon 都写错了
 
 ## Grok 4
 OpenRouter, 20250711
@@ -1425,46 +1009,6 @@ o1-preview, GPT-4o 用了三次
 用鼠标中间点击一个链接，实际上是什么，会触发click事件吗？
 ```
 
-## GPT-4.5 preview
-gpt-4.5-preview, 20250228
-
-{% fold info @展开查看回答 %}
-当你使用鼠标中键点击链接时，浏览器默认的行为通常是：
-
-- 以后台新标签页方式打开链接。
-- 一般不会触发页面 JavaScript 中绑定的 "click" 事件监听函数，除非特别设置。
-
-实际原理上，鼠标中键点击链接，触发的是 `auxclick` 或者 `mousedown` 的事件：
-
-- 从浏览器规范和大部分浏览器实际表现来看，中键点击（也就是鼠标按键的中键，对应事件中的 `event.button` 值通常为 `1`）触发的是 `auxclick` 事件和一些其他事件（例如：`mousedown` 和 `mouseup`），但通常不会触发标准的 `click` 事件。
-
-具体情况：
-
-1. **鼠标点击按钮对应关系：**
-   - 左键：`event.button === 0`，触发 `click` 事件、`mousedown`、`mouseup`。
-   - 中键：`event.button === 1`，触发 `auxclick` 事件、`mousedown`、`mouseup`，但不触发常用绑在链接上的标准 `click` 事件。
-   - 右键：`event.button === 2`，通常用来弹出上下文菜单，即使触发了事件，也不会触发标准 `click` 事件。
-
-2. **`auxclick` 事件：**
-   - 现代浏览器专门引入了 `auxclick` 事件，以便开发者捕获并处理鼠标非主按钮（如中键或右键）的点击事件。
-   - 如果页面想监听鼠标中间按钮打开链接，可以绑定 `auxclick` 事件并通过判断 `event.button` 属性的值来区分中键事件。
-
-示例代码：
-
-```javascript
-link.addEventListener("auxclick", function (event) {
-    if (event.button === 1) { // 鼠标中键被点击
-        console.log("鼠标中键点击了链接");
-        event.preventDefault(); // 如果不希望默认后台打开新标签页，可以阻止默认行为
-    }
-});
-```
-
-总结：
-
-- 鼠标中键点击链接执行浏览器默认行为是“在新后台标签页打开链接”，不会触发一般用来绑定链接点击的标准 `click` 事件监听函数。
-- 要捕获中键点击链接，你需要使用特殊的 `auxclick` 事件。
-{% endfold %}
 
 
 ## GPT-5
@@ -1841,109 +1385,6 @@ GPT-4.5 preview, o1-preview, o1, o3, o4-mini-high, Claude 3.5 Sonnet, Claude 3.7
 在js中，可以用test函数测试是否和正则匹配，对于，match patterns，有没有类似的函数？
 ```
 
-## GPT-4.5 preview
-gpt-4.5-preview, 20250228
-
-{% fold info @展开查看回答 %}
-
-你指的应该是浏览器扩展开发中的 Match Patterns，例如：
-
-```
-https://developer.chrome.com/docs/extensions/mv3/match_patterns/
-https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/Match_patterns
-```
-
-JavaScript 内置的 `RegExp.test()` 函数，只支持正则匹配，而 Match Patterns 是扩展开发者用于声明 URL 匹配的一种特殊格式，比如：
-
-```
-*://*.example.com/*
-```
-
-遗憾的是 JavaScript 本身没有直接提供用于匹配 Match Patterns 的内置函数。不过，你可以利用浏览器扩展 API 提供的方法，例如：
-
-### 一、借助浏览器扩展 API（webextensions API）：
-
-在浏览器扩展开发中，可以用扩展 API 自带方法：
-
-例如： 
-- `browser.runtime.getManifest()` 会获取 manifest 文件声明的 match patterns。
-- `browser.webRequest` API 可用于 URL 过滤并匹配。
-
-以`webextension-polyfill`库或浏览器API为例：
-
-```javascript
-// manifest.json示例属性： 
-// "permissions": ["https://*.example.com/*"]
-
-browser.tabs.query({url: "*://*.example.com/*"}).then(tabs => {
-    console.log(tabs);
-});
-```
-
-但如果你只是想在纯 JavaScript 环境中匹配 match pattern string 和 URL，并不能直接使用这种 API。
-
-### 二、自己实现 match pattern 到正则表达式（推荐）：
-
-由于 match patterns 具备明确的格式，你可以自己实现一个函数转化为正则表达式，然后再调用 `.test()`：
-
-例如简单版实现方法：
-
-```js
-function matchPatternToRegex(pattern) {
-    if(pattern === "<all_urls>") {
-      return /^https?:\/\/.+$/;
-    }
-
-    const escapeRegexp = s => s.replace(/[[/\\^$+.()|{}]/g, "\\$&");
-
-    let regexString = pattern
-      .replace(/\*/g, '.*') // 把*号换成任何字符。
-      .replace(/\?/g, '.')  // 把？换成任意单字符。
-      .replace(/^(\*|http|https|file|ftp):\/\//, '$1:\\/\\/') // 协议处理并转义//
-      .replace(/\//g, '\\/'); // 转义 `/`
-
-    regexString = "^" + regexString + "$";
-    return new RegExp(regexString);
-}
-
-// Usage
-let pattern = "*://*.example.com/*";
-let regex = matchPatternToRegex(pattern);
-
-console.log(regex.test("https://subdomain.example.com/page")); // true
-console.log(regex.test("http://example.com/anotherpage"));     // true
-console.log(regex.test("https://notexample.org"));             // false
-```
-
-### 一些现成的第三方库：
-
-实际上，已经有一些第三方库提供了这样的功能：
-
-- [webext-patterns](https://github.com/fregante/webext-patterns)
-
-使用 `webext-patterns`：
-```shell
-npm install webext-patterns
-```
-
-然后：
-
-```javascript
-import { patternToRegex } from 'webext-patterns';
-
-const matchRegex = patternToRegex('*://*.example.com/*');
-matchRegex.test('https://subdomain.example.com'); // true
-```
-
----
-
-### 结论：
-
-- JavaScript 没有内置 match pattern 匹配函数。
-- 如果你在浏览器扩展开发环境，可以使用扩展 API。
-- 一般情况下可自己编写简单转换函数，或直接使用社区成熟的库。
-
-{% endfold %}
 
 
 ## GPT-5
@@ -2698,18 +2139,6 @@ Kimi K2 提到了自己转换，还有一些额外不切实际的方法
 范滂被抓捕的时候，和母亲说了什么，展示文言文的原文并翻译
 ```
 
-## GPT-4.5 preview
-gpt-4.5-preview, 20250228
-
-{% fold info @展开查看回答 %}
-
-原文：
-范滂将就征诣廷尉，乡人遮道而泣。滂言曰：“诸君何哀邪？使滂得死所，其无恨矣。”其母就滂曰：“汝今得与李、杜齐名，死亦何恨？既有令名，复求寿考，可兼得乎？”滂跪受教，再拜而辞。
-
-译文：
-范滂将要被送往廷尉治罪，家乡的人都在路上拦道为他痛哭。范滂说：“诸位为何如此悲伤呢？只要我死有所值，就没有什么遗憾了。”他的母亲走近范滂，对他说：“你现在能够与李膺、杜密齐名，即便死去，又有什么可遗憾的呢？既然你选择了美好的名声，又追求长寿，难道二者可以兼得吗？”范滂跪地接受母亲的教诲，再拜告别母亲后离去。
-
-{% endfold %}
 
 
 ## GPT-5
@@ -2981,126 +2410,6 @@ plt.close()
 
 print("完成所有文件的 VAD 处理并绘制时长分布图")
 ```
-
-## GPT-4.5 preview
-gpt-4.5-preview, 20250301
-{% fold info @展开查看回答 %}
-
-修改后的代码如下，自动检测输入音频采样率，自动调整成模型支持的采样率进行VAD检测，最后统一将所有音频片段采样率保存为16 kHz：
-
-```python
-import torch
-import os
-import time
-from tqdm import tqdm
-import matplotlib.pyplot as plt
-import numpy as np
-import torchaudio
-
-torch.set_num_threads(1)
-
-# 参数配置
-input_dir = "raw"  # 原始音频所在目录
-save_path = "after-vad"  # 分段后音频保存目录
-min_speech_duration_ms = 1000
-max_speech_duration_s = 20
-audio_extensions = (".wav", ".mp3", ".flac", ".ogg", ".m4a", ".aac")
-target_sample_rate = 16000  # 输出音频采样率
-
-# 如果输出目录不存在，则创建
-os.makedirs(save_path, exist_ok=True)
-
-# 加载 Silero VAD 模型
-model, utils = torch.hub.load(repo_or_dir="snakers4/silero-vad",
-                              model="silero_vad", force_reload=False)
-(get_speech_timestamps,
- save_audio, read_audio,
- VADIterator, collect_chunks) = utils
-
-# 用于累积所有音频片段时长（秒），绘制直方图
-all_durations = []
-
-# 遍历目录，筛选音频后缀文件
-audio_files = [f for f in os.listdir(input_dir) if f.lower().endswith(audio_extensions)]
-
-for audio_file in audio_files:
-    audio_path = os.path.join(input_dir, audio_file)
-    print(f"\n处理文件: {audio_file}")
-
-    # 获取不带后缀的原始文件名（例如“1.wav” -> “1”）
-    original_root, original_ext = os.path.splitext(audio_file)
-
-    # 自动获取输入音频的原始采样率，并重采样到模型所需采样率（一般为16000或8000）
-    wav, original_sr = torchaudio.load(audio_path)
-    wav = wav.mean(dim=0)  # 如果是双通道（或立体声）则转单通道
-    # 模型建议采样率通常是16000
-    model_sample_rate = 16000
-    if original_sr != model_sample_rate:
-        wav = torchaudio.transforms.Resample(orig_freq=original_sr, new_freq=model_sample_rate)(wav)
-
-    # 执行 VAD
-    start = time.time()
-    speech_timestamps = get_speech_timestamps(
-        wav,
-        model,
-        sampling_rate=model_sample_rate,
-        min_speech_duration_ms=min_speech_duration_ms,
-        max_speech_duration_s=max_speech_duration_s,
-    )
-    end = time.time()
-    print(f"{audio_file} 的 VAD 耗时: {end - start:.2f}s")
-
-    # 保存切分后的音频片段为固定的目标采样率16kHz
-    for idx, timestamp in tqdm(
-        enumerate(speech_timestamps),
-        total=len(speech_timestamps),
-        desc=f"保存切分片段 -> {audio_file}",
-    ):
-        # 构建新的文件名，例如：1.wav -> 1-0.wav
-        segment_file_name = f"{original_root}-{idx}.wav"
-        save_file_path = os.path.join(save_path, segment_file_name)
-
-        # 提取音频片段
-        audio_chunk = collect_chunks([timestamp], wav)
-
-        # 如果模型处理的采样率与目标采样率不同，调整到目标采样率 (16kHz)
-        if model_sample_rate != target_sample_rate:
-            audio_chunk = torchaudio.transforms.Resample(orig_freq=model_sample_rate,
-                                                         new_freq=target_sample_rate)(audio_chunk)
-
-        # 保存切分结果
-        save_audio(save_file_path, audio_chunk, sampling_rate=target_sample_rate)
-
-        # 记录片段时长
-        duration = audio_chunk.shape[-1] / target_sample_rate
-        all_durations.append(duration)
-
-# 绘制所有切分结果的时长分布
-plt.figure(figsize=(8, 5))
-plt.hist(all_durations, bins=20, color="skyblue", edgecolor="black")
-plt.xlabel("Segment Duration (s)")
-plt.ylabel("Count")
-plt.title("Segment Duration Distribution for All Files")
-plt.savefig("duration_distribution.png")
-plt.close()
-
-print("\n完成所有文件的 VAD 处理并绘制时长分布图")
-```
-
-修改要点说明：
-
-1. 首先使用`torchaudio.load()`读取音频文件，同时获取该文件的采样率；
-2. 如果音频不是单声道，使用`wav.mean(dim=0)`转换成单声道；
-3. 根据 VAD 模型要求的采样率（Silero VAD 模型推荐 16000 Hz）进行一次重采样；
-4. 调用VAD模型，处理音频；
-5. 保存切分后的片段前，再次确保到统一目标采样率：（固定16kHz）；
-6. 调用了`torchaudio.transforms.Resample()`实现任意原始输入采样率适配为目标采样率；
-7. 片段时长计算统一使用目标采样率16kHz，以保证时长统计准确。
-
-这样修改后的代码便能自动适应任意输入的音频采样率，而输出的片段始终保持统一的 16000 Hz。
-
-{% endfold %}
-
 
 ## GPT-5
 poe, 20250809
@@ -4160,42 +3469,6 @@ graph TD
 	n4 ---|"否"| B{"查找资金或现货账户是否有足够对应币"}
 	C --- A
 ```
-## GPT-4.5 preview
-gpt-4.5-preview, 20250316
-
-{% fold info @展开查看回答 %}
-
-精简优化后的mermaid代码：
-
-```
-graph TD
-    A["扫描高利率理财产品"]
-    n1["计算可用稳定币余额"]
-    n2{"余额大于零？"}
-    n3["结束"]
-    n4{"是否已经完全购买该产品？"}
-    B{"查找资金或现货账户余额是否足够"}
-    C["转账到该产品"]
-    D["查找其他稳定币"]
-    E["兑换稳定币"]
-
-    A --> n1
-    n1 --> n2
-    n2 --否--> n3
-    n2 --是--> n4
-    n4 --是--> A
-    n4 --否--> B
-    B --有--> C
-    B --没有--> D --> E --> C
-    C --> A
-```
-
-优化后的要点：
-- 去除重复连线、重复节点定义，确保每个节点仅定义一次。
-- 明确节点文字信息，内容更简洁且逻辑不变。
-- 保持显示效果与原始图完全一致，不改变原本的逻辑流程和结构。
-
-{% endfold %}
 
 
 ## GPT-5
@@ -4429,44 +3702,6 @@ o1, Claude 3.7 Sonnet, Gemini 2.5 Pro, Grok 3 看起来完成了任务，但是�
 ```
 yaml 里的数组需要缩进 2 格吗？不缩进行不行？
 ```
-## GPT-4.5 preview
-gpt-4.5-preview, 20250418
-
-{% fold info @展开查看回答 %}
-
-在 YAML 格式中，数组元素通常应该有缩进，以保持清晰的结构和易读性。
-
-**标准做法**
-在 YAML 中，列表（数组）元素通常会缩进两个空格：
-
-```yaml
-fruits:
-  - apple
-  - banana
-  - orange
-```
-
-**不缩进是否可行？**
-实际上 YAML 对缩进本身并没有严格的规定，只要同一级别的元素缩进统一即可。不过，通常的约定和最佳实践是缩进两个空格。从技术角度来说，下述写法是合法的：
-
-```yaml
-fruits:
-- apple
-- banana
-- orange
-```
-
-YAML 解析器一样可以正常识别上述写法，不会报错。但这种格式明显可读性较差，易混淆不同层级的关系。因此通常都是推荐按照标准的“缩进两个空格”的做法来书写 YAML 配置。
-
-### 建议做法
-
-- 推荐始终使用**2个空格**进行缩进，保持良好的可读性和协调性。
-- 开发场景中，几乎所有的 YAML 文件（如 Docker Compose、Kubernetes 资源清单、CI/CD 配置）都遵循这种缩进惯例。
-- 尽管没有强制性规定，但保持统一的规范，有助于易读性，一致性和团队协作。
-
-结论：不缩进理论上可以，但实际使用中**推荐缩进 2 空格**来保持清晰结构与易于维护。
-
-{% endfold %}
 
 
 ## GPT-5
@@ -5095,14 +4330,6 @@ Claude 3.7 Sonnet 的描述最好
 ```
 product constance amm 是什么？
 ```
-## GPT-4.5 preview
-gpt-4.5-preview, 20250427
-
-{% fold info @展开查看回答 %}
-
-截至目前，并未发现名为“product constance amm”的明确产品信息或定义，可能存在拼写错误、缩写、型号名不准确或特定领域的术语。如果您能提供更多背景、相关行业或使用场景，或确认拼写是否准确，我可进一步协助您查询相关资料。
-
-{% endfold %}
 
 
 ## GPT-5
@@ -5363,71 +4590,6 @@ uv怎么执行python -m
 ```
 20250601
 
-## GPT-4.5 preview
-{% fold info @展开查看回答 %}
-
-如果你想在 Python 的虚拟环境（如通过 `uv` 工具创建和管理的环境）中执行 `python -m` 命令，可以参考以下步骤：
-
-### 1. 激活环境：
-- 假设环境名是 `myenv`，你创建的虚拟环境一般是通过 `uv venv` 命令创建的：
-
-```bash
-uv venv myenv
-```
-
-激活虚拟环境：
-- Linux 或 macOS 环境下：
-```bash
-source myenv/bin/activate
-```
-
-- Windows 环境下：
-```cmd
-myenv\Scripts\activate
-```
-
-激活以后，你终端提示符最前面通常会显示环境名称，如：
-```
-(myenv) user@host:~/somepath$
-```
-
-### 2. 执行 `python -m` 命令：
-在虚拟环境激活的环境后，便可以执行 `python -m` 命令了，比如：
-
-```bash
-python -m pip install package-name
-```
-
-或者
-
-```bash
-python -m mymodule
-```
-
-这样，你运行的命令会以激活环境中安装的 Python 和对应的库为基础，不会混用系统 Python。
-
----
-
-### 如果不想激活环境，直接用虚拟环境内的 Python 运行 `-m` 命令：
-
-Linux/macOS 下的例子：
-```bash
-myenv/bin/python -m module_name
-```
-
-Windows 下的例子：
-```cmd
-myenv\Scripts\python.exe -m module_name
-```
-
----
-
-### 总结：
-- 最推荐的流程就是先激活环境，然后再执行任何 `python -m` 命令。
-- 若暂时不想激活环境，可以明确地使用环境内的 Python 可执行文件路径，运行 `python -m ...` 
-
-
-{% endfold %}
 
 
 ## GPT-5
@@ -5851,12 +5013,6 @@ DeepSeek-R1 无视了问题
 ```
 20250601
 
-## GPT-4.5 preview
-{% fold info @展开查看回答 %}
-
-
-
-{% endfold %}
 
 
 
