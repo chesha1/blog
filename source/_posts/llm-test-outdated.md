@@ -2430,5 +2430,5 @@ OpenRouter, 20250418
 
 # 尝试淘汰记录
 在某个问题中是唯一 SOTA 所以无法淘汰：
-- DeepSeek-R1
-- Claude 3.7 Sonnet
+- DeepSeek-R1(中国古代历史)
+- Claude 3.7 Sonnet(数组缩进)
