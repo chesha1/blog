@@ -34,8 +34,10 @@ openai o 系列模型比较特殊，现在它们不会优先输出 markdown 格�
 
 曾参与现退出的模型（至少存在一个模型比退出的那个模型，在所有测评问题上都强大）：
 - GPT-4o
+- o1
 - o1-preview
 - o3-mini-high
+- o4-mini-high
 - Claude 3.5 Sonnet
 - Claude Sonnet 4
 - DeepSeek-V3
@@ -348,60 +350,6 @@ wrangler secret put API_KEY
 
 {% endfold %}
 
-## o1
-OpenRouter, 20250217
-
-{% fold info @展开查看回答 %}
-
-在本地开发场景下，Wrangler 会自动加载 `.dev.vars` 文件里的环境变量，并将其注入到 Worker 运行时环境中。然而需要注意的是，这些变量无法直接在 `wrangler.toml` 配置文件里通过诸如 `FOO = "$MY_DEV_VAR"` 这样的方式引用；它们只是在你执行 `wrangler dev` 时，在代码中通过 `env.MY_VAR` 的形式被获取。
-
-下面是一个较为完整的示例：
-
-1. **在项目的根目录创建 `.dev.vars` 文件**（该文件不会部署到生产环境），并填入所需的环境变量，例如：
-
-   ```bash
-   # .dev.vars
-   MY_SECRET="本地开发的 SECRET"
-   MY_API_KEY="本地开发的 API KEY"
-   ```
-
-2. **在 `wrangler.toml` 中（可选）声明你的生产环境变量**，比如：
-
-   ```toml
-   name = "my-worker"
-   main = "src/index.js"
-   compatibility_date = "2023-10-01"
-
-   # 如果有生产环境等其他环境配置，也可以在这里统一定义
-   [vars]
-   MY_SECRET = "生产环境的 SECRET"
-   MY_API_KEY = "生产环境的 API KEY"
-   ```
-
-   上面的 `[vars]` 块用于生产或其他正式环境的部署。这与 `.dev.vars` 并不冲突，二者是各自独立的来源。
-
-3. **在 Worker 代码中使用环境变量**。例如 `index.js`：
-
-   ```js
-   export default {
-     async fetch(request, env) {
-       return new Response(
-         `MY_SECRET=${env.MY_SECRET}\nMY_API_KEY=${env.MY_API_KEY}`,
-         { status: 200 }
-       );
-     },
-   };
-   ```
-
-4. **执行 `wrangler dev`** 时，Wrangler 会自动加载 `.dev.vars` 中的环境变量，你在代码中调用 `env.MY_SECRET`、`env.MY_API_KEY` 等即可获取到对应的本地值。
-   - 如果你执行 `wrangler publish`，则会使用 `wrangler.toml` 中 `[vars]` 块里配置的正式环境变量。
-
-> **总结**
-> - `.dev.vars` 里的变量仅在本地开发（`wrangler dev`）时生效，且通过 `env.变量名` 在 Worker 代码中读取。
-> - `wrangler.toml` 用于配置生产或其他环境（如果你有定义 [env.XXX] 块）。
-> - 无法在 `wrangler.toml` 中直接写这种引用：`SOME_VAR = "$MY_DEV_VAR"`；“注入”是由 Wrangler 在本地开发模式下自动完成的，不需要你手动在 toml 中引用。
-
-{% endfold %}
 
 ## o1-pro
 openRouter, max_tokens=80000, 20250325
@@ -1392,10 +1340,6 @@ poe, 20250809
 
 一次完成，其他都很完美，唯一不好的地方是按钮位置放颠倒了，年份切换按钮在内，月份在外
 
-## o1
-OpenRouter, 20250217
-
-三次的回答都没有提供功能，也没有报错
 
 ## o3
 AiHubMix, 20250422
@@ -1844,45 +1788,6 @@ link.addEventListener('mouseup', (e) => {
 
 {% endfold %}
 
-## o1
-OpenRouter, 20250217
-
-{% fold info @展开查看回答 %}
-
-在浏览器的标准行为中，用鼠标中键（通常是滚轮）点击链接，默认会在新标签页打开该链接，并不一定会触发常见的 `click` 事件。更准确地说，在现代浏览器里，有一个专门针对鼠标非主按键（如中键、右键）的事件，叫做 [`auxclick`](https://developer.mozilla.org/zh-CN/docs/Web/API/Element/auxclick_event)。它是专门用于处理鼠标辅助按键（包括中键、侧键等）的点击操作的。
-
-具体来说，大多数浏览器的行为如下：
-
-1. **鼠标中键点击**
-   - 不会触发普通的 `click` 事件（或只有部分旧浏览器曾经会）。
-   - 会触发一个 `auxclick` 事件，事件对象里通常可以看到 `event.button === 1`。
-   - 默认行为是在新标签页打开链接。
-
-2. **鼠标左键点击**
-   - 触发 `click` 事件，事件对象里 `event.button === 0`。
-   - 默认行为是在当前页面打开链接。
-
-3. **鼠标右键点击**
-   - 一般是触发右键菜单，很少用于触发自定义点击事件。
-   - 现代浏览器也会触发 `auxclick` 事件，`event.button === 2`。
-   - 通常我们会拦截右键的默认行为来实现自定义菜单等。
-
-如果你需要监听中键点击，可以监听 `auxclick` 事件，并在回调里判断 `event.button` 是否为 `1`。例如：
-
-```js
-element.addEventListener('auxclick', (e) => {
-  if (e.button === 1) {
-    // 这是鼠标中键点击
-    console.log('中键点击了元素！');
-    // 可以根据需求决定是否要阻止默认行为
-    // e.preventDefault();
-  }
-});
-```
-
-需要注意的是，如果你要兼容早期不支持 `auxclick` 事件的浏览器，可能只能通过监听 `mousedown`/`mouseup` 事件，结合 `event.button` 来进行判断，但这与真正的“点击”并不完全相同，通常也不会阻止浏览器打开新标签页。
-
-{% endfold %}
 
 ## o3
 AiHubMix, 20250421
@@ -2470,42 +2375,6 @@ console.log(matchesMatchPattern('file:///C:/foo/*', 'file:///C:/foo/bar.txt')); 
 
 {% endfold %}
 
-## o1
-OpenRouter, 20250217
-
-{% fold info @展开查看回答 %}
-
-在 JavaScript 中，如果你想要测试某个字符串是否匹配正则表达式，一般会使用 `RegExp.prototype.test()` 方法（例如：`/pattern/.test(str)`），它会返回一个布尔值表示是否匹配。和它相比，常用的“匹配”相关方法还有以下几种：
-
-1. **String.prototype.match()**
-   - 用法示例：`str.match(regex)`
-   - 返回值：
-     - 若使用不带全局标志（如 `/pattern/`）的正则时，返回一个数组，其中包含匹配到的整体字符串以及捕获组（若有），否则返回 `null`。
-     - 若使用带全局标志的正则（如 `/pattern/g`）时，返回所有匹配到子串组成的数组，否则返回 `null`。
-
-2. **String.prototype.matchAll()（ES2020 新增）**
-   - 用法示例：
-     ```js
-     const regex = /t(e)(st(\d?))/g;
-     const str = 'test1test2';
-     for (const match of str.matchAll(regex)) {
-       console.log(match);
-     }
-     ```
-   - 返回值：返回一个 **可迭代对象**，可以遍历所有匹配结果，每个结果是一个包含整个匹配内容及捕获组的数组。
-   - 相比 `match()` 方法，`matchAll()` 在带有全局标志 `g` 时能够同时提供捕获组信息，且返回迭代器，不用一次性生成完整的匹配结果数组。
-
-3. **RegExp.prototype.exec()**
-   - 用法示例：
-     ```js
-     const regex = /pattern/;
-     const result = regex.exec(str);
-     ```
-   - 返回值：若匹配成功，返回一个数组，包含匹配的子串及捕获组；若匹配失败则返回 `null`。在带有全局标志 `g` 时，可多次调用 `exec()` 来依次获取下一处匹配结果。
-
-总体来说，如果你想要得到匹配内容（尤其是捕获组），可以使用 `match()`、`exec()` 或新的 `matchAll()` 方法；如果只想要一个“是否匹配”的布尔结果，就可以使用 `test()` 方法。
-
-{% endfold %}
 
 ## o1-pro
 openRouter, max_tokens=80000, 20250325
@@ -3277,41 +3146,6 @@ poe, 20250809
 
 {% endfold %}
 
-## o1
-OpenRouter, 20250217
-
-{% fold info @展开查看回答 %}
-
-以下引文出自《后汉书·党锢列传·范滂传》（卷六十下）中范滂临被捕时与母亲的对话。先呈上文言文原文，随后附上白话译文，便于理解。
-
----
-
-**【文言文原文】**
-
-> 後乃收捕滂。母送之門，謂滂曰：「汝今得與李、杜諸君子並遊於地下，不亦榮乎？但恨我不及見汝耳！大丈夫處世，寧有是乎！」滂曰：「兒不孝，使母見此！」母曰：「我所以喜者，正為汝不孝也！」然後滂拜辭去，母不復顧。
-
-（出自《後漢書·列傳第五十下·黨錮下》）
-
----
-
-**【白话译文】**
-
-后来朝廷再度兴起“党锢之祸”，追捕范滂。范滂的母亲将他送到门口，对他说：“你如今能够跟李膺、杜密这些君子一起到地下相聚，难道不是一件值得光荣的事吗？只可惜我没办法再见到你了！大丈夫活在世上，本来就会遇到这种情形啊！”
-范滂说：“孩儿不孝，让母亲今日看到这般情景！”
-母亲回答：“我之所以高兴，正是因为你不肯委曲求全啊！”
-随后范滂拜别出门，母亲再也没有回头看他。
-
----
-
-**【背景与说明】**
-
-1. **“党锢之祸”：** 指东汉末年朝廷对士大夫集团（被斥为“党人”）多次大规模的政治迫害。范滂、李膺、杜密等人皆因刚直敢言、议论时政而被宦官集团视为眼中钉，屡遭迫害。
-2. **语气与情感：** 原文中，母亲的态度看似“平静甚至带有喜悦”，实则是因为她崇尚节义，知道儿子坚持正道，不愿苟且偷生，为他深感骄傲，却也难免痛惜母子分离。
-3. **所言“荣”与“孝”：** 范母所说的“荣”，并非寻常富贵，而是坚守大义、与贤人并列；所说“我所以喜者，正为汝不孝也”，是母亲反语之辞——“不孝”并非真正对母亲不敬，而是指“不肯偷生以苟全自己、反而以大义为先”，这种操守在母亲眼中才是对家庭、对先人真正的光彩。
-
-这段母子对话，历来为人所称颂，体现出东汉士人宁死不屈、不改气节的精神，也展现了范母识大义、讲节操的高洁襟怀。
-
-{% endfold %}
 
 ## o3
 AiHubMix, 20250421
@@ -3813,110 +3647,6 @@ print("完成所有文件的 VAD 处理并绘制时长分布图")
 
 {% endfold %}
 
-## o1
-OpenRouter，20250301
-
----
-
-下面给出一个示例修改版本，思路是：
-1. 无论输入音频是什么采样率，先用 Silero 提供的 `read_audio` 接口将其读取并**统一重采样**到 16k；
-2. VAD 模型和后续的切分、保存都以这一路径（16k）为主进行处理；
-3. 计算切分片段时长时，也使用 16k 作为基准。
-
-这样就不用去获取文件的原始采样率，Silero 的 `read_audio` 本身会将任意输入音频重采样到你指定的采样率，从而达到“适配任意输入、输出始终 16k”的目的。请注意，如果你确实需要知道音频文件的原始采样率（做其他分析），可以改用 `torchaudio` 等方法获取，但原则上只要 VAD 及后续处理都以 16k 为基准即可。
-
-```python
-import torch
-import os
-import time
-from tqdm import tqdm
-import matplotlib.pyplot as plt
-import numpy as np
-
-torch.set_num_threads(1)
-
-# 参数配置
-input_dir = "raw"           # 原始音频所在目录
-save_path = "after-vad"     # 分段后音频保存目录
-min_speech_duration_ms = 1000
-max_speech_duration_s = 20
-audio_extensions = (".wav", ".mp3", ".flac", ".ogg", ".m4a", ".aac")
-
-# 如果输出目录不存在，则创建
-os.makedirs(save_path, exist_ok=True)
-
-# 加载 Silero VAD 模型
-model, utils = torch.hub.load(repo_or_dir="snakers4/silero-vad", model="silero_vad")
-(get_speech_timestamps, save_audio, read_audio, VADIterator, collect_chunks) = utils
-
-# 用于累积所有音频片段时长（秒），绘制直方图
-all_durations = []
-
-# 遍历目录，筛选音频后缀文件
-audio_files = [f for f in os.listdir(input_dir) if f.lower().endswith(audio_extensions)]
-
-for audio_file in audio_files:
-    audio_path = os.path.join(input_dir, audio_file)
-    print(f"处理文件: {audio_file}")
-
-    # 获取不带后缀的原始文件名（例如“1.wav” -> “1”）
-    original_root, original_ext = os.path.splitext(audio_file)
-
-    # 读取音频并统一重采样到 16k
-    # 如果不指定 sampling_rate，则默认会用 16k。为了更清晰，显式写出来。
-    wav = read_audio(audio_path, sampling_rate=16000)
-
-    # 执行 VAD
-    start = time.time()
-    speech_timestamps = get_speech_timestamps(
-        wav,
-        model,
-        sampling_rate=16000,                 # 这里的采样率与上面读入一致
-        min_speech_duration_ms=min_speech_duration_ms,
-        max_speech_duration_s=max_speech_duration_s,
-    )
-    end = time.time()
-    print(f"{audio_file} 的 VAD 耗时: {end - start:.2f}s")
-
-    # 保存切分后的音频片段，不再单独创建文件夹，直接在文件名加入后缀
-    for idx, timestamp in tqdm(
-        enumerate(speech_timestamps),
-        total=len(speech_timestamps),
-        desc=f"保存切分片段 -> {audio_file}",
-    ):
-        # 构建新的文件名，例如：1.wav -> 1-0.wav
-        segment_file_name = f"{original_root}-{idx}.wav"
-        save_file_path = os.path.join(save_path, segment_file_name)
-
-        # 从原始（已是 16k）波形中提取该片段
-        audio_chunk = collect_chunks([timestamp], wav)
-
-        # 保存切分结果，输出采样率同样设置为 16k
-        save_audio(save_file_path, audio_chunk, sampling_rate=16000)
-
-        # 记录片段时长，注意这里除以 16k
-        duration = (timestamp["end"] - timestamp["start"]) / 16000
-        all_durations.append(duration)
-
-# 绘制所有切分结果的时长分布
-plt.figure(figsize=(8, 5))
-plt.hist(all_durations, bins=20, color="skyblue", edgecolor="black")
-plt.xlabel("Segment Duration (s)")
-plt.ylabel("Count")
-plt.title("Segment Duration Distribution for All Files")
-plt.savefig("duration_distribution.png")
-plt.close()
-
-print("完成所有文件的 VAD 处理并绘制时长分布图")
-```
-
-以上修改要点：
-- `read_audio(audio_path, sampling_rate=16000)`：对任何输入自动重采样到 16k；
-- `get_speech_timestamps(…, sampling_rate=16000)`：模型和切分逻辑也使用 16k；
-- `save_audio(…, sampling_rate=16000)`：最后输出音频保持在 16k；
-- 计算片段长度时 `(timestamp["end"] - timestamp["start"]) / 16000`。
-
-这样就不再依赖原始音频是否是 44100Hz、48000Hz 等，始终以 16k 作为处理及输出的采样率。
 
 ## o3
 AiHubMix, 20250421
@@ -4839,15 +4569,15 @@ GPT-4.1, Claude Sonnet 4, Gemini 2.0 Pro 报错了，不细看了
 
 其中，o1 的描述更好，相比其他模型，更多解释了库本身的函数内容和修改的原理
 
-| 更好 |         好        |        中       |        差       |
-|:----:|:-----------------:|:---------------:|:---------------:|
-|  o1  |         o3        | GPT-4.5 preview |     GPT-4.1     |
-|      | Claude 3.7 Sonnet |   o3-mini-high  |    o1-preview   |
-|      |    DeepSeek-R1    |   o4-mini-high  | Claude Sonnet 4 |
-|      |       Grok 3      |  Claude Opus 4  |  Gemini 2.0 Pro |
-|      |                   |  Gemini 2.5 Pro |                 |
-|      |                   |      Grok 4     |                 |
-|      |                   |     Kimi K2     |                 |
+|         好        |        中       |        差       |
+|:-----------------:|:---------------:|:---------------:|
+|         o1        | GPT-4.5 preview |     GPT-4.1     |
+|         o3        |   o3-mini-high  |    o1-preview   |
+| Claude 3.7 Sonnet |   o4-mini-high  | Claude Sonnet 4 |
+|    DeepSeek-R1    |  Claude Opus 4  |  Gemini 2.0 Pro |
+|       Grok 3      |  Gemini 2.5 Pro |                 |
+|                   |      Grok 4     |                 |
+|                   |     Kimi K2     |                 |
 
 # 问题七
 ```
@@ -4991,42 +4721,6 @@ graph TD
 
 {% endfold %}
 
-## o1
-OpenRouter，20250316
-
----
-
-下面是一份更精简但逻辑与外观一致的版本，所有节点、文案、箭头流向都保持不变，只去除了多余的重复定义：
-
-```
-graph TD
-    A["扫描高利率理财产品"]
-    B{查找资金或现货账户余额}
-    D["查找其他稳定币"]
-    E["兑换"]
-    C["直接转账到该产品"]
-    n1["计算可用稳定币余额"]
-    n2@{ shape: "diam", label: "余额大于零" }
-    n3["结束"]
-    n4@{ shape: "diam", label: "是否已经完全购买该产品" }
-
-    %% 资金或现货账户查询
-    B -->|有| C
-    B -->|没有| D --> E --> C
-  
-    %% 主流程
-    n1 --- A
-    A --- n2
-    n2 ---|"否"| n3
-    n2 ---|"是"| n4
-    n4 ---|"是"| A
-    n4 ---|"否"| B{"查找资金或现货账户是否有足够对应币"}
-    C --- A
-```
-
-- 保留了所有原有节点（含相同形状及文字）。
-- 保留了所有原有连线与条件分支（含相同箭头文字、“是/否”等）。
-- 将同一节点的重复定义合并为单处定义，从而保持展示一致的同时使代码更简洁。
 
 ## o1-pro
 openRouter, max_tokens=80000, 20250325
@@ -5387,42 +5081,6 @@ fruits: [apple, banana]
 
 {% endfold %}
 
-## o1
-OpenRouter，20250418
-
-{% fold info @展开查看回答 %}
-
-在 YAML 中，数组本身并不“必须”要缩进 2 格，但需要根据层级进行**一致的缩进**，并且同级的内容要保证相同的缩进量。之所以常见的示例大多使用 2 格，是因为这是官方推荐且最常用的风格，便于阅读和维护。
-
-下面这个示例展示了常规做法（2 格缩进）：
-
-```yaml
-fruits:
-  - apple
-  - banana
-  - orange
-```
-
-如果你想使用 4 格或 1 格缩进，只要确保上下文一致，也是可以的，例如：
-
-```yaml
-vegetables:
-    - tomato
-    - cucumber
-    - potato
-```
-
-**但需要注意**：如果数组嵌套在某个键下面，就必须根据所在层级来缩进；如果完全不缩进，表示它是最顶层的数据结构。例如一个顶层数组可以这样写：
-
-```yaml
-- item1
-- item2
-- item3
-```
-
-只要缩进层级和结构符合 YAML 的解析规则，你可以选择 2 格、4 格等做法，但要避免时而 2 格、时而 4 格的混用，否则会导致解析错误。
-
-{% endfold %}
 
 ## o3
 AiHubMix, 20250422
@@ -6055,35 +5713,6 @@ x * y = k
 
 {% endfold %}
 
-## o1
-OpenRouter, 20250427
-
-{% fold info @展开查看回答 %}
-
-“Constant Product AMM”（常数乘积自动做市商）是一种在去中心化交易所（DEX）中常见的做市机制，通过一个简单的数学公式来决定交易价格和资金池中代币的数量关系。最广为人知的例子是使用公式 **x * y = k**，其中：
-
-- **x** 和 **y** 表示资金池中两种不同代币的数量；
-- **k** 则是一个固定常数（在没有额外资金进入或离开时保持不变）。
-
-当用户在这个资金池中进行代币兑换时，资金池中的某种代币数量会增加，另一种代币数量则会减少，从而使得两种代币的乘积仍然相等于常数 k。这種机制可以在无需订单簿的情况下，自动根据资金池中代币储备变化调整交易价格。比较典型的例子有 Uniswap V2、PancakeSwap 等去中心化交易所都使用了常数乘积 AMM 算法。
-
-**主要特点：**
-
-1. **交易价格随库存动态调整：**
-   当池中某种代币的存量减少时，该代币的价格会提高，反之亦然，这保证了流动性总是存在，但价格滑点可能会随交易规模增大而增加。
-
-2. **无需订单簿：**
-   常数乘积 AMM 并不依赖传统中心化交易所的买卖挂单列表；只要池中有足够的流动性，用户就可以直接与池子进行交易。
-
-3. **流动性提供者收益：**
-   流动性提供者（LP）将两种代币按一定比率注入资金池，能够获得交易手续费分成（比如 0.3%），作为提供流动性的奖励。
-
-4. **无常损失（Impermanent Loss）：**
-   由于该机制会根据公式自动调价，当市场价格发生变化时，资金池内两种代币的数量比例也会随之调整，流动性提供者可能面临“无常损失”。当价格波动越大时，LP 在退出资金池时所损失的价值就可能越大，不过如果价格又回到初始状态或手续费收入足够高，损失也就可能被抵消或减少。
-
-总体而言，“Constant Product AMM” 通过一种简单又有效的数学模型，让任何人都可以轻松地在去中心化环境中提供流动性、进行交易，大幅提升了去中心化金融（DeFi）的可参与度与流动性。
-
-{% endfold %}
 
 ## o3
 AiHubMix, 20250427
@@ -6446,34 +6075,6 @@ uv run -m http.server 8000
 
 {% endfold %}
 
-## o1
-{% fold info @展开查看回答 %}
-
-如果你想要执行某个已安装的 Python 模块（例如 uvicorn、pip 等），通常可以使用以下命令格式：
-
-python -m <模块名> [可选参数]
-
-其中 -m 表示“以脚本方式”来运行指定的模块。与直接 python your_script.py 不同的是，-m 会让 Python 从 sys.path（也就是环境中可用的第三方库或内置库）中查找该模块，然后以脚本的方式来执行它。
-
-如果你是想执行类似“uvicorn”这样的模块，示例命令如下：
-
-python -m uvicorn main:app --reload
-
-这样就相当于执行了 uvicorn 命令，并把 main:app --reload 作为参数传递给它。从而启动一个基于 uvicorn 的服务。
-
-如果你所指的 “uv” 本身是一个模块的名字，那么只要你的 Python 环境中已经正确安装了名为 “uv” 的模块，就可以用下面命令执行它：
-
-python -m uv
-
-至于模块真正要做什么功能，要看模块本身的实现或需要的命令行参数。简而言之，想用 python -m 来运行某个模块时，确保：
-
-1. 模块已安装或在你的 Python 路径中（如 site-packages 目录）。
-2. 使用 python -m <模块名>。
-3. 如果需要传参数，紧跟在模块名后面即可。
-
-这样就可以利用模块自己的“脚本入口点”来执行它的功能。
-
-{% endfold %}
 
 ## o3
 {% fold info @展开查看回答 %}
@@ -6853,12 +6454,6 @@ DeepSeek-R1 无视了问题
 
 {% endfold %}
 
-## o1
-{% fold info @展开查看回答 %}
-
-
-
-{% endfold %}
 
 ## o3
 {% fold info @展开查看回答 %}
