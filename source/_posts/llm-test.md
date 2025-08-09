@@ -1,7 +1,7 @@
 ---
 title: 自用大模型评测问题
 date: 2025-05-25 12:24
-excerpt: 个人使用场景下准备的一些问题，用于测试新的大模型，至少和 o1, Claude 4, Gemini 2.5 Pro, DeepSeek-R1 比较
+excerpt: 个人使用场景下准备的一些问题，用于测试新的大模型，至少和 GPT-5, Claude 4, Gemini 2.5 Pro, DeepSeek-R1 比较
 category: 生活
 ---
 # 背景
@@ -279,6 +279,72 @@ project-root/
 **总结**：你**不需要**在 `wrangler.toml` 里显式引用 `.dev.vars`。只需保证 `.dev.vars` 文件存在，并用 `wrangler dev` 启动，本地变量就会自动生效。生产环境则只会用 `wrangler.toml` 的 `[vars]`。
 
 如需进一步自动化变量同步或有特殊需求，也可用第三方工具管理 env 文件。
+
+{% endfold %}
+
+## GPT-5
+poe, 20250809
+
+{% fold info @展开查看回答 %}
+
+简短结论：不行。wrangler.toml 不能引用或插值 .dev.vars 中的值。.dev.vars 只在 wrangler dev 期间作为 Worker 的运行时绑定提供给你的代码使用，不会参与 wrangler.toml 的配置解析。
+
+怎么用 .dev.vars 的值（正确姿势）
+1) 在项目根目录创建 .dev.vars（别提交到 Git）：
+```
+API_BASE="http://localhost:3000"
+API_KEY="dev-123"
+```
+
+2) 在 Worker 代码里访问（Module 语法）：
+```ts
+export default {
+  async fetch(request: Request, env: Env) {
+    return new Response(`API_BASE=${env.API_BASE}, hasKey=${Boolean(env.API_KEY)}`)
+  },
+};
+```
+
+3) wrangler.toml 中可放部署用的默认值（非敏感）：
+```toml
+name = "my-worker"
+main = "src/index.ts"
+compatibility_date = "2024-10-01"
+
+[vars]
+API_BASE = "https://api.example.com"  # 仅示例，开发时会被 .dev.vars 覆盖
+```
+
+4) 机密在生产环境用 secret：
+```
+wrangler secret put API_KEY
+```
+注意：.dev.vars 只在 wrangler dev 时生效与覆盖，[vars] 与 secret 用于部署；.dev.vars 在 deploy 时完全不会被上传或引用。
+
+如果你想在 wrangler.toml 里“动态使用变量”（例如 routes、account_id 等）
+- wrangler.toml 不支持从 .dev.vars 做字符串插值（如 ${DOMAIN} 之类都不行）。
+- 可选方案：
+  - 用分环境配置：
+    ```toml
+    [env.dev]
+    routes = [{ pattern = "dev.example.com/*", zone_name = "example.com" }]
+
+    [env.prod]
+    routes = [{ pattern = "example.com/*", zone_name = "example.com" }]
+    ```
+    然后 wrangler dev --env dev / wrangler deploy --env prod。
+  - 用多个配置文件并通过 --config 切换：
+    ```
+    wrangler dev --config wrangler.dev.toml
+    wrangler deploy --config wrangler.prod.toml
+    ```
+  - 用 shell 环境变量覆盖 Wrangler 接受的字段（比如 CLOUDFLARE_ACCOUNT_ID、CLOUDFLARE_API_TOKEN），这些需要在你的 shell 中 export，而不是写在 .dev.vars。
+  - 需要模板能力时，用脚本生成 wrangler.toml（例如 envsubst/自写小脚本）。
+
+常见坑
+- .dev.vars 必须与 wrangler.toml 在同一项目根目录。
+- .dev.vars 的值只在 dev 会话中注入为绑定，不能用于配置文件字段的插值。
+- 开发时，.dev.vars 会覆盖 wrangler.toml 的 [vars] 同名键；部署时完全忽略 .dev.vars。
 
 {% endfold %}
 
@@ -1139,24 +1205,23 @@ volcengine, 20250612
 
 GPT-4o, o3-mini-high, Claude 3.5 Sonnet, Claude 3.7 Sonnet, Claude Sonnet 4, DeepSeek-V3, Gemini 2.0 Pro, Qwen3-235B-A22B, Doubao-Seed-1.6-thinking 没有纠正引用这种错误说法
 
-GPT-4.5 preview, o1-preview, o1, o1-pro, o3, o3-pro,o4-mini-high, Claude Opus 4, DeepSeek-R1, Gemini 2.5 Pro, Grok 3 纠正了引用这种错误说法
+GPT-4.5 preview, GPT-5, o1-preview, o1, o1-pro, o3, o3-pro,o4-mini-high, Claude Opus 4, DeepSeek-R1, Gemini 2.5 Pro, Grok 3 纠正了引用这种错误说法
 
 o3-pro 虽然纠正了错误说法，但是没有提到 secrets，然后错误的 prompt 一路狂奔了
-
-其中 Grok 3 的描述最清晰
 
 |        好       |            中            |     差    |
 |:---------------:|:------------------------:|:---------:|
 | GPT-4.5 preview |          GPT-4o          | Kimi-k1.5 |
 |     GPT-4.1     |          o3-pro          |           |
-|    o1-preview   |       o3-mini-high       |           |
-|        o1       |     Claude 3.5 Sonnet    |           |
-|      o1-pro     |     Claude 3.7 Sonnet    |           |
-|        o3       |      Claude Sonnet 4     |           |
-|   o4-mini-high  |        DeepSeek-V3       |           |
-|  Claude Opus 4  |      Gemini 2.0 Pro      |           |
-|   DeepSeek-R1   |      Qwen3-235B-A22B     |           |
-|  Gemini 2.5 Pro | Doubao-Seed-1.6-thinking |           |
+|      GPT-5      |       o3-mini-high       |           |
+|    o1-preview   |     Claude 3.5 Sonnet    |           |
+|        o1       |     Claude 3.7 Sonnet    |           |
+|      o1-pro     |      Claude Sonnet 4     |           |
+|        o3       |        DeepSeek-V3       |           |
+|   o4-mini-high  |      Gemini 2.0 Pro      |           |
+|  Claude Opus 4  |      Qwen3-235B-A22B     |           |
+|   DeepSeek-R1   | Doubao-Seed-1.6-thinking |           |
+|  Gemini 2.5 Pro |                          |           |
 |      Grok 3     |                          |           |
 
 
@@ -1418,6 +1483,11 @@ poe, 20250418
 
 三次回答（来回）没有实现功能
 
+## GPT-5
+poe, 20250809
+
+一次完成，其他都很完美，唯一不好的地方是按钮位置放颠倒了，年份切换按钮在内，月份在外
+
 ## o1
 OpenRouter, 20250217
 
@@ -1670,7 +1740,7 @@ GPT-4.5 preview, o1-preview, GPT-4o, Claude 3.7 Sonnet, Claude Sonnet 4, Claude 
 
 GPT-4.5 preview 只用了一次回答
 
-Claude Sonnet 4, Claude Opus 4 只用了一次回答，而且用了正确的图标，较为美观
+GPT-5, Claude Sonnet 4, Claude Opus 4 只用了一次回答，而且用了正确的图标，较为美观
 
 Claude 3.7 Sonnet, Gemini 2.5 Pro, Grok 4 用了更好看的图标，只用了两次回答
 
@@ -1683,7 +1753,7 @@ o1-preview, GPT-4o 用了三次
 | GPT-4.5 preview | Claude 3.7 Sonnet | o1-preview |          GPT-4.1         |
 | Claude Sonnet 4 |   Gemini 2.5 Pro  |   GPT-4o   |            o1            |
 |  Claude Opus 4  |  Qwen3-235B-A22B  |            |            o3            |
-|                 |       Grok 4      |            |       o3-mini-high       |
+|      GPT-5      |       Grok 4      |            |       o3-mini-high       |
 |                 |                   |            |       o4-mini-high       |
 |                 |                   |            |     Claude 3.5 Sonnet    |
 |                 |                   |            |        DeepSeek-V3       |
@@ -1807,6 +1877,71 @@ document.querySelector('a').addEventListener('auxclick', function(e) {
 
 **结论：**  
 用鼠标中键点击链接**不会触发 `click` 事件**，会触发 `auxclick` 事件。默认会在新标签页打开链接。需要自定义行为时，监听 `auxclick` 并判断 `event.button` 是否为 `1`（中键）。
+
+{% endfold %}
+
+## GPT-5
+poe, 20250809
+
+{% fold info @展开查看回答 %}
+
+简短结论：
+- 鼠标“中键点链接”在浏览器里属于“非主键（auxiliary）点击”。
+- 按标准，click 事件只对应“主按钮（通常是左键）”的单击；中键不会触发 click。
+- 中键会触发 mousedown/mouseup（和对应的 pointerdown/pointerup）；Chromium 系列还会触发 auxclick。
+- 中键点链接的默认行为通常是“在新标签页打开链接”。
+
+更具体一点
+
+- 事件序列（典型情况）：
+  - 左键点链接：mousedown(button=0) → mouseup(button=0) → click →（未阻止时）导航/打开。
+  - 中键点链接：mousedown(button=1) → mouseup(button=1) → [Chromium] auxclick(button=1) →（未阻止时）新标签打开。基本不会触发 click。
+- 键盘/修饰键对比：
+  - Ctrl+左键（Windows/Linux）或 ⌘+左键（macOS）会触发 click（event.button=0，且 ctrlKey/metaKey 为 true），默认也会在新标签打开。这和“中键点击”的行为相似，但事件层面不同。
+
+如何检测或拦截中键
+
+- 检测：
+  - 监听 mousedown/mouseup（或 pointerdown/pointerup），判断 event.button === 1。
+  - 在 Chromium 系列浏览器可监听 auxclick，并判断 event.button === 1。
+- 阻止“中键打开新标签”的默认行为（不建议，违背用户预期）：
+  - 在支持 auxclick 的浏览器：在 auxclick 上 e.preventDefault()。
+  - 兼容性兜底：在 mousedown 或 mouseup 上，遇到 button===1 时 e.preventDefault()。
+  - 同时若也要阻止 Ctrl/⌘+左键新开标签，还需要在 click 上根据 ctrlKey/metaKey 调用 preventDefault。
+
+示例（纯 JS，无 HTML）：
+```js
+const link = document.querySelector('a');
+
+// 左键或键盘激活（会有 click）
+link.addEventListener('click', (e) => {
+  console.log('click', { button: e.button, ctrl: e.ctrlKey, meta: e.metaKey });
+});
+
+// Chromium: 中键等非主键点击
+link.addEventListener('auxclick', (e) => {
+  if (e.button === 1) {
+    console.log('middle auxclick');
+    // e.preventDefault(); // 取消默认“新标签打开”
+  }
+});
+
+// 兼容兜底：所有浏览器的按下/抬起
+link.addEventListener('mousedown', (e) => {
+  if (e.button === 1) {
+    console.log('middle mousedown');
+    // e.preventDefault(); // 一些浏览器需要在这里阻止
+  }
+});
+link.addEventListener('mouseup', (e) => {
+  if (e.button === 1) {
+    console.log('middle mouseup');
+  }
+});
+```
+
+提示
+- 不要用中键触发业务逻辑，用户普遍期望中键用于“在后台新开标签”。最好把交互绑定在 click（主按钮/键盘激活）上，让浏览器处理中键与修饰键的默认行为。
 
 {% endfold %}
 
@@ -2178,18 +2313,19 @@ GPT-4.5 preview, o1-preview, o1, o3, o4-mini-high, Claude 3.5 Sonnet, Claude 3.7
 
 后续又多试了几次 DeepSeek-R1 有时候能提到，有时候不能
 
-|     更好     |         好        |        中       |          差          |
-|:------------:|:-----------------:|:---------------:|:--------------------:|
-| o4-mini-high |  GPT-4.5 preview  |     GPT-4.1     |        GPT-4o        |
-|              |         o1        |   o3-mini-high  | DeepSeek-V3 深度思考 |
-|              |         o3        |    o1-preview   |      DeepSeek-R1     |
-|              | Claude 3.5 Sonnet | Claude Sonnet 4 |       Kimi-k1.5      |
-|              | Claude 3.7 Sonnet |                 |    Gemini 2.0 Pro    |
-|              |   Claude Opus 4   |                 |                      |
-|              |    DeepSeek-V3    |                 |                      |
-|              |   Gemini 2.5 Pro  |                 |                      |
-|              |       Grok 3      |                 |                      |
-|              |  Qwen3-235B-A22B  |                 |                      |
+|     更好     |         好        |       中       |          差          |
+|:------------:|:-----------------:|:--------------:|:--------------------:|
+| o4-mini-high |  GPT-4.5 preview  |     GPT-4.1    |        GPT-4o        |
+|              |       GPT-5       |   DeepSeek-R1  | DeepSeek-V3 深度思考 |
+|              |         o1        |    Kimi-k1.5   |      DeepSeek-R1     |
+|              |         o3        | Gemini 2.0 Pro |       Kimi-k1.5      |
+|              | Claude 3.5 Sonnet |                |    Gemini 2.0 Pro    |
+|              | Claude 3.7 Sonnet |                |                      |
+|              |   Claude Opus 4   |                |                      |
+|              |    DeepSeek-V3    |                |                      |
+|              |   Gemini 2.5 Pro  |                |                      |
+|              |       Grok 3      |                |                      |
+|              |  Qwen3-235B-A22B  |                |                      |
 
 # 问题四
 ```
@@ -2381,6 +2517,96 @@ minimatch('hello.txt', '*.txt'); // true
 - **没有直接等价于 `.test()` 的“通配符模式”方法**，需要自己实现或用库。
 
 如果你有具体的“模式”格式需求，欢迎补充，我可以帮你写更具体的代码！
+
+{% endfold %}
+
+## GPT-5
+poe, 20250809
+
+{% fold info @展开查看回答 %}
+
+简短回答：
+- JS 只内建了基于正则的匹配（RegExp.prototype.test / String.prototype.match）。
+- “match patterns”（比如 WebExtension/Chrome 扩展里的 *://*.example.com/* 这种）JS 并没有内置同名/同语义的测试函数。需要自己实现、用库，或用 URLPattern（语义不完全相同）。
+
+如果你指的是 WebExtension 的 match pattern，下面是一个零依赖的实现，尽量贴近其规则：
+
+```js
+// 判断 urlString 是否匹配 WebExtension/Chrome 扩展的 match pattern
+// 参考语义：scheme://host/path，其中 scheme 的 * 仅代表 http+https
+function matchesMatchPattern(pattern, urlString) {
+  // <all_urls> 的近似实现（按常见文档：含 http/https/file/ftp/ws/wss）
+  if (pattern === '<all_urls>') {
+    let u;
+    try { u = new URL(urlString); } catch { return false; }
+    const allowed = new Set(['http:', 'https:', 'file:', 'ftp:', 'ws:', 'wss:']);
+    return allowed.has(u.protocol);
+  }
+
+  const i = pattern.indexOf('://');
+  if (i === -1) throw new Error('Invalid match pattern: missing "://": ' + pattern);
+
+  const schemePat = pattern.slice(0, i).toLowerCase();
+  const rest = pattern.slice(i + 3);
+  const slash = rest.indexOf('/');
+  if (slash === -1) throw new Error('Invalid match pattern: missing path part: ' + pattern);
+
+  const hostPat = rest.slice(0, slash).toLowerCase(); // 可能是 "*"、"*.example.com" 或精确主机名
+  const pathPat = rest.slice(slash);                  // 必须以 "/" 开头，可以含 "*"
+
+  let url;
+  try { url = new URL(urlString); } catch { return false; }
+
+  const scheme = url.protocol.slice(0, -1).toLowerCase(); // 去掉末尾冒号
+  // scheme 匹配：* 仅代表 http 与 https
+  if (schemePat === '*') {
+    if (scheme !== 'http' && scheme !== 'https') return false;
+  } else if (scheme !== schemePat) {
+    return false;
+  }
+
+  // host 匹配（file: 忽略 host）
+  if (scheme !== 'file') {
+    const host = url.hostname.toLowerCase(); // 不含端口
+    if (!hostMatches(hostPat, host)) return false;
+  }
+
+  // 路径匹配：用 pathname + search + hash
+  const path = (url.pathname || '/') + (url.search || '') + (url.hash || '');
+  return wildcardMatch(pathPat, path);
+}
+
+function hostMatches(pattern, host) {
+  if (pattern === '' || pattern === '*') return true;
+  if (pattern.startsWith('*.')) {
+    const base = pattern.slice(2);
+    // *.example.com 应当匹配 example.com 以及其任意子域
+    return host === base || host.endsWith('.' + base);
+  }
+  return host === pattern;
+}
+
+function wildcardMatch(pattern, str) {
+  // 将 * 转成正则的 .*
+  const re = new RegExp('^' + escapeRegex(pattern).replace(/\\\*/g, '.*') + '$');
+  return re.test(str);
+}
+
+function escapeRegex(s) {
+  return s.replace(/[|\\{}()[\]^$+?.]/g, '\\$&'); // 不转义 *，留给上面替换
+}
+
+// 示例
+console.log(matchesMatchPattern('*://*.example.com/*', 'https://a.example.com/x')); // true
+console.log(matchesMatchPattern('*://*.example.com/*', 'http://example.com/'));     // true
+console.log(matchesMatchPattern('https://example.com/*', 'http://example.com/'));   // false
+console.log(matchesMatchPattern('file:///C:/foo/*', 'file:///C:/foo/bar.txt'));     // true
+```
+
+其他可选方案：
+- 用库：比如 webextension-match-patterns、match-pattern（更贴近标准语义，省去细节坑）。
+- 仅做通配（glob）匹配时：可将通配符模式转换为正则，或在 Node.js 里用 minimatch 等库。
+- URLPattern（现代浏览器/Node 18+）：可做 URL 结构化匹配，但语法与 WebExtension 的 match patterns 不完全一致，不能直接拿来等价替代。需要自己把 match pattern 转成 URLPattern 的各个组件后再测试。
 
 {% endfold %}
 
@@ -3192,22 +3418,22 @@ DeepSeek-R1 也对正则匹配进行了一些废话，但还是提供了一个�
 
 Gemini 2.5 Pro 是提到了 URL Pattern API
 
-o4-mini-high 也提到了 URL Pattern API，还有一些额外的方法
+GPT-5, o4-mini-high 也提到了 URL Pattern API，还有一些额外的方法
 
 Kimi K2 提到了自己转换，还有一些额外不切实际的方法
 
-|     更好     |       好       |         中        |         差        |
-|:------------:|:--------------:|:-----------------:|:-----------------:|
-| o4-mini-high |       o3       |  GPT-4.5 preview  |       GPT-4o      |
-|              |     o3-pro     |     o1-preview    |         o1        |
-|              | Gemini 2.5 Pro | Claude 3.7 Sonnet |       o1-pro      |
-|              |                |  Claude Sonnet 4  |    o3-mini-high   |
-|              |                |   Claude Opus 4   | Claude 3.5 Sonnet |
-|              |                |       Grok 4      |    DeepSeek-R1    |
-|              |                |                   |   Gemini 2.0 Pro  |
-|              |                |                   |       Grok 3      |
-|              |                |                   |  Qwen3-235B-A22B  |
-|              |                |                   |      Kimi K2      |
+|       好       |         中        |         差        |
+|:--------------:|:-----------------:|:-----------------:|
+|      GPT-5     |  GPT-4.5 preview  |       GPT-4o      |
+|       o3       |     o1-preview    |         o1        |
+|     o3-pro     | Claude 3.7 Sonnet |       o1-pro      |
+|  o4-mini-high  |  Claude Sonnet 4  |    o3-mini-high   |
+| Gemini 2.5 Pro |   Claude Opus 4   | Claude 3.5 Sonnet |
+|                |       Grok 4      |    DeepSeek-R1    |
+|                |                   |   Gemini 2.0 Pro  |
+|                |                   |       Grok 3      |
+|                |                   |  Qwen3-235B-A22B  |
+|                |                   |      Kimi K2      |
 
 # 问题五
 ```
@@ -3249,6 +3475,21 @@ poe, 20250418
 ---
 
 此段对话表现了范滂的忠义和他母亲的高尚情操，被后世称颂。
+
+{% endfold %}
+
+## GPT-5
+poe, 20250809
+
+{% fold info @展开查看回答 %}
+
+下面据《后汉书·党锢列传下·范滂传》所记，摘出范滂就逮时与其母的对话要语，并附今译。
+
+- 原文：
+  “吏至，滂谓母曰：‘滂不孝，不得终养，愿母以义割恩。’母曰：‘汝能如此，吾复何忧！’遂就逮。”
+
+- 今译：
+  “官吏来到（门口），范滂对母亲说：‘我不孝，不能在您身边尽终身奉养；愿母亲以大义割舍对儿子的私情。’母亲说：‘你能这样做，我还有什么可担忧的！’于是他便跟随官吏受缚而去。”
 
 {% endfold %}
 
@@ -3460,7 +3701,8 @@ o3-mini-high 直接否认了这个问题
 |:-----------:|:---------------:|:-----------------:|:------------:|
 | DeepSeek-R1 | GPT-4.5 preview |       GPT-4o      | o3-mini-high |
 |             |  Claude Opus 4  |      GPT-4.1      |              |
-|             |  Gemini 2.0 Pro |         o1        |              |
+|             |  Gemini 2.0 Pro |       GPT-5       |              |
+|             |                 |         o1        |              |
 |             |                 |     o1-preview    |              |
 |             |                 |         o3        |              |
 |             |                 |    o4-mini-high   |              |
@@ -5413,6 +5655,56 @@ fruits:
 
 {% endfold %}
 
+## GPT-5
+poe, 20250809
+
+{% fold info @展开查看回答 %}
+
+不需要固定缩进 2 格。YAML 的规则是“缩进用空格，子级相对父级至少多 1 个空格，并且同一层级要对齐一致”。2 个空格只是常见风格，不是语法要求。
+
+要点：
+- 只能用空格缩进，不能用 Tab。
+- 顶层的数组（序列）可以不缩进。
+- 数组作为某个键的值时，连字号 - 必须比该键多缩进至少 1 个空格；用 1、2、4 都行，但同一层要一致。
+- - 后面要有一个空格再写内容。
+
+示例（均为合法 YAML）：
+```yaml
+# 顶层序列：无需缩进
+- a
+- b
+- c
+```
+
+```yaml
+# 序列作为键的值：2 空格（常见推荐）
+fruits:
+  - apple
+  - banana
+```
+
+```yaml
+# 1 空格也可以（不常见，但合法）
+fruits:
+ - apple
+ - banana
+```
+
+错误示例（不要这样写）：
+```yaml
+# 子级没有比父级更深的缩进 —— 非法
+fruits:
+- apple
+- banana
+```
+
+如果你想“完全不缩进”但又把列表写在同一行，可以用流式（方括号）语法：
+```yaml
+fruits: [apple, banana]
+```
+
+{% endfold %}
+
 ## o1
 OpenRouter，20250418
 
@@ -6054,7 +6346,7 @@ fruits:
 ## 答案评价
 GPT-4.5 preview, Claude 3.7 Sonnet, DeepSeek-R1 关于语法的回答是正确的
 
-GPT-4.1, o1-preview, o3, o3-mini-high, o3-pro, o4-mini-high, Claude Sonnet 4, Claude Opus 4, Gemini 2.5 Pro, Grok 3, Grok 4, Kimi K2 关于语法的回答是错误的
+GPT-4.1, GPT-5, o1-preview, o3, o3-mini-high, o3-pro, o4-mini-high, Claude Sonnet 4, Claude Opus 4, Gemini 2.5 Pro, Grok 3, Grok 4, Kimi K2 关于语法的回答是错误的
 
 o1 回避了这个问题，而且描述有错，yaml 官方的数组不缩进
 
@@ -6065,7 +6357,8 @@ Claude 3.7 Sonnet 的描述最好
 |         好        |        中       |        差       |
 |:-----------------:|:---------------:|:---------------:|
 | Claude 3.7 Sonnet | GPT-4.5 preview |     GPT-4.1     |
-|    DeepSeek-R1    |                 |    o1-preview   |
+|    DeepSeek-R1    |                 |      GPT-5      |
+|                   |                 |    o1-preview   |
 |                   |                 |        o1       |
 |                   |                 |        o3       |
 |                   |                 |      o3-pro     |
