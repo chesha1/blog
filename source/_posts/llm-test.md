@@ -25,7 +25,7 @@ openai o 系列模型比较特殊，现在它们不会优先输出 markdown 格�
 
 还在测评中的模型：
 - GPT-5
-- Claude 3.7 Sonnet, Claude Opus 4
+- Claude 3.7 Sonnet, Claude Opus 4, Claude Opus 4.1
 - DeepSeek-R1
 - Gemini 2.5 Pro
 
@@ -554,7 +554,7 @@ poe, 20250809
 
 GPT-4o, o3-mini-high, Claude 3.5 Sonnet, Claude 3.7 Sonnet, Claude Sonnet 4, DeepSeek-V3, Gemini 2.0 Pro, Qwen3-235B-A22B, Doubao-Seed-1.6-thinking 没有纠正引用这种错误说法
 
-GPT-4.5 preview, GPT-5, o1-preview, o1, o1-pro, o3, o3-pro,o4-mini-high, Claude Opus 4, DeepSeek-R1, Gemini 2.5 Pro, Grok 3 纠正了引用这种错误说法
+GPT-4.5 preview, GPT-5, o1-preview, o1, o1-pro, o3, o3-pro,o4-mini-high, Claude Opus 4, Claude Opus 4.1, DeepSeek-R1, Gemini 2.5 Pro, Grok 3 纠正了引用这种错误说法
 
 o3-pro 虽然纠正了错误说法，但是没有提到 secrets，然后错误的 prompt 一路狂奔了
 
@@ -569,7 +569,8 @@ o3-pro 虽然纠正了错误说法，但是没有提到 secrets，然后错误�
 |        o3       |        DeepSeek-V3       |           |
 |   o4-mini-high  |      Gemini 2.0 Pro      |           |
 |  Claude Opus 4  |      Qwen3-235B-A22B     |           |
-|   DeepSeek-R1   | Doubao-Seed-1.6-thinking |           |
+| Claude Opus 4.1 | Doubao-Seed-1.6-thinking |           |
+|   DeepSeek-R1   |                          |           |
 |  Gemini 2.5 Pro |                          |           |
 |      Grok 3     |                          |           |
 |      Grok 4     |                          |           |
@@ -664,202 +665,12 @@ poe, 20250809
 
 一次完成，其他都很完美，唯一不好的地方是按钮位置放颠倒了，年份切换按钮在内，月份在外
 
-
-
-
-
 ## Claude 3.7 Sonnet
 claude-3-7-sonnet, thinking, 20250225
 
 第一次实现了功能，但是点击按钮有报错
 
 第二次实现了功能，回答如下
-
-{% fold info @展开查看回答 %}
-
-您遇到的 `TypeError: goToMonth is not a function` 错误是因为在最新版本的 react-day-picker 中，自定义 Caption 组件接收的属性有所不同。让我们修复这个问题：
-
-```tsx
-"use client"
-
-import * as React from "react"
-import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from "lucide-react"
-import { DayPicker } from "react-day-picker"
-import { format, addYears, addMonths } from "date-fns"
-
-import { cn } from "@/lib/utils"
-import { buttonVariants } from "@/components/ui/button"
-
-export type CalendarProps = React.ComponentProps<typeof DayPicker>
-
-function Calendar({
-  className,
-  classNames,
-  showOutsideDays = true,
-  ...props
-}: CalendarProps) {
-  // 创建一个月份状态，如果外部没有提供
-  const [month, setMonth] = React.useState<Date>(props.defaultMonth || new Date())
-  
-  // 处理月份变化
-  const handleMonthChange = (newMonth: Date) => {
-    setMonth(newMonth);
-    props.onMonthChange?.(newMonth);
-  };
-
-  // 自定义Caption组件，添加年份导航按钮
-  const CustomCaption = ({ 
-    displayMonth 
-  }: { 
-    displayMonth: Date 
-  }) => {
-    // 处理年份和月份切换
-    const handlePreviousYear = () => {
-      handleMonthChange(addYears(displayMonth, -1));
-    };
-
-    const handleNextYear = () => {
-      handleMonthChange(addYears(displayMonth, 1));
-    };
-
-    const handlePreviousMonth = () => {
-      handleMonthChange(addMonths(displayMonth, -1));
-    };
-
-    const handleNextMonth = () => {
-      handleMonthChange(addMonths(displayMonth, 1));
-    };
-
-    // 按钮样式类
-    const buttonClass = cn(
-      buttonVariants({ variant: "outline" }),
-      "h-7 w-7 bg-transparent p-0 opacity-50 hover:opacity-100"
-    );
-
-    return (
-      <div className="flex justify-center pt-1 relative items-center">
-        {/* 上一年按钮 */}
-        <button
-          onClick={handlePreviousYear}
-          className={cn(buttonClass, "absolute left-1")}
-          aria-label="上一年"
-          type="button"
-        >
-          <ChevronsLeft className="h-4 w-4" />
-        </button>
-        
-        {/* 上一月按钮 */}
-        <button
-          onClick={handlePreviousMonth}
-          className={cn(buttonClass, "absolute left-9")}
-          aria-label="上一月"
-          type="button"
-        >
-          <ChevronLeft className="h-4 w-4" />
-        </button>
-        
-        {/* 月份和年份标签 */}
-        <span className="text-sm font-medium">
-          {format(displayMonth, 'MMMM yyyy')}
-        </span>
-        
-        {/* 下一月按钮 */}
-        <button
-          onClick={handleNextMonth}
-          className={cn(buttonClass, "absolute right-9")}
-          aria-label="下一月"
-          type="button"
-        >
-          <ChevronRight className="h-4 w-4" />
-        </button>
-        
-        {/* 下一年按钮 */}
-        <button
-          onClick={handleNextYear}
-          className={cn(buttonClass, "absolute right-1")}
-          aria-label="下一年"
-          type="button"
-        >
-          <ChevronsRight className="h-4 w-4" />
-        </button>
-      </div>
-    );
-  };
-
-  return (
-    <DayPicker
-      showOutsideDays={showOutsideDays}
-      className={cn("p-3", className)}
-      classNames={{
-        months: "flex flex-col sm:flex-row space-y-4 sm:space-x-4 sm:space-y-0",
-        month: "space-y-4",
-        caption: "flex justify-center pt-1 relative items-center",
-        caption_label: "text-sm font-medium",
-        nav: "hidden", // 隐藏默认导航按钮
-        table: "w-full border-collapse space-y-1",
-        head_row: "flex",
-        head_cell:
-          "text-muted-foreground rounded-md w-8 font-normal text-[0.8rem]",
-        row: "flex w-full mt-2",
-        cell: cn(
-          "relative p-0 text-center text-sm focus-within:relative focus-within:z-20 [&:has([aria-selected])]:bg-accent [&:has([aria-selected].day-outside)]:bg-accent/50 [&:has([aria-selected].day-range-end)]:rounded-r-md",
-          props.mode === "range"
-            ? "[&:has(>.day-range-end)]:rounded-r-md [&:has(>.day-range-start)]:rounded-l-md first:[&:has([aria-selected])]:rounded-l-md last:[&:has([aria-selected])]:rounded-r-md"
-            : "[&:has([aria-selected])]:rounded-md"
-        ),
-        day: cn(
-          buttonVariants({ variant: "ghost" }),
-          "h-8 w-8 p-0 font-normal aria-selected:opacity-100"
-        ),
-        day_range_start: "day-range-start",
-        day_range_end: "day-range-end",
-        day_selected:
-          "bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground focus:bg-primary focus:text-primary-foreground",
-        day_today: "bg-accent text-accent-foreground",
-        day_outside:
-          "day-outside text-muted-foreground aria-selected:bg-accent/50 aria-selected:text-muted-foreground",
-        day_disabled: "text-muted-foreground opacity-50",
-        day_range_middle:
-          "aria-selected:bg-accent aria-selected:text-accent-foreground",
-        day_hidden: "invisible",
-        ...classNames,
-      }}
-      components={{
-        Caption: CustomCaption
-      }}
-      month={props.month || month}
-      onMonthChange={handleMonthChange}
-      {...props}
-    />
-  )
-}
-Calendar.displayName = "Calendar"
-
-export { Calendar }
-```
-
-### 修复说明
-
-1. **添加状态管理**：
-   - 创建了组件内部的月份状态 `month`，在没有外部控制值的情况下使用
-   - 添加了 `handleMonthChange` 函数来处理月份变更
-
-2. **自定义月份和年份导航**：
-   - 使用 `date-fns` 的 `addYears` 和 `addMonths` 函数进行日期计算
-   - 直接在组件内执行日期计算，不依赖 `goToMonth` 函数
-
-3. **隐藏默认导航**：
-   - 将默认导航栏隐藏 (`nav: "hidden"`)，完全使用我们的自定义导航
-
-4. **管理控制权**：
-   - 同时支持受控和非受控模式，通过检查 `props.month` 来决定
-
-5. **改进按钮标记**：
-   - 添加了 `type="button"` 属性防止可能的表单提交问题
-
-这个改进版本应该能够正确处理年份和月份的切换，而不会出现 "goToMonth is not a function" 错误。它同时保持了与 shadcn/ui 组件库风格的一致性。
-
-{% endfold %}
 
 ## Claude Opus 4
 Claude workbench, 20250523
@@ -899,7 +710,7 @@ GPT-4.5 preview, o1-preview, GPT-4o, Claude 3.7 Sonnet, Claude Sonnet 4, Claude 
 
 GPT-4.5 preview 只用了一次回答
 
-GPT-5, Claude Sonnet 4, Claude Opus 4 只用了一次回答，而且用了正确的图标，较为美观
+GPT-5, Claude Sonnet 4, Claude Opus 4, Claude Opus 4.1 只用了一次回答，而且用了正确的图标，较为美观
 
 Claude 3.7 Sonnet, Gemini 2.5 Pro, Grok 4 用了更好看的图标，只用了两次回答
 
@@ -910,10 +721,10 @@ o1-preview, GPT-4o 用了三次
 |       更好      |         好        |     中     |            差            |
 |:---------------:|:-----------------:|:----------:|:------------------------:|
 | GPT-4.5 preview | Claude 3.7 Sonnet | o1-preview |          GPT-4.1         |
-| Claude Sonnet 4 |   Gemini 2.5 Pro  |   GPT-4o   |            o1            |
-|  Claude Opus 4  |  Qwen3-235B-A22B  |            |            o3            |
-|      GPT-5      |       Grok 4      |            |       o3-mini-high       |
-|                 |                   |            |       o4-mini-high       |
+|      GPT-5      |   Gemini 2.5 Pro  |   GPT-4o   |            o1            |
+| Claude Sonnet 4 |  Qwen3-235B-A22B  |            |            o3            |
+|  Claude Opus 4  |       Grok 4      |            |       o3-mini-high       |
+| Claude Opus 4.1 |                   |            |       o4-mini-high       |
 |                 |                   |            |     Claude 3.5 Sonnet    |
 |                 |                   |            |        DeepSeek-V3       |
 |                 |                   |            |        DeepSeek-R1       |
@@ -927,8 +738,6 @@ o1-preview, GPT-4o 用了三次
 ```
 用鼠标中间点击一个链接，实际上是什么，会触发click事件吗？
 ```
-
-
 
 ## GPT-5
 poe, 20250809
@@ -1218,7 +1027,7 @@ myLink.addEventListener('click', function(event) {
 ## 答案评价
 GPT-4o, DeepSeek-V3 深度思考, DeepSeek-R1, Gemini 2.0 Pro, Grok 4 没有提到 `auxclick`
 
-GPT-4.5 preview, o1-preview, o1, o3, o4-mini-high, Claude 3.5 Sonnet, Claude 3.7 Sonnet, Claude Sonnet 4, Claude Opus 4, Gemini 2.5 Pro, Grok 3, Qwen3-235B-A22B 还额外提到 `mousedown` 和 `mouseup`
+GPT-4.5 preview, o1-preview, o1, o3, o4-mini-high, Claude 3.5 Sonnet, Claude 3.7 Sonnet, Claude Sonnet 4, Claude Opus 4, Claude Opus 4.1, Gemini 2.5 Pro, Grok 3, Qwen3-235B-A22B 还额外提到 `mousedown` 和 `mouseup`
 
 后续又多试了几次 DeepSeek-R1 有时候能提到，有时候不能
 
@@ -1232,6 +1041,7 @@ GPT-4.5 preview, o1-preview, o1, o3, o4-mini-high, Claude 3.5 Sonnet, Claude 3.7
 | Claude 3.5 Sonnet |                |        Grok 4        |
 | Claude 3.7 Sonnet |                |                      |
 |   Claude Opus 4   |                |                      |
+|  Claude Opus 4.1  |                |                      |
 |    DeepSeek-V3    |                |                      |
 |   Gemini 2.5 Pro  |                |                      |
 |       Grok 3      |                |                      |
@@ -1241,8 +1051,6 @@ GPT-4.5 preview, o1-preview, o1, o3, o4-mini-high, Claude 3.5 Sonnet, Claude 3.7
 ```
 在js中，可以用test函数测试是否和正则匹配，对于，match patterns，有没有类似的函数？
 ```
-
-
 
 ## GPT-5
 poe, 20250809
@@ -1753,7 +1561,7 @@ OpenRouter, 20250711
 {% endfold %}
 
 ## 答案评价
-GPT-4o, o1, Gemini 2.0 Pro, Grok 3 全篇没有想到 match patterns 是和正则表达式不一样的东西
+GPT-4o, o1, Gemini 2.0 Pro, Claude Opus 4.1, Grok 3 全篇没有想到 match patterns 是和正则表达式不一样的东西
 
 Qwen3-235B-A22B 确实想到了是和正则不同的东西，但是想错了方向，提供了完全错误的方法
 
@@ -1786,8 +1594,9 @@ Kimi K2 提到了自己转换，还有一些额外不切实际的方法
 |     o3-pro     |     o1-preview    |       o1-pro      |
 |  o4-mini-high  | Claude 3.7 Sonnet |    o3-mini-high   |
 | Gemini 2.5 Pro |  Claude Sonnet 4  | Claude 3.5 Sonnet |
-|                |   Claude Opus 4   |    DeepSeek-R1    |
-|                |       Grok 4      |   Gemini 2.0 Pro  |
+|                |   Claude Opus 4   |  Claude Opus 4.1  |
+|                |       Grok 4      |    DeepSeek-R1    |
+|                |                   |   Gemini 2.0 Pro  |
 |                |                   |       Grok 3      |
 |                |                   |  Qwen3-235B-A22B  |
 |                |                   |      Kimi K2      |
@@ -1941,27 +1750,27 @@ OpenRouter, 20250327
 {% endfold %}
 
 ## 答案评价
-这几个模型都没有开联网搜索，只有 GPT-4.5 preview, Claude Opus 4, DeepSeek-R1 和 Gemini 2.0 Pro 给出了相对正确的原文，DeepSeek-R1 的附加介绍更好并且原文错误少
+这几个模型都没有开联网搜索，只有 GPT-4.5 preview, Claude Opus 4, Claude Opus 4.1, DeepSeek-R1 和 Gemini 2.0 Pro 给出了相对正确的原文
 
 o1 等模型有较大错误
 
 o3-mini-high 直接否认了这个问题
 
-|     更好    |        好       |         中        |      差      |
-|:-----------:|:---------------:|:-----------------:|:------------:|
-| DeepSeek-R1 | GPT-4.5 preview |       GPT-4o      | o3-mini-high |
-|             |  Claude Opus 4  |      GPT-4.1      |              |
-|             |  Gemini 2.0 Pro |       GPT-5       |              |
-|             |                 |         o1        |              |
-|             |                 |     o1-preview    |              |
-|             |                 |         o3        |              |
-|             |                 |    o4-mini-high   |              |
-|             |                 | Claude 3.5 Sonnet |              |
-|             |                 | Claude 3.7 Sonnet |              |
-|             |                 |  Claude Sonnet 4  |              |
-|             |                 |   Gemini 2.5 Pro  |              |
-|             |                 |       Grok 3      |              |
-|             |                 |       Grok 4      |              |
+|        好       |         中        |      差      |
+|:---------------:|:-----------------:|:------------:|
+| GPT-4.5 preview |       GPT-4o      | o3-mini-high |
+|  Claude Opus 4  |      GPT-4.1      |              |
+| Claude Opus 4.1 |       GPT-5       |              |
+|  Gemini 2.0 Pro |         o1        |              |
+|   DeepSeek-R1   |     o1-preview    |              |
+|                 |         o3        |              |
+|                 |    o4-mini-high   |              |
+|                 | Claude 3.5 Sonnet |              |
+|                 | Claude 3.7 Sonnet |              |
+|                 |  Claude Sonnet 4  |              |
+|                 |   Gemini 2.5 Pro  |              |
+|                 |       Grok 3      |              |
+|                 |       Grok 4      |              |
 
 
 # 问题六
