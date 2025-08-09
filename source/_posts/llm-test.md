@@ -4959,6 +4959,38 @@ graph TD
 
 {% endfold %}
 
+## GPT-5
+poe, 20250809
+
+{% fold info @展开查看回答 %}
+
+已优化，未改动逻辑且保持原有显示效果：
+
+```
+graph TD
+  A["扫描高利率理财产品"]
+  n1["计算可用稳定币余额"]
+  n2{余额大于零}
+  n3["结束"]
+  n4{是否已经完全购买该产品}
+  B{查找资金或现货账户是否有足够对应币}
+  D["查找其他稳定币"]
+  E["兑换"]
+  C["转账到该产品"]
+
+  n1 --- A
+  A --- n2
+  n2 ---|否| n3
+  n2 ---|是| n4
+  n4 ---|是| A
+  n4 ---|否| B
+  B -->|有| C
+  B -->|没有| D --> E --> C
+  C --- A
+```
+
+{% endfold %}
+
 ## o1
 OpenRouter，20250316
 
@@ -5199,19 +5231,21 @@ GPT-4.5 preview, GPT-4.1, o1-preview, o1-pro, o3-mini-high, o4-mini-high, Claude
 
 o1, Claude 3.7 Sonnet, Gemini 2.5 Pro, Grok 3 看起来完成了任务，但是对于描述也偷偷地修改了
 
-| 好 |         中        |        差       |
-|:--:|:-----------------:|:---------------:|
-|    |         o1        | GPT-4.5 preview |
-|    | Claude 3.7 Sonnet |     GPT-4.1     |
-|    |   Gemini 2.5 Pro  |    o1-preview   |
-|    |       Grok 3      |      o1-pro     |
-|    |                   |        o3       |
-|    |                   |   o3-mini-high  |
-|    |                   |   o4-mini-high  |
-|    |                   | Claude Sonnet 4 |
-|    |                   |  Claude Opus 4  |
-|    |                   |   DeepSeek-R1   |
-|    |                   |  Gemini 2.0 Pro |
+只有 GPT-5 做到了优化代码，还不改变显示效果
+
+|   好  |         中        |        差       |
+|:-----:|:-----------------:|:---------------:|
+| GPT-5 |         o1        | GPT-4.5 preview |
+|       | Claude 3.7 Sonnet |     GPT-4.1     |
+|       |   Gemini 2.5 Pro  |    o1-preview   |
+|       |       Grok 3      |      o1-pro     |
+|       |                   |        o3       |
+|       |                   |   o3-mini-high  |
+|       |                   |   o4-mini-high  |
+|       |                   | Claude Sonnet 4 |
+|       |                   |  Claude Opus 4  |
+|       |                   |   DeepSeek-R1   |
+|       |                   |  Gemini 2.0 Pro |
 
 # 问题八
 ```
