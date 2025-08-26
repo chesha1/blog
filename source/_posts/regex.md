@@ -527,7 +527,7 @@ CallCFunction(function_reference, return_type, args...);
 ### Torque 语言特定宏
 
 #### 1. transitioning 关键字
-```torque
+```cpp
 transitioning javascript builtin RegExpPrototypeTest(
     js-implicit context: NativeContext, receiver: JSAny)(
     string: JSAny): JSAny
@@ -536,7 +536,7 @@ transitioning javascript builtin RegExpPrototypeTest(
 **功能**: 标记函数可能改变堆状态，需要特殊的垃圾回收处理
 
 #### 2. otherwise 错误处理
-```torque
+```cpp
 RegExpPrototypeExecBodyWithoutResultFast(
     UnsafeCast<JSRegExp>(receiver), str)
     otherwise return False;
@@ -545,7 +545,7 @@ RegExpPrototypeExecBodyWithoutResultFast(
 **功能**: Torque的异常处理机制，类似于C++的异常或Go的错误返回
 
 #### 3. typeswitch 模式匹配
-```torque
+```cpp
 typeswitch (exec) {
   case (execCallable: Callable): {
     // 处理可调用对象
