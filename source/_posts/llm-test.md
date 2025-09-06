@@ -71,7 +71,7 @@ openai o 系列模型比较特殊，现在它们不会优先输出 markdown 格�
 
 - **Alibaba:**
   - Qwen3-235B-A22B
-  - Qwen3-Max-Preview(测试是在可以思考的版本下做的，但是现在官方不能思考了)
+  - Qwen3-Max-Preview
 
 - **字节跳动:**
   - Doubao-Seed-1.6-thinking
@@ -978,21 +978,22 @@ GPT-4.5 preview, o1-preview, o1, o3, o4-mini, Claude 3.5 Sonnet, Claude 3.7 Sonn
 
 后续又多试了几次 DeepSeek-R1 有时候能提到，有时候不能
 
-|         好        |       中       |          差          |
-|:-----------------:|:--------------:|:--------------------:|
-|  GPT-4.5 preview  |     GPT-4.1    |        GPT-4o        |
-|       GPT-5       |   DeepSeek-R1  | DeepSeek-V3 深度思考 |
-|         o1        |     Kimi-k2    |      DeepSeek-R1     |
-|         o3        | Gemini 2.5 Pro |       Kimi-k1.5      |
-|      o4-mini      |                |    Gemini 2.0 Pro    |
-| Claude 3.5 Sonnet |                |        Grok 4        |
-| Claude 3.7 Sonnet |                |   Qwen3-Max-Preview  |
-|   Claude Opus 4   |                |                      |
-|  Claude Opus 4.1  |                |                      |
-|    DeepSeek-V3    |                |                      |
-|   Gemini 2.5 Pro  |                |                      |
-|       Grok 3      |                |                      |
-|  Qwen3-235B-A22B  |                |                      |
+| 好 | 中 | 差 |
+|:---:|:---:|:---:|
+| GPT-4.5 preview | GPT-4.1 | GPT-4o |
+| GPT-5 | DeepSeek-R1 | DeepSeek-V3 深度思考 |
+| o1 | Kimi-k2 | DeepSeek-R1 |
+| o3 | Gemini 2.5 Pro | Kimi-k1.5 |
+| o4-mini |  | Gemini 2.0 Pro |
+| Claude 3.5 Sonnet |  | Grok 4 |
+| Claude 3.7 Sonnet |  |  |
+| Claude Opus 4 |  |  |
+| Claude Opus 4.1 |  |  |
+| DeepSeek-V3 |  |  |
+| Gemini 2.5 Pro |  |  |
+| Grok 3 |  |  |
+| Qwen3-235B-A22B |  |  |
+| Qwen3-Max-Preview |  |  |
 
 # 问题四
 ```
@@ -1446,7 +1447,7 @@ OpenRouter, 20250711
 {% endfold %}
 
 ## 答案评价
-GPT-4o, o1, Gemini 2.0 Pro, Claude Opus 4.1, Grok 3, Qwen3-Max-Preview 全篇没有想到 match patterns 是和正则表达式不一样的东西
+GPT-4o, o1, Gemini 2.0 Pro, Claude Opus 4.1, Grok 3 全篇没有想到 match patterns 是和正则表达式不一样的东西
 
 Qwen3-235B-A22B 确实想到了是和正则不同的东西，但是想错了方向，提供了完全错误的方法
 
@@ -1462,7 +1463,7 @@ o3-mini 提供了一堆关于正则匹配的废话，最后才提到目前没有
 
 Claude 3.5 Sonnet 提到了现在标准库中没有这种函数，并提供了第三方库和其他错误方法
 
-GPT-4.5 preview, GPT-4.1, o3, Claude 3.7 Sonnet, Claude Sonnet 4, Claude Opus 4, Grok 4 提供了把 match patterns 转化成正则和使用第三方库两种正确的方法
+GPT-4.5 preview, GPT-4.1, o3, Claude 3.7 Sonnet, Claude Sonnet 4, Claude Opus 4, Grok 4, Qwen3-Max-Preview 提供了把 match patterns 转化成正则和使用第三方库两种正确的方法
 
 DeepSeek-R1 也对正则匹配进行了一些废话，但还是提供了一个解决方法
 
@@ -1472,20 +1473,20 @@ GPT-5, o4-mini 也提到了 URL Pattern API，还有一些额外的方法
 
 Kimi K2 提到了自己转换，还有一些额外不切实际的方法
 
-|       好       |         中        |         差        |
-|:--------------:|:-----------------:|:-----------------:|
-|      GPT-5     |  GPT-4.5 preview  |       GPT-4o      |
-|       o3       |      GPT-4.1      |         o1        |
-|     o3-pro     |     o1-preview    |       o1-pro      |
-|     o4-mini    | Claude 3.7 Sonnet |      o3-mini      |
-| Gemini 2.5 Pro |  Claude Sonnet 4  | Claude 3.5 Sonnet |
-|                |   Claude Opus 4   |  Claude Opus 4.1  |
-|                |       Grok 4      |    DeepSeek-R1    |
-|                |                   |   Gemini 2.0 Pro  |
-|                |                   |       Grok 3      |
-|                |                   |  Qwen3-235B-A22B  |
-|                |                   |      Kimi K2      |
-|                |                   | Qwen3-Max-Preview |
+| 好 | 中 | 差 |
+|:---:|:---:|:---:|
+| GPT-5 | GPT-4.5 preview | GPT-4o |
+| o3 | GPT-4.1 | o1 |
+| o3-pro | o1-preview | o1-pro |
+| o4-mini | Claude 3.7 Sonnet | o3-mini |
+| Gemini 2.5 Pro | Claude Sonnet 4 | Claude 3.5 Sonnet |
+|  | Claude Opus 4 | Claude Opus 4.1 |
+|  | Grok 4 | DeepSeek-R1 |
+|  | Qwen3-Max-Preview | Gemini 2.0 Pro |
+|  |  | Grok 3 |
+|  |  | Qwen3-235B-A22B |
+|  |  | Kimi K2 |
+|  |  |  |
 
 # 问题五
 ```
@@ -2654,7 +2655,7 @@ o1, Claude 3.7 Sonnet, Gemini 2.5 Pro, Grok 3 看起来完成了任务，但是�
 | GPT-5 | o1 | GPT-4.5 preview |
 | Grok 4 | Claude 3.7 Sonnet | GPT-4.1 |
 | Claude Opus 4.1 | Gemini 2.5 Pro | o1-preview |
-| Qwen3-Max-Preview | Grok 3 | o1-pro |
+|  | Grok 3 | o1-pro |
 |  |  | o3 |
 |  |  | o3-mini |
 |  |  | o4-mini |
@@ -2662,6 +2663,7 @@ o1, Claude 3.7 Sonnet, Gemini 2.5 Pro, Grok 3 看起来完成了任务，但是�
 |  |  | Claude Opus 4 |
 |  |  | DeepSeek-R1 |
 |  |  | Gemini 2.0 Pro |
+|  |  | Qwen3-Max-Preview |
 
 # 问题八
 ```
@@ -3097,21 +3099,21 @@ Grok 4 的回答最差
 
 DeepSeek-R1 猜出了这是恒定乘积 AMM，但是不够确定
 
-GPT-4.1, Claude 3.7 Sonnet, Grok 3 解释得比较浅，没有提到特点
+GPT-4.1, Claude 3.7 Sonnet, Grok 3, Qwen3-Max-Preview 解释得比较浅，没有提到特点
 
 o1 没有提到滑点，o3 没有强调滑点这个重要问题
 
 Gemini 2.5 Pro 没有提到不需要 limit order book 这个问题
 
-GPT-5, o4-mini, Claude Opus 4, Claude Opus 4.1, Qwen3-Max-Preview 的解释不错
+GPT-5, o4-mini, Claude Opus 4, Claude Opus 4.1 的解释不错
 
-|      更好     |       好       |         中        |        差       |
-|:-------------:|:--------------:|:-----------------:|:---------------:|
-|     GPT-5     |       o1       |      GPT-4.1      | GPT-4.5 preview |
-|  o4-mini |       o3       | Claude 3.7 Sonnet | Claude Sonnet 4 |
-| Claude Opus 4 | Gemini 2.5 Pro |       Grok 3      |   DeepSeek-R1   |
-| Claude Opus 4.1 |                |                   |      Grok 4     |
-| Qwen3-Max-Preview |                |                   |                 |
+| 更好 | 好 | 中 | 差 |
+|:---:|:---:|:---:|:---:|
+| GPT-5 | o1 | GPT-4.1 | GPT-4.5 preview |
+| o4-mini | o3 | Claude 3.7 Sonnet | Claude Sonnet 4 |
+| Claude Opus 4 | Gemini 2.5 Pro | Grok 3 | DeepSeek-R1 |
+| Claude Opus 4.1 |  | Qwen3-Max-Preview | Grok 4 |
+|  |  |  |  |
 
 
 # 问题十
