@@ -538,26 +538,28 @@ poe, 20250809
 
 GPT-4o, o3-mini, Claude 3.5 Sonnet, Claude 3.7 Sonnet, Claude Sonnet 4, DeepSeek-V3, Gemini 2.0 Pro, Qwen3-235B-A22B, Doubao-Seed-1.6-thinking 没有纠正引用这种错误说法
 
-GPT-4.5 preview, GPT-5, o1-preview, o1, o1-pro, o3, o3-pro,o4-mini, Claude Opus 4, Claude Opus 4.1, DeepSeek-R1, Gemini 2.5 Pro, Grok 3 纠正了引用这种错误说法
+GPT-4.5 preview, GPT-5, o1-preview, o1, o1-pro, o3, o3-pro,o4-mini, Claude Opus 4, Claude Opus 4.1, DeepSeek-R1, Gemini 2.5 Pro, Grok 3, Qwen3-Max-Preview 纠正了引用这种错误说法
 
 o3-pro 虽然纠正了错误说法，但是没有提到 secrets，然后错误的 prompt 一路狂奔了
 
-|        好       |            中            |     差    |
-|:---------------:|:------------------------:|:---------:|
-| GPT-4.5 preview |          GPT-4o          | Kimi-k1.5 |
-|     GPT-4.1     |          o3-pro          |           |
-|      GPT-5      |       o3-mini       |           |
-|    o1-preview   |     Claude 3.5 Sonnet    |           |
-|        o1       |     Claude 3.7 Sonnet    |           |
-|      o1-pro     |      Claude Sonnet 4     |           |
-|        o3       |        DeepSeek-V3       |           |
-|   o4-mini  |      Gemini 2.0 Pro      |           |
-|  Claude Opus 4  |      Qwen3-235B-A22B     |           |
-| Claude Opus 4.1 | Doubao-Seed-1.6-thinking |           |
-|   DeepSeek-R1   |                          |           |
-|  Gemini 2.5 Pro |                          |           |
-|      Grok 3     |                          |           |
-|      Grok 4     |                          |           |
+| 好 | 中 | 差 |
+|:---:|:---:|:---:|
+| GPT-4.5 preview | GPT-4o | Kimi-k1.5 |
+| GPT-4.1 | o3-pro | |
+| GPT-5 | o3-mini | |
+| o1-preview | Claude 3.5 Sonnet | |
+| o1 | Claude 3.7 Sonnet | |
+| o1-pro | Claude Sonnet 4 | |
+| o3 | DeepSeek-V3 | |
+| o4-mini | Gemini 2.0 Pro | |
+| Claude Opus 4 | Qwen3-235B-A22B | |
+| Claude Opus 4.1 | Doubao-Seed-1.6-thinking | |
+| DeepSeek-R1 | | |
+| Gemini 2.5 Pro | | |
+| Grok 3 | | |
+| Grok 4 | | |
+| Qwen3-Max-Preview | | |
+
 
 
 # 问题二
@@ -969,7 +971,7 @@ myLink.addEventListener('click', function(event) {
 {% endfold %}
 
 ## 答案评价
-GPT-4o, DeepSeek-V3 深度思考, DeepSeek-R1, Gemini 2.0 Pro, Grok 4 没有提到 `auxclick`
+GPT-4o, DeepSeek-V3 深度思考, DeepSeek-R1, Gemini 2.0 Pro, Grok 4, Qwen3-Max-Preview 没有提到 `auxclick`
 
 GPT-4.5 preview, o1-preview, o1, o3, o4-mini, Claude 3.5 Sonnet, Claude 3.7 Sonnet, Claude Sonnet 4, Claude Opus 4, Claude Opus 4.1, Gemini 2.5 Pro, Grok 3, Qwen3-235B-A22B 还额外提到 `mousedown` 和 `mouseup`
 
@@ -983,7 +985,7 @@ GPT-4.5 preview, o1-preview, o1, o3, o4-mini, Claude 3.5 Sonnet, Claude 3.7 Sonn
 |         o3        | Gemini 2.5 Pro |       Kimi-k1.5      |
 |      o4-mini      |                |    Gemini 2.0 Pro    |
 | Claude 3.5 Sonnet |                |        Grok 4        |
-| Claude 3.7 Sonnet |                |                      |
+| Claude 3.7 Sonnet |                |   Qwen3-Max-Preview  |
 |   Claude Opus 4   |                |                      |
 |  Claude Opus 4.1  |                |                      |
 |    DeepSeek-V3    |                |                      |
@@ -1443,7 +1445,7 @@ OpenRouter, 20250711
 {% endfold %}
 
 ## 答案评价
-GPT-4o, o1, Gemini 2.0 Pro, Claude Opus 4.1, Grok 3 全篇没有想到 match patterns 是和正则表达式不一样的东西
+GPT-4o, o1, Gemini 2.0 Pro, Claude Opus 4.1, Grok 3, Qwen3-Max-Preview 全篇没有想到 match patterns 是和正则表达式不一样的东西
 
 Qwen3-235B-A22B 确实想到了是和正则不同的东西，但是想错了方向，提供了完全错误的方法
 
@@ -1474,7 +1476,7 @@ Kimi K2 提到了自己转换，还有一些额外不切实际的方法
 |      GPT-5     |  GPT-4.5 preview  |       GPT-4o      |
 |       o3       |      GPT-4.1      |         o1        |
 |     o3-pro     |     o1-preview    |       o1-pro      |
-|  o4-mini  | Claude 3.7 Sonnet |    o3-mini   |
+|     o4-mini    | Claude 3.7 Sonnet |      o3-mini      |
 | Gemini 2.5 Pro |  Claude Sonnet 4  | Claude 3.5 Sonnet |
 |                |   Claude Opus 4   |  Claude Opus 4.1  |
 |                |       Grok 4      |    DeepSeek-R1    |
@@ -1482,6 +1484,7 @@ Kimi K2 提到了自己转换，还有一些额外不切实际的方法
 |                |                   |       Grok 3      |
 |                |                   |  Qwen3-235B-A22B  |
 |                |                   |      Kimi K2      |
+|                |                   | Qwen3-Max-Preview |
 
 # 问题五
 ```
@@ -1611,27 +1614,27 @@ OpenRouter, 20250327
 {% endfold %}
 
 ## 答案评价
-这几个模型都没有开联网搜索，只有 GPT-4.5 preview, Claude Opus 4, Claude Opus 4.1, DeepSeek-R1 和 Gemini 2.0 Pro 给出了相对正确的原文
+这几个模型都没有开联网搜索，只有 GPT-4.5 preview, Claude Opus 4, Claude Opus 4.1, DeepSeek-R1 和 Gemini 2.0 Pro, Qwen3-Max-Preview 给出了相对正确的原文
 
 o1 等模型有较大错误
 
 o3-mini 直接否认了这个问题
 
-|        好       |         中        |      差      |
-|:---------------:|:-----------------:|:------------:|
-| GPT-4.5 preview |       GPT-4o      | o3-mini |
-|  Claude Opus 4  |      GPT-4.1      |              |
-| Claude Opus 4.1 |       GPT-5       |              |
-|  Gemini 2.0 Pro |         o1        |              |
-|   DeepSeek-R1   |     o1-preview    |              |
-|                 |         o3        |              |
-|                 |    o4-mini   |              |
-|                 | Claude 3.5 Sonnet |              |
-|                 | Claude 3.7 Sonnet |              |
-|                 |  Claude Sonnet 4  |              |
-|                 |   Gemini 2.5 Pro  |              |
-|                 |       Grok 3      |              |
-|                 |       Grok 4      |              |
+| 好 | 中 | 差 |
+|:---:|:---:|:---:|
+| GPT-4.5 preview | GPT-4o | o3-mini |
+| Claude Opus 4 | GPT-4.1 |  |
+| Claude Opus 4.1 | GPT-5 |  |
+| Gemini 2.0 Pro | o1 |  |
+| DeepSeek-R1 | o1-preview |  |
+| Qwen3-Max-Preview | o3 |  |
+|  | o4-mini |  |
+|  | Claude 3.5 Sonnet |  |
+|  | Claude 3.7 Sonnet |  |
+|  | Claude Sonnet 4 |  |
+|  | Gemini 2.5 Pro |  |
+|  | Grok 3 |  |
+|  | Grok 4 |  |
 
 
 # 问题六
@@ -2428,9 +2431,7 @@ print("完成所有文件的 VAD 处理并绘制时长分布图")
 {% endfold %}
 
 ## 答案评价
-GPT-4.5 preview, o3-mini, o4-mini, Claude Opus 4, Gemini 2.5 Pro, Grok 4 多引入了 `torchaudio` 依赖，手动做了转换，实现功能了但是有点冗余
-
-Kimi K2 也引入了冗余的依赖，但是没有报错，而且也实现了功能
+GPT-4.5 preview, o3-mini, o4-mini, Claude Opus 4, Gemini 2.5 Pro, Grok 4, Kimi K2, Qwen3-Max-Preview 多引入了 `torchaudio` 依赖，手动做了转换，实现功能了但是有点冗余
 
 o1-preview 多引入了 `torchaudio` 依赖，其实 `read_audio` 自己就能重新采样成 16 kHz 的音频，而且能自动压成单声道，不需要再额外设置，这里用 `torchaudio.load` 而不用 `read_audio` 没有处理双声道直接报错了
 
@@ -2438,15 +2439,16 @@ GPT-5, o1, o3, Claude 3.7 Sonnet, DeepSeek-R1, Grok 3 的做法是正确做法
 
 GPT-4.1, Claude Sonnet 4, Gemini 2.0 Pro 报错了，不细看了
 
-|         好        |        中       |        差       |
-|:-----------------:|:---------------:|:---------------:|
-|       GPT-5       | GPT-4.5 preview |     GPT-4.1     |
-|         o1        |   o3-mini  |    o1-preview   |
-|         o3        |   o4-mini  | Claude Sonnet 4 |
-| Claude 3.7 Sonnet |  Claude Opus 4  |  Gemini 2.0 Pro |
-|    DeepSeek-R1    |  Gemini 2.5 Pro |                 |
-|       Grok 3      |      Grok 4     |                 |
-|                   |     Kimi K2     |                 |
+| 好 | 中 | 差 |
+|:---:|:---:|:---:|
+| GPT-5 | GPT-4.5 preview | GPT-4.1 |
+| o1 | o3-mini | o1-preview |
+| o3 | o4-mini | Claude Sonnet 4 |
+| Claude 3.7 Sonnet | Claude Opus 4 | Gemini 2.0 Pro |
+| DeepSeek-R1 | Gemini 2.5 Pro |  |
+| Grok 3 | Grok 4 |  |
+|  | Kimi K2 |  |
+|  | Qwen3-Max-Preview |  |
 
 # 问题七
 ```
@@ -2644,21 +2646,21 @@ GPT-4.5 preview, GPT-4.1, o1-preview, o1-pro, o3-mini, o4-mini, Claude Sonnet 4,
 
 o1, Claude 3.7 Sonnet, Gemini 2.5 Pro, Grok 3 看起来完成了任务，但是对于描述也偷偷地修改了
 
-只有 GPT-5, Claude Opus 4.1, Grok 4 做到了优化代码，还不改变显示效果
+只有 GPT-5, Claude Opus 4.1, Grok 4, Qwen3-Max-Preview 做到了优化代码，还不改变显示效果
 
-|   好   |         中        |        差       |
-|:------:|:-----------------:|:---------------:|
-|  GPT-5 |         o1        | GPT-4.5 preview |
-| Grok 4 | Claude 3.7 Sonnet |     GPT-4.1     |
-| Claude Opus 4.1 |   Gemini 2.5 Pro  |    o1-preview   |
-|        |       Grok 3      |      o1-pro     |
-|        |                   |        o3       |
-|        |                   |   o3-mini  |
-|        |                   |   o4-mini  |
-|        |                   | Claude Sonnet 4 |
-|        |                   |  Claude Opus 4  |
-|        |                   |   DeepSeek-R1   |
-|        |                   |  Gemini 2.0 Pro |
+| 好 | 中 | 差 |
+|:---:|:---:|:---:|
+| GPT-5 | o1 | GPT-4.5 preview |
+| Grok 4 | Claude 3.7 Sonnet | GPT-4.1 |
+| Claude Opus 4.1 | Gemini 2.5 Pro | o1-preview |
+| Qwen3-Max-Preview | Grok 3 | o1-pro |
+|  |  | o3 |
+|  |  | o3-mini |
+|  |  | o4-mini |
+|  |  | Claude Sonnet 4 |
+|  |  | Claude Opus 4 |
+|  |  | DeepSeek-R1 |
+|  |  | Gemini 2.0 Pro |
 
 # 问题八
 ```
@@ -2906,7 +2908,7 @@ Okay, let's break down YAML array (sequence) indentation:
 ## 答案评价
 GPT-4.5 preview, Claude 3.7 Sonnet, DeepSeek-R1 关于语法的回答是正确的
 
-GPT-4.1, GPT-5, o1-preview, o3, o3-mini, o3-pro, o4-mini, Claude Sonnet 4, Claude Opus 4, Claude Opus 4.1, Gemini 2.5 Pro, Grok 3, Grok 4, Kimi K2 关于语法的回答是错误的
+GPT-4.1, GPT-5, o1-preview, o3, o3-mini, o3-pro, o4-mini, Claude Sonnet 4, Claude Opus 4, Claude Opus 4.1, Gemini 2.5 Pro, Grok 3, Grok 4, Kimi K2, Qwen3-Max-Preview 关于语法的回答是错误的
 
 o1 回避了这个问题，而且描述有错，yaml 官方的数组不缩进
 
@@ -2914,23 +2916,24 @@ GPT-4.5 preview 的描述有一点小错，k8s 描述数组时一般不缩进
 
 Claude 3.7 Sonnet 的描述最好
 
-|         好        |        中       |        差       |
-|:-----------------:|:---------------:|:---------------:|
-| Claude 3.7 Sonnet | GPT-4.5 preview |     GPT-4.1     |
-|    DeepSeek-R1    |                 |      GPT-5      |
-|                   |                 |    o1-preview   |
-|                   |                 |        o1       |
-|                   |                 |        o3       |
-|                   |                 |      o3-pro     |
-|                   |                 |   o3-mini  |
-|                   |                 |   o4-mini  |
-|                   |                 | Claude Sonnet 4 |
-|                   |                 |  Claude Opus 4  |
-|                   |                 |  Claude Opus 4.1 |
-|                   |                 |  Gemini 2.5 Pro |
-|                   |                 |      Grok 3     |
-|                   |                 |      Grok 4     |
-|                   |                 |     Kimi K2     |
+| 好 | 中 | 差 |
+|:---:|:---:|:---:|
+| Claude 3.7 Sonnet | GPT-4.5 preview | GPT-4.1 |
+| DeepSeek-R1 |  | GPT-5 |
+|  |  | o1-preview |
+|  |  | o1 |
+|  |  | o3 |
+|  |  | o3-pro |
+|  |  | o3-mini |
+|  |  | o4-mini |
+|  |  | Claude Sonnet 4 |
+|  |  | Claude Opus 4 |
+|  |  | Claude Opus 4.1 |
+|  |  | Gemini 2.5 Pro |
+|  |  | Grok 3 |
+|  |  | Grok 4 |
+|  |  | Kimi K2 |
+|  |  | Qwen3-Max-Preview |
 
 # 问题九
 ```
@@ -3099,7 +3102,7 @@ o1 没有提到滑点，o3 没有强调滑点这个重要问题
 
 Gemini 2.5 Pro 没有提到不需要 limit order book 这个问题
 
-GPT-5, o4-mini, Claude Opus 4, Claude Opus 4.1 的解释不错
+GPT-5, o4-mini, Claude Opus 4, Claude Opus 4.1, Qwen3-Max-Preview 的解释不错
 
 |      更好     |       好       |         中        |        差       |
 |:-------------:|:--------------:|:-----------------:|:---------------:|
@@ -3107,6 +3110,8 @@ GPT-5, o4-mini, Claude Opus 4, Claude Opus 4.1 的解释不错
 |  o4-mini |       o3       | Claude 3.7 Sonnet | Claude Sonnet 4 |
 | Claude Opus 4 | Gemini 2.5 Pro |       Grok 3      |   DeepSeek-R1   |
 | Claude Opus 4.1 |                |                   |      Grok 4     |
+| Qwen3-Max-Preview |                |                   |                 |
+
 
 # 问题十
 ```
@@ -3391,14 +3396,16 @@ Claude Opus 4, Claude Opus 4.1, Gemini 2.5 Pro 包括了 uv run -m 和手动激�
 
 DeepSeek-R1 无视了问题
 
-|        好       |        中       |         差        |
-|:---------------:|:---------------:|:-----------------:|
-|     GPT-4.1     | GPT-4.5 preview |         o1        |
-|      GPT-5      |        o3       |      o4-mini      |
-|  Claude Opus 4  |                 | Claude 3.7 Sonnet |
-| Claude Opus 4.1 |                 |    DeepSeek-R1    |
-|  Gemini 2.5 Pro |                 |                   |
-|      Grok 4     |                 |                   |
+Qwen3-Max-Preview 只提到了 uv run python -m 这一种方法
+
+| 好 | 中 | 差 |
+|:---:|:---:|:---:|
+| GPT-4.1 | GPT-4.5 preview | o1 |
+| GPT-5 | o3 | o4-mini |
+| Claude Opus 4 | Qwen3-Max-Preview | Claude 3.7 Sonnet |
+| Claude Opus 4.1 |  | DeepSeek-R1 |
+| Gemini 2.5 Pro |  |  |
+| Grok 4 |  |  |
 
 
 # 问题 X
