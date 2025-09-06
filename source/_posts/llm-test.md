@@ -71,6 +71,7 @@ openai o 系列模型比较特殊，现在它们不会优先输出 markdown 格�
 
 - **Alibaba:**
   - Qwen3-235B-A22B
+  - Qwen3-Max-Preview(测试是在可以思考的版本下做的，但是现在官方不能思考了)
 
 - **字节跳动:**
   - Doubao-Seed-1.6-thinking
