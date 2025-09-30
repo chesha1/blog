@@ -1,0 +1,27 @@
+---
+title: monorepo 使用体验
+date: 2025-08-31 11:20
+excerpt: 深入分析V8引擎中正则表达式的执行机制：从编译原理视角探讨 IRREGEXP、ATOM、EXPERIMENTAL 三种引擎的选择策略，详细解析从 RegExp.prototype.test 到底层字符串匹配的完整调用链，以及 Boyer-Moore 等高性能搜索算法的实现细节
+category: 前端
+mermaid: true
+---
+# 背景
+最近基本上半转职成前端，所以研究一点前端的事，公司的基础架构不支持，自己创造点需求
+
+# 调研
+## 工具选择
+参考：https://monorepo.tools/#monorepo-tools
+
+tools github stars npm downloads
+lerna 36k 1324k
+nx 27k 6108k
+turborepo 28.7k 5180k
+rush 6.3k 776k
+
+数据来源于2025 09 17
+
+turborepo首先排除，nextjs shadcn/ui 绑定太深，对v0没有好印象
+
+Lerna 被nx团队接管了，Lerna 更老有历史包袱，那为啥不用nx
+
+最后选择nx
