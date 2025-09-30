@@ -544,24 +544,24 @@ GPT-4.5 preview, GPT-5, o1-preview, o1, o1-pro, o3, o3-pro,o4-mini, Claude Opus 
 
 o3-pro 虽然纠正了错误说法，但是没有提到 secrets，然后错误的 prompt 一路狂奔了
 
-| 好 	| 中 	| 差 	|
-|:---:	|:---:	|:---:	|
-| GPT-4.5 preview 	| GPT-4o 	| Kimi-k1.5 	|
-| GPT-4.1 	| o3-pro 	|  	|
-| GPT-5 	| o3-mini 	|  	|
-| o1-preview 	| Claude 3.5 Sonnet 	|  	|
-| o1 	| Claude 3.7 Sonnet 	|  	|
-| o1-pro 	| Claude Sonnet 4 	|  	|
-| o3 	| DeepSeek-V3 	|  	|
-| o4-mini 	| Gemini 2.0 Pro 	|  	|
-| Claude Sonnet 4.5 	| Qwen3-235B-A22B 	|  	|
-| Claude Opus 4 	| Doubao-Seed-1.6-thinking 	|  	|
-| Claude Opus 4.1 	|  	|  	|
-| DeepSeek-R1 	|  	|  	|
-| Gemini 2.5 Pro 	|  	|  	|
-| Grok 3 	|  	|  	|
-| Grok 4 	|  	|  	|
-| Qwen3-Max-Preview 	|  	|  	|
+| 好 | 中 | 差 |
+|:---:|:---:|:---:|
+| GPT-4.5 preview | GPT-4o | Kimi-k1.5 |
+| GPT-4.1 | o3-pro |  |
+| GPT-5 | o3-mini |  |
+| o1-preview | Claude 3.5 Sonnet |  |
+| o1 | Claude 3.7 Sonnet |  |
+| o1-pro | Claude Sonnet 4 |  |
+| o3 | DeepSeek-V3 |  |
+| o4-mini | Gemini 2.0 Pro |  |
+| Claude Sonnet 4.5 | Qwen3-235B-A22B |  |
+| Claude Opus 4 | Doubao-Seed-1.6-thinking |  |
+| Claude Opus 4.1 |  |  |
+| DeepSeek-R1 |  |  |
+| Gemini 2.5 Pro |  |  |
+| Grok 3 |  |  |
+| Grok 4 |  |  |
+| Qwen3-Max-Preview |  |  |
 
 
 
@@ -980,22 +980,22 @@ GPT-4.5 preview, o1-preview, o1, o3, o4-mini, Claude 3.5 Sonnet, Claude 3.7 Sonn
 
 后续又多试了几次 DeepSeek-R1 有时候能提到，有时候不能
 
-| 好 	| 中 	| 差 	|
-|:---:	|:---:	|:---:	|
-| GPT-4.5 preview 	| GPT-4.1 	| GPT-4o 	|
-| GPT-5 	| Claude Sonnet 4.5 	| DeepSeek-V3 深度思考 	|
-| o1 	| DeepSeek-R1 	| DeepSeek-R1 	|
-| o3 	| Kimi-k2 	| Kimi-k1.5 	|
-| o4-mini 	| Gemini 2.5 Pro 	| Gemini 2.0 Pro 	|
-| Claude 3.5 Sonnet 	|  	| Grok 4 	|
-| Claude 3.7 Sonnet 	|  	|  	|
-| Claude Opus 4 	|  	|  	|
-| Claude Opus 4.1 	|  	|  	|
-| DeepSeek-V3 	|  	|  	|
-| Gemini 2.5 Pro 	|  	|  	|
-| Grok 3 	|  	|  	|
-| Qwen3-235B-A22B 	|  	|  	|
-| Qwen3-Max-Preview 	|  	|  	|
+| 好 | 中 | 差 |
+|:---:|:---:|:---:|
+| GPT-4.5 preview | GPT-4.1 | GPT-4o |
+| GPT-5 | Claude Sonnet 4.5 | DeepSeek-V3 深度思考 |
+| o1 | DeepSeek-R1 | DeepSeek-R1 |
+| o3 | Kimi-k2 | Kimi-k1.5 |
+| o4-mini | Gemini 2.5 Pro | Gemini 2.0 Pro |
+| Claude 3.5 Sonnet |  | Grok 4 |
+| Claude 3.7 Sonnet |  |  |
+| Claude Opus 4 |  |  |
+| Claude Opus 4.1 |  |  |
+| DeepSeek-V3 |  |  |
+| Gemini 2.5 Pro |  |  |
+| Grok 3 |  |  |
+| Qwen3-235B-A22B |  |  |
+| Qwen3-Max-Preview |  |  |
 
 # 问题四
 ```
@@ -1475,20 +1475,20 @@ GPT-5, o4-mini 也提到了 URL Pattern API，还有一些额外的方法
 
 Kimi K2 提到了自己转换，还有一些额外不切实际的方法
 
-| 好 	| 中 	| 差 	|
-|:---:	|:---:	|:---:	|
-| GPT-5 	| GPT-4.5 preview 	| GPT-4o 	|
-| o3 	| GPT-4.1 	| o1 	|
-| o3-pro 	| o1-preview 	| o1-pro 	|
-| o4-mini 	| Claude 3.7 Sonnet 	| o3-mini 	|
-| Gemini 2.5 Pro 	| Claude Sonnet 4 	| Claude 3.5 Sonnet 	|
-|  	| Claude Sonnet 4.5 	| Claude Opus 4.1 	|
-|  	| Claude Opus 4 	| DeepSeek-R1 	|
-|  	| Grok 4 	| Gemini 2.0 Pro 	|
-|  	| Qwen3-Max-Preview 	| Grok 3 	|
-|  	|  	| Qwen3-235B-A22B 	|
-|  	|  	| Kimi K2 	|
-|  	|  	|  	|
+| 好 | 中 | 差 |
+|:---:|:---:|:---:|
+| GPT-5 | GPT-4.5 preview | GPT-4o |
+| o3 | GPT-4.1 | o1 |
+| o3-pro | o1-preview | o1-pro |
+| o4-mini | Claude 3.7 Sonnet | o3-mini |
+| Gemini 2.5 Pro | Claude Sonnet 4 | Claude 3.5 Sonnet |
+|  | Claude Sonnet 4.5 | Claude Opus 4.1 |
+|  | Claude Opus 4 | DeepSeek-R1 |
+|  | Grok 4 | Gemini 2.0 Pro |
+|  | Qwen3-Max-Preview | Grok 3 |
+|  |  | Qwen3-235B-A22B |
+|  |  | Kimi K2 |
+|  |  |  |
 
 # 问题五
 ```
@@ -1624,22 +1624,22 @@ o1 等模型有较大错误
 
 o3-mini 直接否认了这个问题
 
-| 好 	| 中 	| 差 	|
-|:---:	|:---:	|:---:	|
-| GPT-4.5 preview 	| GPT-4o 	| o3-mini 	|
-| Claude Opus 4 	| GPT-4.1 	|  	|
-| Claude Opus 4.1 	| GPT-5 	|  	|
-| Gemini 2.0 Pro 	| o1 	|  	|
-| DeepSeek-R1 	| o1-preview 	|  	|
-| Qwen3-Max-Preview 	| o3 	|  	|
-|  	| o4-mini 	|  	|
-|  	| Claude 3.5 Sonnet 	|  	|
-|  	| Claude 3.7 Sonnet 	|  	|
-|  	| Claude Sonnet 4 	|  	|
-|  	| Claude Sonnet 4.5 	|  	|
-|  	| Gemini 2.5 Pro 	|  	|
-|  	| Grok 3 	|  	|
-|  	| Grok 4 	|  	|
+| 好 | 中 | 差 |
+|:---:|:---:|:---:|
+| GPT-4.5 preview | GPT-4o | o3-mini |
+| Claude Opus 4 | GPT-4.1 |  |
+| Claude Opus 4.1 | GPT-5 |  |
+| Gemini 2.0 Pro | o1 |  |
+| DeepSeek-R1 | o1-preview |  |
+| Qwen3-Max-Preview | o3 |  |
+|  | o4-mini |  |
+|  | Claude 3.5 Sonnet |  |
+|  | Claude 3.7 Sonnet |  |
+|  | Claude Sonnet 4 |  |
+|  | Claude Sonnet 4.5 |  |
+|  | Gemini 2.5 Pro |  |
+|  | Grok 3 |  |
+|  | Grok 4 |  |
 
 
 # 问题六
@@ -2444,17 +2444,17 @@ GPT-5, o1, o3, Claude 3.7 Sonnet, DeepSeek-R1, Grok 3 的做法是正确做法
 
 GPT-4.1, Claude Sonnet 4, Gemini 2.0 Pro 报错了，不细看了
 
-| 好 	| 中 	| 差 	|
-|:---:	|:---:	|:---:	|
-| GPT-5 	| GPT-4.5 preview 	| GPT-4.1 	|
-| o1 	| o3-mini 	| o1-preview 	|
-| o3 	| o4-mini 	| Claude Sonnet 4 	|
-| Claude 3.7 Sonnet 	| Claude Sonnet 4.5 	| Gemini 2.0 Pro 	|
-| DeepSeek-R1 	| Claude Opus 4 	|  	|
-| Grok 3 	| Gemini 2.5 Pro 	|  	|
-|  	| Grok 4 	|  	|
-|  	| Kimi K2 	|  	|
-|  	| Qwen3-Max-Preview 	|  	|
+| 好 | 中 | 差 |
+|:---:|:---:|:---:|
+| GPT-5 | GPT-4.5 preview | GPT-4.1 |
+| o1 | o3-mini | o1-preview |
+| o3 | o4-mini | Claude Sonnet 4 |
+| Claude 3.7 Sonnet | Claude Sonnet 4.5 | Gemini 2.0 Pro |
+| DeepSeek-R1 | Claude Opus 4 |  |
+| Grok 3 | Gemini 2.5 Pro |  |
+|  | Grok 4 |  |
+|  | Kimi K2 |  |
+|  | Qwen3-Max-Preview |  |
 
 # 问题七
 ```
@@ -2654,21 +2654,21 @@ o1, Claude 3.7 Sonnet, Gemini 2.5 Pro, Grok 3 看起来完成了任务，但是�
 
 只有 GPT-5, Claude Opus 4.1, Grok 4, Qwen3-Max-Preview 做到了优化代码，还不改变显示效果
 
-| 好 	| 中 	| 差 	|
-|:---:	|:---:	|:---:	|
-| GPT-5 	| o1 	| GPT-4.5 preview 	|
-| Grok 4 	| Claude 3.7 Sonnet 	| GPT-4.1 	|
-| Claude Opus 4.1 	| Gemini 2.5 Pro 	| o1-preview 	|
-|  	| Grok 3 	| o1-pro 	|
-|  	|  	| o3 	|
-|  	|  	| o3-mini 	|
-|  	|  	| o4-mini 	|
-|  	|  	| Claude Sonnet 4 	|
-|  	|  	| Claude Sonnet 4.5 	|
-|  	|  	| Claude Opus 4 	|
-|  	|  	| DeepSeek-R1 	|
-|  	|  	| Gemini 2.0 Pro 	|
-|  	|  	| Qwen3-Max-Preview 	|
+| 好 | 中 | 差 |
+|:---:|:---:|:---:|
+| GPT-5 | o1 | GPT-4.5 preview |
+| Grok 4 | Claude 3.7 Sonnet | GPT-4.1 |
+| Claude Opus 4.1 | Gemini 2.5 Pro | o1-preview |
+|  | Grok 3 | o1-pro |
+|  |  | o3 |
+|  |  | o3-mini |
+|  |  | o4-mini |
+|  |  | Claude Sonnet 4 |
+|  |  | Claude Sonnet 4.5 |
+|  |  | Claude Opus 4 |
+|  |  | DeepSeek-R1 |
+|  |  | Gemini 2.0 Pro |
+|  |  | Qwen3-Max-Preview |
 
 # 问题八
 ```
@@ -2924,25 +2924,25 @@ GPT-4.5 preview 的描述有一点小错，k8s 描述数组时一般不缩进
 
 Claude 3.7 Sonnet 的描述最好
 
-| 好 	| 中 	| 差 	|
-|:---:	|:---:	|:---:	|
-| Claude 3.7 Sonnet 	| GPT-4.5 preview 	| GPT-4.1 	|
-| DeepSeek-R1 	|  	| GPT-5 	|
-|  	|  	| o1-preview 	|
-|  	|  	| o1 	|
-|  	|  	| o3 	|
-|  	|  	| o3-pro 	|
-|  	|  	| o3-mini 	|
-|  	|  	| o4-mini 	|
-|  	|  	| Claude Sonnet 4 	|
-|  	|  	| Claude Sonnet 4.5 	|
-|  	|  	| Claude Opus 4 	|
-|  	|  	| Claude Opus 4.1 	|
-|  	|  	| Gemini 2.5 Pro 	|
-|  	|  	| Grok 3 	|
-|  	|  	| Grok 4 	|
-|  	|  	| Kimi K2 	|
-|  	|  	| Qwen3-Max-Preview 	|
+| 好 | 中 | 差 |
+|:---:|:---:|:---:|
+| Claude 3.7 Sonnet | GPT-4.5 preview | GPT-4.1 |
+| DeepSeek-R1 |  | GPT-5 |
+|  |  | o1-preview |
+|  |  | o1 |
+|  |  | o3 |
+|  |  | o3-pro |
+|  |  | o3-mini |
+|  |  | o4-mini |
+|  |  | Claude Sonnet 4 |
+|  |  | Claude Sonnet 4.5 |
+|  |  | Claude Opus 4 |
+|  |  | Claude Opus 4.1 |
+|  |  | Gemini 2.5 Pro |
+|  |  | Grok 3 |
+|  |  | Grok 4 |
+|  |  | Kimi K2 |
+|  |  | Qwen3-Max-Preview |
 
 # 问题九
 ```
@@ -3113,13 +3113,13 @@ Gemini 2.5 Pro 没有提到不需要 limit order book 这个问题
 
 GPT-5, o4-mini, Claude Opus 4, Claude Opus 4.1 的解释不错
 
-| 更好 	| 好 	| 中 	| 差 	|
-|:---:	|:---:	|:---:	|:---:	|
-| GPT-5 	| o1 	| GPT-4.1 	| GPT-4.5 preview 	|
-| o4-mini 	| o3 	| Claude 3.7 Sonnet 	| Claude Sonnet 4 	|
-| Claude Opus 4 	| Gemini 2.5 Pro 	| Grok 3 	| Claude Sonnet 4.5 	|
-| Claude Opus 4.1 	|  	| Qwen3-Max-Preview 	| DeepSeek-R1 	|
-|  	|  	|  	| Grok 4 	|
+| 更好 | 好 | 中 | 差 |
+|:---:|:---:|:---:|:---:|
+| GPT-5 | o1 | GPT-4.1 | GPT-4.5 preview |
+| o4-mini | o3 | Claude 3.7 Sonnet | Claude Sonnet 4 |
+| Claude Opus 4 | Gemini 2.5 Pro | Grok 3 | Claude Sonnet 4.5 |
+| Claude Opus 4.1 |  | Qwen3-Max-Preview | DeepSeek-R1 |
+|  |  |  | Grok 4 |
 
 
 # 问题十
@@ -3407,14 +3407,14 @@ DeepSeek-R1 无视了问题
 
 Qwen3-Max-Preview 只提到了 uv run python -m 这一种方法
 
-| 好 	| 中 	| 差 	|
-|:---:	|:---:	|:---:	|
-| GPT-4.1 	| GPT-4.5 preview 	| o1 	|
-| GPT-5 	| o3 	| o4-mini 	|
-| Claude Opus 4 	| Claude Sonnet 4.5 	| Claude 3.7 Sonnet 	|
-| Claude Opus 4.1 	| Qwen3-Max-Preview 	| DeepSeek-R1 	|
-| Gemini 2.5 Pro 	|  	|  	|
-| Grok 4 	|  	|  	|
+| 好 | 中 | 差 |
+|:---:|:---:|:---:|
+| GPT-4.1 | GPT-4.5 preview | o1 |
+| GPT-5 | o3 | o4-mini |
+| Claude Opus 4 | Claude Sonnet 4.5 | Claude 3.7 Sonnet |
+| Claude Opus 4.1 | Qwen3-Max-Preview | DeepSeek-R1 |
+| Gemini 2.5 Pro |  |  |
+| Grok 4 |  |  |
 
 
 # 问题 X
