@@ -1,7 +1,7 @@
 ---
 title: 自用大模型评测问题
 date: 2025-05-25 12:24
-excerpt: 个人使用场景下准备的一些问题，用于测试新的大模型，至少和 GPT-5, Claude 4, Gemini 2.5 Pro, DeepSeek-R1 比较
+excerpt: 个人使用场景下准备的一些问题，用于测试新的大模型，至少和 GPT-5, Claude 4, Gemini 3 Pro, DeepSeek-R1 比较
 category: 生活
 ---
 # 背景
@@ -453,6 +453,126 @@ OpenRouter, 20250327
 
 {% endfold %}
 
+## Gemini 3 Pro
+ai studio, gemini-3-pro-preview, 20251119
+
+{% fold info @展开查看回答 %}
+
+这是一个非常常见的误解。简单直接的回答是：**你不能直接在 `wrangler.toml` 文件内部引用 `.dev.vars` 中的变量。**
+
+这是因为两者的用途完全不同：
+
+1.  **`wrangler.toml`**：用于配置 Worker 的基础设施（如触发器、绑定资源、路由）。
+2.  **`.dev.vars`**：用于存放 **本地开发时的敏感数据（Secrets）**，这些数据会被注入到 Worker 的 **运行代码** 中，而不是用来配置 Wrangler 本身。
+
+### 详细解释与解决方案
+
+如果你想实现某些目标，请查看以下对应的场景和解决方案：
+
+---
+
+### 场景 1：我想在 Worker 代码中使用 `.dev.vars` 里的变量
+
+这是 `.dev.vars` 的正确用法。它模拟了生产环境中的 `wrangler secret put`。
+
+**1. 创建 `.dev.vars` 文件 (不要提交到 git):**
+```properties
+API_KEY=my-secret-key-123
+DB_PASSWORD=secret-password
+```
+
+**2. 在 Worker 代码 (`src/index.ts` 或 `src/index.js`) 中使用:**
+Wrangler 会在本地启动时自动读取 `.dev.vars` 并将其注入到 `env` 对象中。
+
+```typescript
+export interface Env {
+  API_KEY: string;
+  DB_PASSWORD: string;
+}
+
+export default {
+  async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
+    // 这里可以直接使用 .dev.vars 里的值
+    console.log(env.API_KEY); 
+    
+    return new Response(`My secret is: ${env.API_KEY}`);
+  },
+};
+```
+
+**3. 启动开发服务器:**
+```bash
+npx wrangler dev
+```
+
+---
+
+### 场景 2：我想在 `wrangler.toml` 里定义非敏感的环境变量
+
+如果你只是想定义一些公共变量（非机密），你可以直接写在 `wrangler.toml` 的 `[vars]` 块中。
+
+**`wrangler.toml`:**
+```toml
+name = "my-worker"
+
+[vars]
+APP_VERSION = "1.0.0"
+API_BASE_URL = "https://api.example.com"
+```
+
+**代码中使用:**
+```typescript
+console.log(env.APP_VERSION); // 输出 "1.0.0"
+```
+
+> **注意**：如果 `.dev.vars` 和 `wrangler.toml` 的 `[vars]` 中有同名变量，`.dev.vars` (作为 Secret) 的优先级更高。
+
+---
+
+### 场景 3：我想动态配置 `wrangler.toml` (例如 Account ID 或 KV ID)
+
+如果你是希望像使用 `.env` 文件一样，在 `wrangler.toml` 中使用 `${ACCOUNT_ID}` 这样的语法，**Wrangler 目前原生不支持这种变量插值**。
+
+但是，你有以下几种替代方案：
+
+#### 方法 A：使用系统环境变量（仅限特定字段）
+Wrangler 允许通过系统环境变量覆盖某些核心配置，而不需要写在 `wrangler.toml` 里：
+
+*   **CLOUDFLARE_ACCOUNT_ID**: 可以在终端设置此变量，从而在 `wrangler.toml` 中省略 `account_id`。
+*   **CLOUDFLARE_API_TOKEN**: 用于认证。
+
+**使用方式:**
+```bash
+# macOS/Linux
+export CLOUDFLARE_ACCOUNT_ID="your-id-here"
+npx wrangler dev
+
+# 或者在 .env 文件中配合 dotenv 使用 (需要构建脚本支持)
+```
+
+#### 方法 B：使用 CI/CD 或 脚本生成 (Envsubst)
+如果你必须隐藏 `wrangler.toml` 中的某些 ID（如数据库 ID），通常的做法是在 CI/CD 流程中生成配置文件。
+
+1. 创建一个模板文件 `wrangler.toml.template`:
+   ```toml
+   name = "my-worker"
+   account_id = "$MY_ACCOUNT_ID"
+   ```
+2. 使用 `envsubst` 生成最终文件:
+   ```bash
+   export MY_ACCOUNT_ID="12345..."
+   envsubst < wrangler.toml.template > wrangler.toml
+   npx wrangler deploy
+   ```
+
+### 总结
+
+*   **`.dev.vars`** -> 只能在 **Worker 代码** (`env.VAR`) 中读取。
+*   **`wrangler.toml`** -> 不支持读取 `.dev.vars`。
+*   **敏感配置** -> 对于代码用的密钥，使用 `.dev.vars`；对于 Wrangler 配置用的 ID，通常直接写在 `wrangler.toml` 里（因为 ID 通常不算绝对机密），或者使用 CI/CD 环境变量注入。
+
+{% endfold %}
+
 ## Grok 4
 poe, 20250809
 
@@ -540,7 +660,7 @@ poe, 20250809
 
 GPT-4o, o3-mini, Claude 3.5 Sonnet, Claude 3.7 Sonnet, Claude Sonnet 4, DeepSeek-V3, Gemini 2.0 Pro, Qwen3-235B-A22B, Doubao-Seed-1.6-thinking 没有纠正引用这种错误说法
 
-GPT-4.5 preview, GPT-5, o1-preview, o1, o1-pro, o3, o3-pro,o4-mini, Claude Opus 4, Claude Opus 4.1, DeepSeek-R1, Gemini 2.5 Pro, Grok 3, Qwen3-Max-Preview 纠正了引用这种错误说法
+GPT-4.5 preview, GPT-5, o1-preview, o1, o1-pro, o3, o3-pro,o4-mini, Claude Opus 4, Claude Opus 4.1, DeepSeek-R1, Gemini 2.5 Pro, Gemini 3 Pro, Grok 3, Qwen3-Max-Preview 纠正了引用这种错误说法
 
 o3-pro 虽然纠正了错误说法，但是没有提到 secrets，然后错误的 prompt 一路狂奔了
 
@@ -559,6 +679,7 @@ o3-pro 虽然纠正了错误说法，但是没有提到 secrets，然后错误�
 | Claude Opus 4.1 |  |  |
 | DeepSeek-R1 |  |  |
 | Gemini 2.5 Pro |  |  |
+| Gemini 3 Pro |  |  |
 | Grok 3 |  |  |
 | Grok 4 |  |  |
 | Qwen3-Max-Preview |  |  |
@@ -1471,7 +1592,7 @@ DeepSeek-R1 也对正则匹配进行了一些废话，但还是提供了一个�
 
 Gemini 2.5 Pro 是提到了 URL Pattern API
 
-GPT-5, o4-mini 也提到了 URL Pattern API，还有一些额外的方法
+Gemini 3 Pro, GPT-5, o4-mini 也提到了 URL Pattern API，还有一些额外的方法
 
 Kimi K2 提到了自己转换，还有一些额外不切实际的方法
 
@@ -1482,13 +1603,12 @@ Kimi K2 提到了自己转换，还有一些额外不切实际的方法
 | o3-pro | o1-preview | o1-pro |
 | o4-mini | Claude 3.7 Sonnet | o3-mini |
 | Gemini 2.5 Pro | Claude Sonnet 4 | Claude 3.5 Sonnet |
-|  | Claude Sonnet 4.5 | Claude Opus 4.1 |
+| Gemini 3 Pro | Claude Sonnet 4.5 | Claude Opus 4.1 |
 |  | Claude Opus 4 | DeepSeek-R1 |
 |  | Grok 4 | Gemini 2.0 Pro |
 |  | Qwen3-Max-Preview | Grok 3 |
 |  |  | Qwen3-235B-A22B |
 |  |  | Kimi K2 |
-|  |  |  |
 
 # 问题五
 ```
@@ -1618,7 +1738,7 @@ OpenRouter, 20250327
 {% endfold %}
 
 ## 答案评价
-这几个模型都没有开联网搜索，只有 GPT-4.5 preview, Claude Opus 4, Claude Opus 4.1, DeepSeek-R1 和 Gemini 2.0 Pro, Qwen3-Max-Preview 给出了相对正确的原文
+这几个模型都没有开联网搜索，只有 GPT-4.5 preview, Claude Opus 4, Claude Opus 4.1, DeepSeek-R1 和 Gemini 2.0 Pro, Qwen3-Max-Preview, Gemini 3 Pro 给出了相对正确的原文
 
 o1 等模型有较大错误
 
@@ -1630,9 +1750,9 @@ o3-mini 直接否认了这个问题
 | Claude Opus 4 | GPT-4.1 |  |
 | Claude Opus 4.1 | GPT-5 |  |
 | Gemini 2.0 Pro | o1 |  |
-| DeepSeek-R1 | o1-preview |  |
-| Qwen3-Max-Preview | o3 |  |
-|  | o4-mini |  |
+| Gemini 3 Pro | o1-preview |  |
+| DeepSeek-R1 | o3 |  |
+| Qwen3-Max-Preview | o4-mini |  |
 |  | Claude 3.5 Sonnet |  |
 |  | Claude 3.7 Sonnet |  |
 |  | Claude Sonnet 4 |  |
@@ -2914,7 +3034,7 @@ Okay, let's break down YAML array (sequence) indentation:
 {% endfold %}
 
 ## 答案评价
-GPT-4.5 preview, Claude 3.7 Sonnet, DeepSeek-R1 关于语法的回答是正确的
+GPT-4.5 preview, Claude 3.7 Sonnet, DeepSeek-R1, Gemini 3 Pro 关于语法的回答是正确的
 
 GPT-4.1, GPT-5, o1-preview, o3, o3-mini, o3-pro, o4-mini, Claude Sonnet 4, Claude Opus 4, Claude Opus 4.1, Gemini 2.5 Pro, Grok 3, Grok 4, Kimi K2, Qwen3-Max-Preview 关于语法的回答是错误的
 
@@ -2928,7 +3048,7 @@ Claude 3.7 Sonnet 的描述最好
 |:---:|:---:|:---:|
 | Claude 3.7 Sonnet | GPT-4.5 preview | GPT-4.1 |
 | DeepSeek-R1 |  | GPT-5 |
-|  |  | o1-preview |
+| Gemini 3 Pro |  | o1-preview |
 |  |  | o1 |
 |  |  | o3 |
 |  |  | o3-pro |
